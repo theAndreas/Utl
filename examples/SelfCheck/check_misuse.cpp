@@ -74,6 +74,12 @@ void CheckMisuse() {
   Check(
       MisuseCount() == before + 1 && LastMisuse() == utl::Misuse::kNullFunction,
       F("a function_ref of a null pointer is reported"));
+  utl::inplace_function<uint8_t()> const no_callback;
+  before = MisuseCount();
+  uint8_t const placeholder = no_callback();
+  Check(MisuseCount() == before + 1 &&
+            LastMisuse() == utl::Misuse::kEmptyFunction && placeholder == 0,
+        F("a call of an empty inplace_function is reported, and gives 0"));
 
   before = MisuseCount();
   static_cast<void>(pair[1]);
@@ -86,6 +92,8 @@ void CheckMisuse() {
   utl::PrintMisuse(Serial, utl::Misuse::kRemove);
   Serial.println();
   utl::PrintMisuse(Serial, utl::Misuse::kNullFunction);
+  Serial.println();
+  utl::PrintMisuse(Serial, utl::Misuse::kEmptyFunction);
   Serial.println();
 #endif
 }

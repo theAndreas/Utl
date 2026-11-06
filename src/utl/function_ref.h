@@ -3,50 +3,25 @@
 
 /*!
  * \file
- * \brief A reference to something to call: std::function_ref, from C++26,
- * for gnu++11.
+ * \brief A reference to something to call: std::function_ref, from C++26, for
+ *        gnu++11.
  */
 
 #ifndef UTL_SRC_UTL_FUNCTION_REF_H_
 #define UTL_SRC_UTL_FUNCTION_REF_H_
 
+#include "utl/internal/invoke.h"
 #include "utl/internal/type_traits.h"
 #include "utl/misuse.h"
 
 namespace utl {
 
-/*! \cond */
-// What a sketch does not see: how the result of a call is returned.
-namespace internal {
-
-// Calls `f` with `args` and returns its result as an R, converted
-// implicitly, as a static_cast<R> would also take an explicit constructor.
-template <typename R>
-struct CallReturning {
-  template <typename F, typename... Args>
-  static R Call(F& f, Args&&... args) {
-    return f(static_cast<Args&&>(args)...);
-  }
-};
-
-// For R void, the result is dropped, whatever it is.
-template <>
-struct CallReturning<void> {
-  template <typename F, typename... Args>
-  static void Call(F& f, Args&&... args) {
-    f(static_cast<Args&&>(args)...);
-  }
-};
-
-}  // namespace internal
-/*! \endcond */
-
 /*!
  * \brief Stops the build: `Signature` has to be a function type, such as
- * `void(uint8_t)`.
+ *        `void(uint8_t)`.
  *
  * \tparam Signature How it is called: what it returns, and the types of its
- * arguments.
+ *                   arguments.
  */
 template <typename Signature>
 class function_ref {
@@ -89,19 +64,20 @@ class function_ref {
  * \tparam Args The types of the arguments.
  *
  * \stddiff Neither a signature with `const` nor one with `noexcept`, which
- * gnu++11 cannot have: the one only narrows what binds, the other is no type
- * before C++17. No constructor that takes the function as a template
- * argument, for a member function bound to its object, as it needs C++17's
- * `template <auto>`: a lambda that calls the member, kept beside the
- * function_ref, does the same. A function pointer that is null is reported
- * with `UTL_CHECK_ACCESS`, where the standard leaves it undefined.
+ *          gnu++11 cannot have: the one only narrows what binds, the other is
+ *          no type before C++17. No constructor that takes the function as a
+ *          template argument, for a member function bound to its object, as it
+ *          needs C++17's `template <auto>`: a lambda that calls the member,
+ *          kept beside the function_ref, does the same. A function pointer that
+ *          is null is reported with `UTL_CHECK_ACCESS`, where the standard
+ *          leaves it undefined.
  */
 template <typename R, typename... Args>
 class function_ref<R(Args...)> {
  public:
   /*!
    * \brief Refers to the function `f` points to, or to `f` itself if given by
-   * name.
+   *        name.
    *
    * Implicit, as in the standard, so that a function passes where a
    * function_ref is taken. A function whose types differ binds as well, if
@@ -110,8 +86,8 @@ class function_ref<R(Args...)> {
    * \param[in] f The function.
    *
    * \pre `f` is not null. A call through a null one jumps to address 0, which
-   * restarts the sketch on the AVR; with `UTL_CHECK_ACCESS` at 1 it is
-   * reported as Misuse::kNullFunction when the function_ref is made.
+   *      restarts the sketch on the AVR; with `UTL_CHECK_ACCESS` at 1 it is
+   *      reported as Misuse::kNullFunction when the function_ref is made.
    */
   template <typename F,
             typename = internal::EnableIf<internal::IsFunction<F>::kValue>,
@@ -132,7 +108,7 @@ class function_ref<R(Args...)> {
    * `const` `operator()` if `f` is `const`.
    *
    * \param[in] f What to call: an lvalue that outlives the function_ref, or a
-   * temporary written as the argument.
+   *              temporary written as the argument.
    */
   template <typename F, typename T = internal::RemoveReference<F>,
             typename = internal::EnableIf<
@@ -152,7 +128,7 @@ class function_ref<R(Args...)> {
 
   /*!
    * \brief Deleted: a lambda or an object assigned would be gone before the
-   * next call.
+   *        next call.
    *
    * Assigning another function_ref, or a function, rebinds it:
    * `f = utl::function_ref<void()>(blink)` or `f = Blink`.

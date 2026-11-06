@@ -61,13 +61,13 @@ CheckOptions:
   # told them; the same block lies in MaxMatrix and Wordclock, so that every
   # project names alike. Three exceptions Google makes itself: an entity that
   # mimics one of the standard library takes its names (array, span,
-  # optional, reference_wrapper, function_ref, string_view: utl::array,
-  # ref(), size(), value_type, npos); an accessor is named like the variable
-  # it gives (group(), code(), error()); and an include guard ends in an
-  # underscore.
+  # optional, reference_wrapper, function_ref, inplace_function, string_view:
+  # utl::array, ref(), size(), value_type, npos); an accessor is named like
+  # the variable it gives (group(), code(), error()); and an include guard
+  # ends in an underscore.
   readability-identifier-naming.NamespaceCase: lower_case
   readability-identifier-naming.ClassCase: CamelCase
-  readability-identifier-naming.ClassIgnoredRegexp: '^(array|span|optional|reference_wrapper|function_ref|basic_string_view|string_view|basic_flash_string_view|flash_string_view|const_iterator|iterator)$'
+  readability-identifier-naming.ClassIgnoredRegexp: '^(array|span|optional|reference_wrapper|function_ref|inplace_function|basic_string_view|string_view|basic_flash_string_view|flash_string_view|const_iterator|iterator)$'
   readability-identifier-naming.StructCase: CamelCase
   readability-identifier-naming.StructIgnoredRegexp: '^(array|nullopt_t|is_[a-z_]+|remove_[a-z_]+|enable_if|integral_constant|true_type|false_type)$'
   readability-identifier-naming.EnumCase: CamelCase

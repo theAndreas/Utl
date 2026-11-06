@@ -36,7 +36,8 @@
  * - `[]` beyond the end,
  * - `front()` or `back()` of an empty span or string_view,
  * - `remove_prefix()` or `remove_suffix()` of more than there is,
- * - a `function_ref` made of a null function pointer.
+ * - a `function_ref` made of a null function pointer,
+ * - a call of an empty `inplace_function`, which gives `R()`.
  *
  * It is meant for finding a mistake while a sketch is written, as the DET of
  * AUTOSAR Classic is.

@@ -40,6 +40,7 @@ void CheckOptionals();         // check_optional.cpp
 void CheckRustFluent();        // check_fluent.cpp
 void CheckReferenceWrapper();  // check_reference_wrapper.cpp
 void CheckFunctionRef();       // check_function_ref.cpp
+void CheckInplaceFunction();   // check_inplace_function.cpp
 void CheckText();              // check_text.cpp
 void CheckMisuse();            // check_misuse.cpp
 

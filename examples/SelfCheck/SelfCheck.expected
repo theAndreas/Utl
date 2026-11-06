@@ -106,6 +106,10 @@ pass function_ref calls a lambda
 pass function_ref refers to the lambda, not a copy
 pass function_ref rebinds, and to a function of other types
 pass function_ref of a lambda written as the argument
+pass inplace_function keeps a lambda with this
+pass inplace_function keeps a copy of its captures
+pass inplace_function copies its callable
+pass inplace_function of a function, and emptied
 pass string_view of a string
 pass string_view::starts_with, ends_with
 pass string_view::find

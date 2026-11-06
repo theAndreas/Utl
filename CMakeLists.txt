@@ -39,6 +39,7 @@ set(test_sources
     test/error_test.cpp
     test/flash_string_view_test.cpp
     test/function_ref_test.cpp
+    test/inplace_function_test.cpp
     test/misuse_test.cpp
     test/optional_reference_test.cpp
     test/optional_test.cpp

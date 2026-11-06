@@ -19,11 +19,12 @@ char const kEmptyText[] PROGMEM = "front() or back() of an empty view";
 char const kRemoveText[] PROGMEM =
     "remove_prefix() or remove_suffix() beyond the end";
 char const kNullFunctionText[] PROGMEM = "function_ref of a null pointer";
+char const kEmptyFunctionText[] PROGMEM = "call of an empty inplace_function";
 
 // In the order of Misuse.
 constexpr auto kTexts PROGMEM =
     make_array(kResultValueText, kOptionalValueText, kIndexText, kEmptyText,
-               kRemoveText, kNullFunctionText);
+               kRemoveText, kNullFunctionText, kEmptyFunctionText);
 
 }  // namespace
 

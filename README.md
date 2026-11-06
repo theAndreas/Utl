@@ -15,6 +15,8 @@ standard where it has an answer, and checked where the standard leaves a call un
   an object another owns.
 - **`function_ref`**, a reference to something to call, as in C++26, for a parameter that takes a
   function, a lambda or an object without being a template.
+- **`inplace_function`**, something to call kept inside, as `std::function` without the heap, for
+  a callback that is kept, a lambda with its captures among them.
 - **Text**: `string_view` for text in RAM, as in the standard, and `flash_string_view` for text in
   flash, `PROGMEM` or `F("...")`, which the standard does not know; the two compare with each
   other.
@@ -347,6 +349,39 @@ Left out are the signatures with `const` and `noexcept`, and the constructors th
 function as a template argument, for a member function bound to its object, which need C++17's
 `template <auto>`.
 
+## inplace_function
+
+```cpp
+class Button {
+ public:
+  void OnPress(utl::inplace_function<void()> const& handler) { on_press_ = handler; }
+  void Poll() {
+    if (Pressed() && on_press_) {
+      on_press_();
+    }
+  }
+
+ private:
+  utl::inplace_function<void()> on_press_;  // empty: nothing to call
+};
+
+button.OnPress([this] { Toggle(); });  // a copy of the lambda, kept inside
+```
+
+`inplace_function<R(Args...), Capacity>` (`inplace_function.h`) is `std::function` without the
+heap, as SG14's `inplace_function` is: it keeps a copy of a function, a lambda with its captures or
+an object with `operator()` in `Capacity` bytes of its own, by default two pointers, 4 bytes on
+the Uno, room for `[this]` and a byte. A callable larger than that stops the build. It is
+`Capacity` and 4 bytes, 8 by default: two pointers to code, one to call and one to copy and
+destroy, which is null for a callable that is trivially copyable, as a lambda that captures
+pointers, references or numbers, copied as its bytes. Where a `function_ref` refers to a lambda
+that is gone after the call, it keeps one; it is copied and assigned as a value, and copies its
+callable with it. It is empty when made without a callable, from `nullptr` or a null function
+pointer, and after it was moved from; `operator bool` asks. A call of an empty one does nothing
+and returns `R()`, [checked](#checked-access), where `std::function` throws; so `R` is `void` or
+has a default constructor, and is never a reference. Left out are `swap()`, the comparisons with
+`nullptr` and `target()`, which needs RTTI.
+
 ## Text: string_view and flash_string_view
 
 ```cpp
@@ -414,9 +449,9 @@ What the standard leaves undefined, or what gives a placeholder here, can be rep
 happens, for finding a mistake while a sketch is written, as the DET of AUTOSAR Classic does:
 `value()` of a `Result` with an error, `*` and `->` of an empty `optional`, `[]` beyond the end,
 `front()` or `back()` of an empty `span` or `string_view`, and `remove_prefix()` or
-`remove_suffix()` of more than there is, which then leaves an empty view, and a `function_ref`
-made of a null function pointer. With
-`UTL_CHECK_ACCESS` at 1, set for the whole build as `config.h` says, each goes to `utl::ReportMisuse()` first,
+`remove_suffix()` of more than there is, which then leaves an empty view, a `function_ref`
+made of a null function pointer, and a call of an empty `inplace_function`, which returns `R()`.
+With `UTL_CHECK_ACCESS` at 1, set for the whole build as `config.h` says, each goes to `utl::ReportMisuse()` first,
 which prints `utl: [] beyond the end` on `Serial`:
 
 ```cpp
@@ -458,7 +493,7 @@ examples are built with it to show that utl does not depend on it.
 | Example | Flash, ram | Flash, flash | Flash, checked | RAM, ram | RAM, flash | RAM, checked |
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
-| SelfCheck | 16624 | 16624 | 18666 | 313 | 295 | 315 |
+| SelfCheck | 17626 | 17626 | 19784 | 313 | 295 | 315 |
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the
 plugin; `checked` is `ram` with `UTL_CHECK_ACCESS` at 1. `SelfCheck` checks more in `checked`,

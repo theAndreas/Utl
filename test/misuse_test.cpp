@@ -21,6 +21,7 @@
 #include <Arduino.h>
 #include <utl/array.h>
 #include <utl/function_ref.h>
+#include <utl/inplace_function.h>
 #include <utl/optional.h>
 #include <utl/result.h>
 #include <utl/span.h>
@@ -52,6 +53,8 @@ TEST(MisuseTest, PrintsEachKind) {
             "utl: remove_prefix() or remove_suffix() beyond the end");
   EXPECT_EQ(Printed(Misuse::kNullFunction),
             "utl: function_ref of a null pointer");
+  EXPECT_EQ(Printed(Misuse::kEmptyFunction),
+            "utl: call of an empty inplace_function");
   // A value beyond the enum, which PrintMisuse() has to leave without a text.
   // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
   auto const beyond = static_cast<Misuse>(200);
@@ -127,6 +130,11 @@ TEST(MisuseTest, ReportsEachMisuseOnSerial) {
               static_cast<void>(f);
             }),
             "utl: function_ref of a null pointer\r\n");
+  EXPECT_EQ(Reported([] {
+              utl::inplace_function<int()> const empty;
+              EXPECT_EQ(empty(), 0);  // the default, after the report
+            }),
+            "utl: call of an empty inplace_function\r\n");
 }
 
 TEST(MisuseTest, ReportsAnArrayIndexBeyondTheEnd) {
@@ -156,6 +164,8 @@ TEST(MisuseTest, RightAccessIsNotReported) {
               f();
               utl::function_ref<void()> const g = +nothing;  // a pointer
               g();
+              utl::inplace_function<void()> const kept = nothing;
+              kept();
             }),
             "");
 }
