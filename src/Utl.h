@@ -62,6 +62,7 @@
 #include "utl/reference_wrapper.h"  // IWYU pragma: export
 #include "utl/result.h"             // IWYU pragma: export
 #include "utl/span.h"               // IWYU pragma: export
+#include "utl/spsc_queue.h"         // IWYU pragma: export
 #include "utl/status.h"             // IWYU pragma: export
 #include "utl/string_view.h"        // IWYU pragma: export
 

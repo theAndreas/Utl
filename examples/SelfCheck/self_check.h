@@ -43,6 +43,8 @@ void CheckFunctionRef();       // check_function_ref.cpp
 void CheckInplaceFunction();   // check_inplace_function.cpp
 void CheckText();              // check_text.cpp
 void CheckFlashSpan();         // check_flash_span.cpp
+void CheckSpscQueue();         // check_spsc_queue.cpp
+void PushTick();               // check_spsc_queue.cpp, from its interrupt
 void CheckMisuse();            // check_misuse.cpp
 
 }  // namespace self_check

@@ -50,6 +50,7 @@ set(test_sources
     test/result_reference_test.cpp
     test/result_test.cpp
     test/span_test.cpp
+    test/spsc_queue_test.cpp
     test/status_test.cpp
     test/string_view_test.cpp
     test/alpha_error.cpp
