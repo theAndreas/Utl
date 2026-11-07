@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include "utl/array.h"
+#include "utl/internal/in_place.h"
 #include "utl/internal/invoke.h"
 #include "utl/internal/type_traits.h"
 #include "utl/misuse.h"
@@ -21,8 +22,8 @@
 namespace utl {
 
 /*! \cond */
-// What a sketch does not see: the alignment of the storage, what is kept of
-// a callable, and how it is made in the storage.
+// What a sketch does not see: the alignment of the storage, and what is kept
+// of a callable.
 namespace internal {
 
 // std::max_align_t, without long double, which Google's style keeps out: as
@@ -32,11 +33,6 @@ union MaxAlign {
   double floating;
   void* object;
   void (*function)();
-};
-
-// Where a callable is made, for the operator new below.
-struct InPlace {
-  void* where;
 };
 
 // The type a callable is kept as: a function as a pointer to it, anything
@@ -68,22 +64,6 @@ struct IsValueInitializable<R, Void<decltype(R())>> {
 };
 
 }  // namespace internal
-}  // namespace utl
-
-/*
- * Placement new at an InPlace, in place of the one of <new>. Not noexcept, so
- * the compiler does not check its result for null, a branch that is never
- * taken; and not one the AVR core has to declare, which it does only since
- * 1.8.3. No delete to match: only a constructor that throws would call one,
- * which on the AVR, built without exceptions, none does, and on the host it
- * would be a branch in each placement that no test takes.
- */
-// NOLINTNEXTLINE(misc-new-delete-overloads)
-inline void* operator new(size_t /*size*/, utl::internal::InPlace place) {
-  return place.where;
-}
-
-namespace utl {
 /*! \endcond */
 
 /*!

@@ -94,6 +94,13 @@ void CheckMisuse() {
   Check(
       MisuseCount() == before + 1 && LastMisuse() == utl::Misuse::kNullFunction,
       F("a function_ref of a member and a null object is reported"));
+  utl::inplace_vector<uint8_t, 2> no_codes;
+  before = MisuseCount();
+  no_codes.pop_back();
+  Check(MisuseCount() == before + 1 && LastMisuse() == utl::Misuse::kEmpty &&
+            no_codes.empty(),
+        F("pop_back() of an empty inplace_vector is reported, and does "
+          "nothing"));
   utl::inplace_function<uint8_t()> const no_callback;
   before = MisuseCount();
   uint8_t const placeholder = no_callback();

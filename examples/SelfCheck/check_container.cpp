@@ -1,7 +1,8 @@
 // Copyright 2026 Andreas Burnickl
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
-// array and span.
+// array, span and inplace_vector: a braced list of an inplace_vector is
+// made with Utl's own std::initializer_list, which avr-gcc lacks.
 
 #include <Utl.h>
 #include <stddef.h>
@@ -90,11 +91,67 @@ void CheckSpan() {
         F("span with the fluent API"));
 }
 
+// Made when compiled, in .bss: no code sets it up.
+utl::inplace_vector<uint8_t, 4> pressed;
+
+// An element with a destructor: counts how many live, so that each made is
+// destroyed once.
+struct Tracked {
+  static uint8_t alive;
+  explicit Tracked(uint8_t code_in) : code(code_in) { ++alive; }
+  Tracked(Tracked const& other) : code(other.code) { ++alive; }
+  Tracked& operator=(Tracked const&) = default;
+  ~Tracked() { --alive; }
+  uint8_t code;
+};
+uint8_t Tracked::alive = 0;
+
+void CheckInplaceVector() {
+  using Codes = utl::inplace_vector<uint8_t, 4>;
+  Codes codes_kept{codes[0], codes[1], codes[2]};
+  Check(codes_kept.size() == 3 && codes_kept[2] == 7 && codes_kept.back() == 7,
+        F("inplace_vector of a braced list"));
+  Check(pressed.empty() && pressed.push_back(1).IsOk() && pressed.size() == 1,
+        F("inplace_vector made when compiled"));
+
+  Check(codes_kept.push_back(9).IsOk(), F("inplace_vector::push_back"));
+  utl::Status const full = codes_kept.push_back(10);
+  PrintStatus(full);
+  Check(full == IndexError::kFull && codes_kept.size() == 4,
+        F("inplace_vector::push_back when full"));
+  Check(Sum(codes_kept) == 17 && codes_kept.at(3).ValueOr(0) == 9 &&
+            codes_kept.at(4).status() == IndexError::kOutOfRange,
+        F("inplace_vector as a span, and at"));
+
+  codes_kept.erase(codes_kept.begin());
+  Check(codes_kept.insert(codes_kept.begin() + 1, 5).IsOk() &&
+            codes_kept == Codes{1, 5, 7, 9},
+        F("inplace_vector::erase and insert"));
+  codes_kept.pop_back();
+  Check(codes_kept.resize(4, 2).IsOk() && codes_kept == Codes{1, 5, 7, 2},
+        F("inplace_vector::pop_back and resize"));
+  codes_kept = {3};
+  Check(codes_kept.size() == 1 && codes_kept.front() == 3,
+        F("inplace_vector assigned a braced list"));
+
+  {
+    utl::inplace_vector<Tracked, 3> tracked;
+    static_cast<void>(tracked.emplace_back(codes[1]));
+    static_cast<void>(tracked.emplace_back(codes[2]));
+    utl::inplace_vector<Tracked, 3> const copy = tracked;
+    tracked.erase(tracked.begin());
+    Check(Tracked::alive == 3 && copy.size() == 2 && tracked[0].code == 7,
+          F("inplace_vector of elements with a destructor"));
+  }
+  Check(Tracked::alive == 0, F("inplace_vector destroys each element once"));
+}
+
 }  // namespace
 
 void CheckContainers() {
   CheckArray();
   CheckSpan();
+  CheckInplaceVector();
 }
 
 }  // namespace self_check

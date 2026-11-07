@@ -34,6 +34,8 @@ static_assert(sizeof(utl::function_ref<void(uint8_t)>) == 4,
               "a function_ref is two pointers");
 static_assert(sizeof(utl::inplace_function<void(uint8_t)>) == 8,
               "an inplace_function is 4 bytes for the callable, two pointers");
+static_assert(sizeof(utl::inplace_vector<uint8_t, 8>) == 9,
+              "an inplace_vector is its room and a count of 1 byte");
 static_assert(sizeof(utl::string_view) == 4 &&
                   sizeof(utl::flash_string_view) == 4,
               "a string_view is a pointer and a size");

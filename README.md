@@ -7,8 +7,9 @@ standard where it has an answer, and checked where the standard leaves a call un
 - **Errors** that say what went wrong and where it came from, in 3 bytes each: `Error`, `Status`,
   `Result<T>` and `Result<void>`, with a fluent API after Rust, and groups of errors that any
   library or sketch adds without changing this one.
-- **Containers**: `array`, `span` and `make_array`, as in the standard, except that what can go
-  out of range returns a `Result` rather than being undefined.
+- **Containers**: `array`, `span` and `make_array`, as in the standard, and `inplace_vector`, as
+  in C++26, a vector without the heap, except that what can go out of range or be full returns a
+  `Result` or a `Status` rather than being undefined or throwing.
 - **`optional`**, a value or none, as in the standard, except that `value()` of an empty one
   returns a `Result` rather than throwing; also of a reference, `optional<T&>`, as in C++26.
 - **`reference_wrapper`**, a reference that copies, as in the standard, for a member that refers to
@@ -257,6 +258,42 @@ constexpr auto kPins = utl::make_array(uint8_t{2}, uint8_t{3});  // utl::array<u
   `std::array a = {...}` deduces from C++17 on. It refuses arguments that would narrow, although
   Arduino compiles with `-fpermissive -Wno-error=narrowing`.
 
+### inplace_vector
+
+```cpp
+utl::inplace_vector<uint8_t, 8> pressed;      // empty, room for 8
+pressed.push_back(3);                        // a Status: ok, or IndexError::kFull
+utl::inplace_vector<uint8_t, 8> pins{2, 3, 4};
+pins.insert(pins.begin(), 1);                // 1, 2, 3, 4
+pins.erase(pins.begin() + 1);                // 1, 3, 4
+Sum(pins);                                   // a span<uint8_t const> of 3
+```
+
+`inplace_vector<T, N>` (`inplace_vector.h`) is C++26's `std::inplace_vector`: a vector of at most
+`N` elements, kept inside, never on the heap. It is the room for `N` elements and a count, 1 byte
+for `N` up to 255: an `inplace_vector<uint8_t, 8>` is 9 bytes. Elements are made when added and
+destroyed when removed, so `T` needs no default constructor, and one of elements that are trivially
+copyable is copied as its bytes. What adds an element, `push_back()`, `emplace_back()`,
+`insert()`, `emplace()` and `resize()`, returns a `Status` with `IndexError::kFull` where the
+standard throws `std::bad_alloc`: not a reference or an iterator, as a `Result` would warn
+wherever a sketch drops it, and a `Status` does not. `insert()` puts the element at the position
+given, or returns `IndexError::kOutOfRange` for one outside. `at()` returns a `Result`, as of an
+array, and a span takes an `inplace_vector` as it takes an array. `pop_back()` of an empty one and
+`erase()` beyond the end do nothing, [checked](#checked-access), where the standard leaves them
+undefined.
+
+One made empty is a constant: a global one lies in `.bss` and costs no code to set up. One made of
+a braced list, `{2, 3, 4}`, is set up when the sketch starts, with the list in RAM besides; a table
+that never changes is cheaper as a `constexpr` array. A braced list needs `std::initializer_list`,
+which avr-gcc lacks: Utl defines it where no `<initializer_list>` is found, laid out as GCC's own and
+under its include guard, so that a library that brings the header keeps its own. A list of more
+than `N` keeps the first `N`, [checked](#checked-access); a constant that does not fit `T` narrows,
+as in the standard, which Arduino's flags let pass with a warning.
+
+Left out are the `try_` and `unchecked_` variants, which `push_back()` covers; a constructor of `n`
+elements, which `resize()` does; and `reserve()`, `shrink_to_fit()`, `swap()`, `assign()`,
+`append_range()` and `<`.
+
 ## optional
 
 ```cpp
@@ -475,7 +512,9 @@ a `double` would not fit on an Uno, and avr-libc has `dtostrf()`.
 What the standard leaves undefined, or what gives a placeholder here, can be reported before it
 happens, for finding a mistake while a sketch is written, as the DET of AUTOSAR Classic does:
 `value()` of a `Result` with an error, `*` and `->` of an empty `optional`, `[]` beyond the end,
-`front()` or `back()` of an empty `span` or `string_view`, and `remove_prefix()` or
+`front()` or `back()` of an empty `span`, `string_view` or `inplace_vector`, `pop_back()` of an
+empty `inplace_vector`, `erase()` beyond its end and one made of more elements than it holds, which
+then each do nothing or keep what fits, and `remove_prefix()` or
 `remove_suffix()` of more than there is, which then leaves an empty view, a `function_ref`
 made of a null function pointer, or of a member function and a null pointer to its object, and a
 call of an empty `inplace_function`, which returns `R()`.
@@ -521,7 +560,7 @@ examples are built with it to show that utl does not depend on it.
 | Example | Flash, ram | Flash, flash | Flash, checked | RAM, ram | RAM, flash | RAM, checked |
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
-| SelfCheck | 17884 | 17884 | 20200 | 313 | 295 | 315 |
+| SelfCheck | 19334 | 19334 | 21992 | 339 | 321 | 341 |
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the
 plugin; `checked` is `ram` with `UTL_CHECK_ACCESS` at 1. `SelfCheck` checks more in `checked`,

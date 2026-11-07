@@ -21,12 +21,19 @@
 
 namespace utl {
 
+/*! \cond */
+// Declared only: a span is made of one, which includes this header.
+template <typename T, size_t N>
+class inplace_vector;
+/*! \endcond */
+
 /*!
  * \brief A view of elements that lie one after the other.
  *
  * A pointer and a size, 4 bytes on the Uno. A span owns nothing: whatever it
  * views has to outlive it. A function that takes a span takes a C array, a
- * utl::array, another span, or a pointer and a size alike:
+ * utl::array, a utl::inplace_vector, another span, or a pointer and a size
+ * alike:
  *
  * \code{.cpp}
  * uint8_t Sum(utl::span<uint8_t const> rows);
@@ -103,6 +110,29 @@ class span {
             typename = internal::ArrayConvertible<U const, T>>
   constexpr span(array<U, N> const& elements)  // NOLINT(runtime/explicit)
       : data_(elements.data()), size_(N) {}
+
+  /*!
+   * \brief Makes a span of the elements a utl::inplace_vector holds now.
+   *
+   * It holds as many as the vector does when made, and does not grow with it.
+   *
+   * \param[in] vector The vector.
+   */
+  template <typename U, size_t N, typename = internal::ArrayConvertible<U, T>>
+  constexpr span(inplace_vector<U, N>& vector)  // NOLINT(runtime/explicit)
+      : data_(vector.data()), size_(vector.size()) {}
+
+  /*!
+   * \brief Makes a span of `const` of the elements a utl::inplace_vector that
+   *        is `const` holds now.
+   *
+   * \param[in] vector The vector.
+   */
+  template <typename U, size_t N,
+            typename = internal::ArrayConvertible<U const, T>>
+  constexpr span(
+      inplace_vector<U, N> const& vector)  // NOLINT(runtime/explicit)
+      : data_(vector.data()), size_(vector.size()) {}
 
   /*!
    * \brief Makes a span of another, as a `span<uint8_t>` into a

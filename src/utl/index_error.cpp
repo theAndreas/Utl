@@ -17,9 +17,10 @@ char const kIndexErrorGroup[] PROGMEM = "index";
 namespace {
 
 char const kOutOfRangeText[] PROGMEM = "out of range";
+char const kFullText[] PROGMEM = "full";
 
 // In the order of IndexError.
-constexpr auto kMessages PROGMEM = make_array(kOutOfRangeText);
+constexpr auto kMessages PROGMEM = make_array(kOutOfRangeText, kFullText);
 
 }  // namespace
 

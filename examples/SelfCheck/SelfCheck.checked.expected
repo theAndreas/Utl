@@ -69,6 +69,17 @@ pass span::subspan
 pass span beyond the end
 pass span::subspan does not overflow
 pass span with the fluent API
+pass inplace_vector of a braced list
+pass inplace_vector made when compiled
+pass inplace_vector::push_back
+index: full
+pass inplace_vector::push_back when full
+pass inplace_vector as a span, and at
+pass inplace_vector::erase and insert
+pass inplace_vector::pop_back and resize
+pass inplace_vector assigned a braced list
+pass inplace_vector of elements with a destructor
+pass inplace_vector destroys each element once
 pass optional is empty
 pass optional holds a value
 optional: 0
@@ -144,6 +155,7 @@ pass value() of a Result<T&> with an error is reported
 pass remove_prefix() beyond the end is reported, and empties
 pass a function_ref of a null pointer is reported
 pass a function_ref of a member and a null object is reported
+pass pop_back() of an empty inplace_vector is reported, and does nothing
 pass a call of an empty inplace_function is reported, and gives 0
 pass a right access is not reported
 utl: [] beyond the end

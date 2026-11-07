@@ -31,8 +31,16 @@ enum class Misuse : uint8_t {
    */
   kResultValue,   /*!< `value()` of a Result with an error. */
   kOptionalValue, /*!< `*` or `->` of an empty optional. */
-  kIndex,         /*!< `[]` beyond the end. */
-  kEmpty,         /*!< `front()` or `back()` of an empty span or string_view. */
+  /*!
+   * \brief `[]` or `erase()` beyond the end, or an inplace_vector made of more
+   *        elements than it holds.
+   */
+  kIndex,
+  /*!
+   * \brief `front()` or `back()` of an empty span, string_view or
+   *        inplace_vector, or `pop_back()` of an empty one.
+   */
+  kEmpty,
   kRemove, /*!< `remove_prefix()` or `remove_suffix()` of more than there is. */
   /*!
    * \brief A function_ref made of a null function pointer, or of a member

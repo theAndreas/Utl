@@ -23,10 +23,13 @@
 #include <utl/constant_wrapper.h>
 #include <utl/function_ref.h>
 #include <utl/inplace_function.h>
+#include <utl/inplace_vector.h>
 #include <utl/optional.h>
 #include <utl/result.h>
 #include <utl/span.h>
 #include <utl/string_view.h>
+
+#include <cstdint>
 
 #include "test/beta_error.h"
 #endif
@@ -62,7 +65,8 @@ TEST(MisuseTest, PrintsEachKind) {
   EXPECT_EQ(Printed(Misuse::kOptionalValue),
             "utl: * or -> of an empty optional");
   EXPECT_EQ(Printed(Misuse::kIndex), "utl: [] beyond the end");
-  EXPECT_EQ(Printed(Misuse::kEmpty), "utl: front() or back() of an empty view");
+  EXPECT_EQ(Printed(Misuse::kEmpty),
+            "utl: front(), back() or pop_back() when empty");
   EXPECT_EQ(Printed(Misuse::kRemove),
             "utl: remove_prefix() or remove_suffix() beyond the end");
   EXPECT_EQ(Printed(Misuse::kNullFunction),
@@ -125,8 +129,8 @@ TEST(MisuseTest, ReportsEachMisuseOnSerial) {
               static_cast<void>(none.front());
               static_cast<void>(none.back());
             }),
-            "utl: front() or back() of an empty view\r\n"
-            "utl: front() or back() of an empty view\r\n");
+            "utl: front(), back() or pop_back() when empty\r\n"
+            "utl: front(), back() or pop_back() when empty\r\n");
   EXPECT_EQ(Reported([] {
               utl::string_view shortened = "ab";
               shortened.remove_prefix(3);
@@ -162,6 +166,53 @@ TEST(MisuseTest, ReportsAnArrayIndexBeyondTheEnd) {
               size_t const volatile beyond = 2;
               utl::array<int, 2> pair = {{1, 2}};
               static_cast<void>(pair[beyond]);
+            }),
+            "utl: [] beyond the end\r\n");
+}
+
+// What follows each report is what the access does unchecked: the element
+// read lies in the room of the vector, which is there all the same.
+TEST(MisuseTest, ReportsAMisusedInplaceVector) {
+  using Bytes = utl::inplace_vector<uint8_t, 2>;
+  EXPECT_EQ(Reported([] {
+              Bytes bytes{1};
+              static_cast<void>(bytes[1]);
+              Bytes const& const_bytes = bytes;
+              static_cast<void>(const_bytes[1]);
+            }),
+            "utl: [] beyond the end\r\n"
+            "utl: [] beyond the end\r\n");
+  EXPECT_EQ(Reported([] {
+              Bytes empty;
+              Bytes const& const_empty = empty;
+              static_cast<void>(empty.front());
+              static_cast<void>(const_empty.front());
+              static_cast<void>(empty.back());
+              static_cast<void>(const_empty.back());
+            }),
+            "utl: front(), back() or pop_back() when empty\r\n"
+            "utl: front(), back() or pop_back() when empty\r\n"
+            "utl: front(), back() or pop_back() when empty\r\n"
+            "utl: front(), back() or pop_back() when empty\r\n");
+  EXPECT_EQ(Reported([] {
+              Bytes empty;
+              empty.pop_back();  // does nothing
+              EXPECT_TRUE(empty.empty());
+            }),
+            "utl: front(), back() or pop_back() when empty\r\n");
+  EXPECT_EQ(Reported([] {
+              Bytes bytes{1, 2};
+              // Past the last, and the first after the last: nothing removed.
+              EXPECT_EQ(bytes.erase(bytes.end()), bytes.end());
+              EXPECT_EQ(bytes.erase(bytes.begin() + 1, bytes.begin()),
+                        bytes.end());
+              EXPECT_EQ(bytes, (Bytes{1, 2}));
+            }),
+            "utl: [] beyond the end\r\n"
+            "utl: [] beyond the end\r\n");
+  EXPECT_EQ(Reported([] {
+              Bytes const three{1, 2, 3};  // the first two are kept
+              EXPECT_EQ(three, (Bytes{1, 2}));
             }),
             "utl: [] beyond the end\r\n");
 }

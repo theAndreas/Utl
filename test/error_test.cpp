@@ -110,6 +110,7 @@ TEST(ErrorTest, LibraryGroupsSayWhatWentWrong) {
   utl::UseOptionalMessages();
   utl::UseCharconvMessages();
   EXPECT_EQ(Printed(utl::IndexError::kOutOfRange), "index: out of range");
+  EXPECT_EQ(Printed(utl::IndexError::kFull), "index: full");
   EXPECT_EQ(Printed(utl::OptionalError::kEmpty), "optional: empty");
   EXPECT_EQ(Printed(utl::CharconvError::kInvalidArgument),
             "charconv: invalid argument");

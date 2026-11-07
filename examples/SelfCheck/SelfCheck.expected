@@ -69,6 +69,17 @@ pass span::subspan
 pass span beyond the end
 pass span::subspan does not overflow
 pass span with the fluent API
+pass inplace_vector of a braced list
+pass inplace_vector made when compiled
+pass inplace_vector::push_back
+index: full
+pass inplace_vector::push_back when full
+pass inplace_vector as a span, and at
+pass inplace_vector::erase and insert
+pass inplace_vector::pop_back and resize
+pass inplace_vector assigned a braced list
+pass inplace_vector of elements with a destructor
+pass inplace_vector destroys each element once
 pass optional is empty
 pass optional holds a value
 optional: 0

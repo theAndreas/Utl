@@ -33,8 +33,10 @@
  *
  * - `value()` of a Result with an error,
  * - `*` and `->` of an empty optional,
- * - `[]` beyond the end,
- * - `front()` or `back()` of an empty span or string_view,
+ * - `[]` beyond the end, `erase()` beyond the end of an `inplace_vector`, or
+ *   one made of more elements than it holds,
+ * - `front()` or `back()` of an empty span, string_view or `inplace_vector`,
+ *   and `pop_back()` of an empty one,
  * - `remove_prefix()` or `remove_suffix()` of more than there is,
  * - a `function_ref` made of a null function pointer, or of a member
  *   function and a null pointer to its object,

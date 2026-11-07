@@ -15,7 +15,7 @@ namespace {
 char const kResultValueText[] PROGMEM = "value() of a Result with an error";
 char const kOptionalValueText[] PROGMEM = "* or -> of an empty optional";
 char const kIndexText[] PROGMEM = "[] beyond the end";
-char const kEmptyText[] PROGMEM = "front() or back() of an empty view";
+char const kEmptyText[] PROGMEM = "front(), back() or pop_back() when empty";
 char const kRemoveText[] PROGMEM =
     "remove_prefix() or remove_suffix() beyond the end";
 char const kNullFunctionText[] PROGMEM = "function_ref of a null pointer";
