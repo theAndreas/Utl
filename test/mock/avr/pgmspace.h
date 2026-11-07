@@ -21,6 +21,25 @@ inline uint8_t pgm_read_byte(void const* address) {
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
+inline uint16_t pgm_read_word(void const* address) {
+  uint16_t value = 0;
+  memcpy(&value, address, sizeof(value));
+  return value;
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+inline uint32_t pgm_read_dword(void const* address) {
+  uint32_t value = 0;
+  memcpy(&value, address, sizeof(value));
+  return value;
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+inline void* memcpy_P(void* ram, void const* flash, size_t count) {
+  return memcpy(ram, flash, count);
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
 inline void const* pgm_read_ptr(void const* address) {
   return *static_cast<void const* const*>(address);
 }

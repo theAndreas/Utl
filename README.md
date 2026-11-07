@@ -9,7 +9,8 @@ standard where it has an answer, and checked where the standard leaves a call un
   library or sketch adds without changing this one.
 - **Containers**: `array`, `span` and `make_array`, as in the standard, and `inplace_vector`, as
   in C++26, a vector without the heap, except that what can go out of range or be full returns a
-  `Result` or a `Status` rather than being undefined or throwing.
+  `Result` or a `Status` rather than being undefined or throwing; and `flash_span`, a span of a
+  table in flash, which the standard does not know.
 - **`optional`**, a value or none, as in the standard, except that `value()` of an empty one
   returns a `Result` rather than throwing; also of a reference, `optional<T&>`, as in C++26.
 - **`reference_wrapper`**, a reference that copies, as in the standard, for a member that refers to
@@ -294,6 +295,31 @@ Left out are the `try_` and `unchecked_` variants, which `push_back()` covers; a
 elements, which `resize()` does; and `reserve()`, `shrink_to_fit()`, `swap()`, `assign()`,
 `append_range()` and `<`.
 
+### flash_span
+
+```cpp
+constexpr uint8_t kSmiley[] PROGMEM = {0x3c, 0x42, 0xa5, 0x81, 0xa5, 0x99, 0x42, 0x3c};
+
+utl::flash_span<uint8_t> const smiley(kSmiley);  // explicit: the array lies in flash
+for (uint8_t const row : smiley) { ... }         // each row read from flash
+smiley.at(9).ValueOr(0);                         // 0, as 9 lies beyond the end
+smiley.subspan(2, 4).Map(Draw);                  // a Result: subspan() can fail
+```
+
+`flash_span<T>` (`flash_span.h`) is a `span` of elements in flash, `PROGMEM`, as
+`flash_string_view` is a `string_view` of text there: a table that never changes, a font or a
+pattern, lies in flash rather than in RAM, where the Uno has 2 KB. It is a pointer and a size, 4
+bytes. Each element is read with `pgm_read_byte()`, `pgm_read_word()` or `pgm_read_dword()` by its
+size, or `memcpy_P()` for any other, and given as a value, not a reference, as there is nothing in
+RAM to refer to; so `T` is trivially copyable, and not `const`, as nothing writes to flash anyway.
+Its names are those of `span`, and `at()`, `first()`, `last()` and `subspan()` return a `Result`
+as there; `[]`, `front()` and `back()` are [checked](#checked-access).
+
+It is made of a C array or a `utl::array` only explicitly, `flash_span<uint8_t>(kSmiley)`, as the
+type of an array does not tell where it lies: one of an array in RAM reads whatever lies in flash
+at that address, and nothing stops it. Flash beyond 64 KB, which `pgm_read_byte_far()` reads on a
+Mega, is left out, as Utl is for the Uno.
+
 ## optional
 
 ```cpp
@@ -512,14 +538,14 @@ a `double` would not fit on an Uno, and avr-libc has `dtostrf()`.
 What the standard leaves undefined, or what gives a placeholder here, can be reported before it
 happens, for finding a mistake while a sketch is written, as the DET of AUTOSAR Classic does:
 `value()` of a `Result` with an error, `*` and `->` of an empty `optional`, `[]` beyond the end,
-`front()` or `back()` of an empty `span`, `string_view` or `inplace_vector`, `pop_back()` of an
-empty `inplace_vector`, `erase()` beyond its end and one made of more elements than it holds, which
-then each do nothing or keep what fits, and `remove_prefix()` or
-`remove_suffix()` of more than there is, which then leaves an empty view, a `function_ref`
-made of a null function pointer, or of a member function and a null pointer to its object, and a
-call of an empty `inplace_function`, which returns `R()`.
-With `UTL_CHECK_ACCESS` at 1, set for the whole build as `config.h` says, each goes to `utl::ReportMisuse()` first,
-which prints `utl: [] beyond the end` on `Serial`:
+`front()` or `back()` of an empty `span`, `flash_span`, `string_view` or `inplace_vector`,
+`pop_back()` of an empty `inplace_vector`, `erase()` beyond its end and one made of more elements
+than it holds, which then each do nothing or keep what fits, and `remove_prefix()` or
+`remove_suffix()` of more than there is, which then leaves an empty view, a `function_ref` made of a
+null function pointer, or of a member function and a null pointer to its object, and a call of an
+empty `inplace_function`, which returns `R()`. With `UTL_CHECK_ACCESS` at 1, set for the whole build
+as `config.h` says, each goes to `utl::ReportMisuse()` first, which prints `utl: [] beyond the end`
+on `Serial`:
 
 ```cpp
 // A report of your own, in a .cpp of the sketch, replaces the default.
@@ -560,7 +586,7 @@ examples are built with it to show that utl does not depend on it.
 | Example | Flash, ram | Flash, flash | Flash, checked | RAM, ram | RAM, flash | RAM, checked |
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
-| SelfCheck | 19334 | 19334 | 21992 | 339 | 321 | 341 |
+| SelfCheck | 20146 | 20146 | 23106 | 343 | 325 | 357 |
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the
 plugin; `checked` is `ram` with `UTL_CHECK_ACCESS` at 1. `SelfCheck` checks more in `checked`,

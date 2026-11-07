@@ -146,4 +146,11 @@ pass from_chars takes what it reads
 pass from_chars of a negative
 charconv: out of range
 pass from_chars out of range
+pass flash_span reads bytes from flash
+pass flash_span reads words and double words
+pass flash_span reads a struct
+pass flash_span in a range-based for
+pass flash_span of a utl::array
+pass flash_span::at
+pass flash_span::subspan, first
 failed: 0

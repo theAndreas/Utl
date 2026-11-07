@@ -28,6 +28,7 @@ void setup() {
   self_check::CheckFunctionRef();
   self_check::CheckInplaceFunction();
   self_check::CheckText();
+  self_check::CheckFlashSpan();
   self_check::CheckMisuse();
 
   Serial.print(F("failed: "));
