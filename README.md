@@ -597,6 +597,11 @@ sketch, not the `.ino`, for which arduino-cli writes prototypes outside the name
 
 - `Basics`: two groups, a `Status` and a `Result` chained, and the error printed on `Serial`: the
   bus in words, the font as a code, as only the bus's texts are turned on.
+- `Keypad`: a code lock of four buttons on pins 8 to 11. The pin-change interrupt passes each press
+  to `loop()` through a `spsc_queue`, without `cli()`; `loop()` looks its char up in a table in
+  flash, a `flash_span`, keeps the last four in an `inplace_vector`, and when they match the code,
+  also in flash, opens the lock through a `function_ref` bound to it with `UTL_CW()`. 2484 bytes of
+  flash and 212 of RAM, little more than `Basics`.
 - `SelfCheck`: checks the library and prints a line per check, then the number that failed.
   `tools/self_check.sh` runs it in simavr and compares with `SelfCheck.expected`. Its checks lie
   in one file per area, `check_*.cpp`; a new area is a file there and a line in `setup()`.
@@ -617,6 +622,7 @@ examples are built with it to show that utl does not depend on it.
 | Example | Flash, ram | Flash, flash | Flash, checked | RAM, ram | RAM, flash | RAM, checked |
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
+| Keypad | 2484 | 2484 | 2802 | 212 | 194 | 212 |
 | SelfCheck | 20586 | 20586 | 23552 | 354 | 336 | 368 |
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the
@@ -646,6 +652,7 @@ dev container below has them all.
 ```bash
 tools/build_plugin.sh             # build/avr-flash-vtbl.so
 tools/self_check.sh               # examples/SelfCheck in simavr, in each variant
+tools/keypad_check.sh             # examples/Keypad in simavr with keys pressed, ~40 s a variant
 tools/compile_examples.sh         # every example in each variant, fails on a warning; the table
 cmake --workflow --preset default   # the tests on the host, in three variants
 cmake --workflow --preset sanitize  # the same under AddressSanitizer and UBSan
@@ -672,8 +679,11 @@ message of the `static_assert` that has to stop it. CMake makes a test of each, 
 compiler on the file and passes only if that message comes; a `static_assert` that went missing
 fails it. A new case is a new file there, nothing else.
 
-CI (`.github/workflows/ci.yml`) runs the same scripts on every pull request, and `arduino-lint`
-on top; the table of flash and RAM lands in the summary of the job "Examples on arduino:avr:uno".
+CI (`.github/workflows/ci.yml`) runs the same scripts on every pull request, but `keypad_check.sh`,
+and `arduino-lint` on top; the table of flash and RAM lands in the summary of the job "Examples on
+arduino:avr:uno". `keypad_check.sh` runs apart, in `.github/workflows/keypad.yml`, for a pull
+request that changes the sketch or what of the library it uses, and by hand ("Run workflow"), as
+simavr takes about 40 s a variant for its 0.3 s of keys.
 
 The reference, built from the Doxygen blocks of `src/`, is published at
 <https://theandreas.github.io/Utl/>; how a block is written, and how it is checked, is in

@@ -1,0 +1,54 @@
+# examples/Keypad in simavr with keys pressed on its pins, through
+# tools/keypad_check.sh. Optional, apart from CI: simavr runs the sketch far
+# slower than the board, about 40 s a variant, so it runs only for a pull
+# request that changes the sketch, its check or what of the library it uses,
+# and by hand ("Run workflow"). It runs beside CI, not after it.
+name: Keypad
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - examples/Keypad/**
+      - tools/keypad_check.sh
+      - tools/common.sh
+      - src/utl/constant_wrapper.h
+      - src/utl/flash_span.h
+      - src/utl/function_ref.h
+      - src/utl/inplace_vector.h
+      - src/utl/spsc_queue.h
+      - src/utl/internal/**
+      - .github/workflows/keypad.yml
+
+# A second push to the same branch makes the first answer worthless.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  keypad:
+    name: Keypad in simavr
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: arduino/setup-arduino-cli@v2
+        with:
+          version: 1.5.1
+
+      - name: Install the AVR core and simavr
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install arduino:avr@1.8.8
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends simavr
+
+      # Without "flash", which needs the plugin built first, and adds nothing
+      # here: the vtables of the core are not what the keys test.
+      - name: Keys pressed in simavr
+        run: tools/keypad_check.sh ram checked
