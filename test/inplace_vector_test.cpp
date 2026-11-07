@@ -32,8 +32,8 @@ struct Counted {
       : value(value_in) {
     ++alive;
   }
-  Counted(Counted const& other) : value(other.value) { ++alive; }
-  Counted(Counted&& other) noexcept : value(other.value) {
+  Counted(Counted const& other) : value{other.value} { ++alive; }
+  Counted(Counted&& other) noexcept : value{other.value} {
     other.value = -1;
     ++alive;
   }
@@ -53,7 +53,7 @@ int Counted::alive = 0;
 
 // No default constructor, which an element needs not have.
 struct Pin {
-  explicit Pin(uint8_t number_in) : number(number_in) {}
+  explicit Pin(uint8_t number_in) : number{number_in} {}
   uint8_t number;
 };
 
@@ -78,7 +78,7 @@ static_assert(kEmpty.empty() && kEmpty.size() == 0);  // NOLINT
 
 // The sizes of a braced list and of a span.
 uint16_t Sum(utl::span<uint8_t const> values) {
-  uint16_t sum = 0;
+  uint16_t sum{0};
   for (uint8_t const value : values) {
     sum = static_cast<uint16_t>(sum + value);
   }
@@ -106,6 +106,8 @@ TEST_F(InplaceVectorTest, IsMadeOfABracedList) {
   EXPECT_FALSE(bytes.empty());
   EXPECT_EQ(bytes[0], 2);
   EXPECT_EQ(bytes[2], 4);
+  // = rather than braces: what is checked is that the constructor of a braced
+  // list is implicit.
   Bytes assigned = {9};
   assigned = {5, 6};
   EXPECT_EQ(assigned, (Bytes{5, 6}));
@@ -116,7 +118,7 @@ TEST_F(InplaceVectorTest, IsMadeOfABracedList) {
 TEST_F(InplaceVectorTest, AddsAtTheEndUntilFull) {
   Bytes bytes;
   EXPECT_TRUE(bytes.push_back(1).IsOk());
-  uint8_t const two = 2;
+  uint8_t const two{2};
   EXPECT_TRUE(bytes.push_back(two).IsOk());
   EXPECT_TRUE(bytes.emplace_back(3).IsOk());
   EXPECT_TRUE(bytes.emplace_back().IsOk());  // T(), 0
@@ -129,14 +131,14 @@ TEST_F(InplaceVectorTest, AddsAtTheEndUntilFull) {
 TEST_F(InplaceVectorTest, MakesAnElementWithoutADefaultConstructor) {
   inplace_vector<Pin, 2> pins;
   EXPECT_TRUE(pins.emplace_back(uint8_t{13}).IsOk());
-  EXPECT_TRUE(pins.push_back(Pin(7)).IsOk());
+  EXPECT_TRUE(pins.push_back(Pin{7}).IsOk());
   EXPECT_EQ(pins.front().number, 13);
   EXPECT_EQ(pins.back().number, 7);
 }
 
 TEST_F(InplaceVectorTest, GivesItsElements) {
   Bytes bytes{2, 3, 4};
-  Bytes const& const_bytes = bytes;
+  Bytes const& const_bytes{bytes};
   EXPECT_EQ(bytes.at(1).value(), 3);
   EXPECT_EQ(bytes.at(3).status(), IndexError::kOutOfRange);  // not added
   EXPECT_EQ(bytes.front(), 2);
@@ -157,7 +159,7 @@ TEST_F(InplaceVectorTest, GivesItsElements) {
 TEST_F(InplaceVectorTest, IsASpan) {
   Bytes bytes{2, 3, 4};
   EXPECT_EQ(Sum(bytes), 9);
-  utl::span<uint8_t> const writable = bytes;
+  utl::span<uint8_t> const writable{bytes};
   writable[0] = 5;
   EXPECT_EQ(bytes[0], 5);
   Bytes const const_bytes{1};
@@ -168,7 +170,7 @@ TEST_F(InplaceVectorTest, IsASpan) {
 TEST_F(InplaceVectorTest, InsertsBeforeAPosition) {
   Bytes bytes{2, 4};
   EXPECT_TRUE(bytes.insert(bytes.begin() + 1, 3).IsOk());
-  uint8_t const one = 1;
+  uint8_t const one{1};
   EXPECT_TRUE(bytes.insert(bytes.begin(), one).IsOk());
   EXPECT_EQ(bytes, (Bytes{1, 2, 3, 4}));
   EXPECT_EQ(bytes.insert(bytes.begin(), 0), IndexError::kFull);
@@ -193,13 +195,13 @@ TEST_F(InplaceVectorTest, InsertsAnElementOfItself) {
 
 TEST_F(InplaceVectorTest, ErasesAndMovesTheRestBack) {
   Bytes bytes{1, 2, 3, 4};
-  uint8_t const* const next = bytes.erase(bytes.begin() + 1);
+  uint8_t const* const next{bytes.erase(bytes.begin() + 1)};
   EXPECT_EQ(*next, 3);
   EXPECT_EQ(bytes, (Bytes{1, 3, 4}));
   EXPECT_EQ(bytes.erase(bytes.begin(), bytes.begin() + 2), bytes.begin());
   EXPECT_EQ(bytes, (Bytes{4}));
   EXPECT_EQ(bytes.erase(bytes.begin(), bytes.begin()), bytes.begin());
-  uint8_t const* const after_last = bytes.erase(bytes.begin());  // the last
+  uint8_t const* const after_last{bytes.erase(bytes.begin())};  // the last
   EXPECT_EQ(after_last, bytes.end());
   EXPECT_TRUE(bytes.empty());
 }
@@ -236,16 +238,16 @@ TEST_F(InplaceVectorTest, MakesAndDestroysEachElementOnce) {
   {
     Objects objects{1, 2};
     EXPECT_EQ(Counted::alive, 2);
-    EXPECT_TRUE(objects.push_back(Counted(3)).IsOk());
+    EXPECT_TRUE(objects.push_back(Counted{3}).IsOk());
     EXPECT_EQ(Counted::alive, 3);
     objects.pop_back();
     EXPECT_EQ(Counted::alive, 2);
-    EXPECT_TRUE(objects.resize(4, Counted(7)).IsOk());
+    EXPECT_TRUE(objects.resize(4, Counted{7}).IsOk());
     EXPECT_EQ(Values(objects), (std::vector<int>{1, 2, 7, 7}));
     objects.erase(objects.begin(), objects.begin() + 2);
     EXPECT_EQ(Values(objects), (std::vector<int>{7, 7}));
     EXPECT_EQ(Counted::alive, 2);
-    EXPECT_TRUE(objects.insert(objects.begin() + 1, Counted(5)).IsOk());
+    EXPECT_TRUE(objects.insert(objects.begin() + 1, Counted{5}).IsOk());
     EXPECT_EQ(Values(objects), (std::vector<int>{7, 5, 7}));
     EXPECT_EQ(Counted::alive, 3);
     EXPECT_TRUE(objects.emplace(objects.end(), 6).IsOk());
@@ -259,10 +261,10 @@ TEST_F(InplaceVectorTest, MakesAndDestroysEachElementOnce) {
 
 TEST_F(InplaceVectorTest, CopiesAndMovesElementByElement) {
   Objects const original{1, 2};
-  Objects copy = original;
+  Objects copy{original};
   EXPECT_EQ(copy, original);
   EXPECT_EQ(Counted::alive, 4);
-  Objects const moved = std::move(copy);
+  Objects const moved{std::move(copy)};
   EXPECT_EQ(Values(moved), (std::vector<int>{1, 2}));
 
   Objects assigned{9, 9, 9};
@@ -270,17 +272,17 @@ TEST_F(InplaceVectorTest, CopiesAndMovesElementByElement) {
   EXPECT_EQ(assigned, original);
   assigned = Objects{5};
   EXPECT_EQ(Values(assigned), (std::vector<int>{5}));
-  Objects const& same = assigned;
+  Objects const& same{assigned};
   assigned = same;  // to itself
   EXPECT_EQ(Values(assigned), (std::vector<int>{5}));
-  Objects& alias = assigned;
+  Objects& alias{assigned};
   assigned = std::move(alias);  // to itself, which keeps it
   EXPECT_EQ(Values(assigned), (std::vector<int>{5}));
 }
 
 TEST_F(InplaceVectorTest, CopiesTriviallyCopyableElementsAsBytes) {
   Bytes const original{1, 2};
-  Bytes copy = original;
+  Bytes copy{original};
   EXPECT_EQ(copy, original);
   copy = Bytes{3};
   EXPECT_EQ(copy, (Bytes{3}));

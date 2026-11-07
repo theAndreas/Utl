@@ -9,7 +9,7 @@
 #include <utl/optional.h>
 
 void Case() {
-  int target = 0;
+  int target{0};
   static_cast<void>(
-      utl::optional<int&>(target).Inspect([](int const& v) { return v; }));
+      utl::optional<int&>{target}.Inspect([](int const& v) { return v; }));
 }

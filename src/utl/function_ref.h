@@ -47,7 +47,7 @@ class function_ref {
  *   }
  * }
  *
- * uint8_t on = 0;
+ * uint8_t on{0};
  * ForEachLed([&on](Led& led) { on += led.IsOn(); });
  * \endcode
  *
@@ -174,9 +174,9 @@ class function_ref<R(Args...)> {
   template <typename F, F Function, typename T,
             typename = internal::InvocableAs<R, F, T&, Args...>>
   constexpr function_ref(constant_wrapper<F, Function> /*f*/, T& object)
-      : bound_(const_cast<void*>(
-            static_cast<void const*>(__builtin_addressof(object)))),
-        call_(&CallConstantOn<F, Function, T>) {
+      : bound_{const_cast<void*>(
+            static_cast<void const*>(__builtin_addressof(object)))},
+        call_{&CallConstantOn<F, Function, T>} {
     static_assert(Function != nullptr, "function_ref: the function is null");
   }
 
@@ -200,8 +200,8 @@ class function_ref<R(Args...)> {
   template <typename F, F Function, typename T,
             typename = internal::InvocableAs<R, F, T*, Args...>>
   function_ref(constant_wrapper<F, Function> /*f*/, T* object)
-      : bound_(const_cast<void*>(static_cast<void const*>(object))),
-        call_(&CallConstantWith<F, Function, T>) {
+      : bound_{const_cast<void*>(static_cast<void const*>(object))},
+        call_{&CallConstantWith<F, Function, T>} {
     static_assert(Function != nullptr, "function_ref: the function is null");
     static_cast<void>(internal::Check(
         !internal::IsMemberPointer<F>::kValue || object != nullptr,
@@ -234,8 +234,8 @@ class function_ref<R(Args...)> {
   // What it is bound to: an object or a function, whose pointers may differ
   // in size and are never converted into each other.
   union Bound {
-    constexpr explicit Bound(void* object_in) : object(object_in) {}
-    constexpr explicit Bound(void (*function_in)()) : function(function_in) {}
+    constexpr explicit Bound(void* object_in) : object{object_in} {}
+    constexpr explicit Bound(void (*function_in)()) : function{function_in} {}
 
     void* object;
     void (*function)();

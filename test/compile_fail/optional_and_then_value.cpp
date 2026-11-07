@@ -9,5 +9,5 @@
 #include <utl/optional.h>
 
 void Case() {
-  static_cast<void>(utl::optional<int>(1).AndThen([](int v) { return v; }));
+  static_cast<void>(utl::optional<int>{1}.AndThen([](int v) { return v; }));
 }

@@ -38,9 +38,9 @@ class inplace_vector;
  * \code{.cpp}
  * uint8_t Sum(utl::span<uint8_t const> rows);
  *
- * utl::array<uint8_t, 8> rows = {};
+ * utl::array<uint8_t, 8> rows{};
  * Sum(rows);
- * Sum(utl::span<uint8_t const>(buffer, length));
+ * Sum(utl::span<uint8_t const>{buffer, length});
  * \endcode
  *
  * It follows std::span and keeps its names, as the Google style allows for an
@@ -64,7 +64,7 @@ class span {
   using iterator = T*;                      /*!< An iterator, a pointer. */
 
   /*! \brief Makes an empty span, with no data. */
-  constexpr span() : data_(nullptr), size_(0) {}
+  constexpr span() : data_{nullptr}, size_{0} {}
 
   /*!
    * \brief Makes a span of `size` elements from `data` on.
@@ -72,7 +72,7 @@ class span {
    * \param[in] data The first element.
    * \param[in] size The number of elements.
    */
-  constexpr span(T* data, size_type size) : data_(data), size_(size) {}
+  constexpr span(T* data, size_type size) : data_{data}, size_{size} {}
 
   /*
    * The conversions below are implicit, as in std::span: a span is a view of
@@ -228,7 +228,7 @@ class span {
     if (count > size_) {
       return IndexError::kOutOfRange;
     }
-    return span(data_, count);
+    return span{data_, count};
   }
 
   /*!
@@ -243,7 +243,7 @@ class span {
     if (count > size_) {
       return IndexError::kOutOfRange;
     }
-    return span(data_ + (size_ - count), count);
+    return span{data_ + (size_ - count), count};
   }
 
   /*!
@@ -261,7 +261,7 @@ class span {
     if (offset > size_) {
       return IndexError::kOutOfRange;
     }
-    return span(data_ + offset, size_ - offset);
+    return span{data_ + offset, size_ - offset};
   }
 
   /*!
@@ -279,7 +279,7 @@ class span {
     if (offset > size_ || count > size_ - offset) {
       return IndexError::kOutOfRange;
     }
-    return span(data_ + offset, count);
+    return span{data_ + offset, count};
   }
 
  private:

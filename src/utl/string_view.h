@@ -60,10 +60,10 @@ class basic_string_view {
   using iterator = const_iterator;      /*!< The same: a view cannot write. */
 
   /*! \brief What find() returns when it finds nothing. */
-  static constexpr size_type npos = static_cast<size_type>(-1);
+  static constexpr size_type npos{static_cast<size_type>(-1)};
 
   /*! \brief Makes an empty view, with no data. */
-  constexpr basic_string_view() : data_(nullptr), size_(0) {}
+  constexpr basic_string_view() : data_{nullptr}, size_{0} {}
 
   /*!
    * \brief Makes a view of `size` chars from `data` on.
@@ -72,7 +72,7 @@ class basic_string_view {
    * \param[in] size The number of chars.
    */
   constexpr basic_string_view(CharT const* data, size_type size)
-      : data_(data), size_(size) {}
+      : data_{data}, size_{size} {}
 
   /*!
    * \brief Makes a view of the chars of a string up to its terminating `'\0'`.
@@ -172,8 +172,8 @@ class basic_string_view {
     if (position > size_) {
       return IndexError::kOutOfRange;
     }
-    size_type const rest = size_ - position;
-    return basic_string_view(data_ + position, count < rest ? count : rest);
+    size_type const rest{size_ - position};
+    return basic_string_view{data_ + position, count < rest ? count : rest};
   }
 
   /*!
@@ -227,7 +227,7 @@ class basic_string_view {
    */
   void remove_prefix(size_type count) {
     static_cast<void>(internal::Check(count <= size_, Misuse::kRemove));
-    size_type const removed = count < size_ ? count : size_;
+    size_type const removed{count < size_ ? count : size_};
     data_ += removed;
     size_ -= removed;
   }
@@ -255,8 +255,8 @@ class basic_string_view {
    *          sign means anything.
    */
   int8_t compare(basic_string_view other) const {
-    size_type const common = size_ < other.size_ ? size_ : other.size_;
-    for (size_type index = 0; index < common; ++index) {
+    size_type const common{size_ < other.size_ ? size_ : other.size_};
+    for (size_type index{0}; index < common; ++index) {
       auto const a = static_cast<uint8_t>(data_[index]);
       auto const b = static_cast<uint8_t>(other.data_[index]);
       if (a != b) {
@@ -277,7 +277,7 @@ class basic_string_view {
    * \return The position, or npos if there is none.
    */
   size_type find(CharT c, size_type position = 0) const {
-    for (size_type index = position; index < size_; ++index) {
+    for (size_type index{position}; index < size_; ++index) {
       if (data_[index] == c) {
         return index;
       }
@@ -296,7 +296,7 @@ class basic_string_view {
     if (text.size_ > size_) {
       return npos;
     }
-    for (size_type index = position; index <= size_ - text.size_; ++index) {
+    for (size_type index{position}; index <= size_ - text.size_; ++index) {
       if (Equal(data_ + index, text.data_, text.size_)) {
         return index;
       }
@@ -419,7 +419,7 @@ class basic_string_view {
   }
 
   static bool Equal(CharT const* a, CharT const* b, size_type count) {
-    for (size_type index = 0; index < count; ++index) {
+    for (size_type index{0}; index < count; ++index) {
       if (a[index] != b[index]) {
         return false;
       }

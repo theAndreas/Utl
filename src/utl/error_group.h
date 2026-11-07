@@ -29,7 +29,7 @@ namespace utl {
  * enum class FontError : uint8_t { kUnknownChar, kNullText };
  * extern char const kFontErrorGroup[] PROGMEM;  // "font"
  * constexpr utl::ErrorGroup GetErrorGroup(FontError) {
- *   return utl::ErrorGroup(kFontErrorGroup);
+ *   return utl::ErrorGroup{kFontErrorGroup};
  * }
  *
  * // font_error.cpp
@@ -51,7 +51,7 @@ class ErrorGroup {
    *
    * \param[in] name The name, an array of chars in `PROGMEM`, defined once.
    */
-  constexpr explicit ErrorGroup(char const* name) : name_(name) {}
+  constexpr explicit ErrorGroup(char const* name) : name_{name} {}
 
   /*! \brief Returns the name of the group, from flash. */
   __FlashStringHelper const* Name() const {
@@ -82,7 +82,7 @@ class ErrorGroup {
   friend class Error;
 
   // No group, which only an Error inside a Status holds, for "ok".
-  constexpr explicit ErrorGroup(decltype(nullptr)) : name_(nullptr) {}
+  constexpr explicit ErrorGroup(decltype(nullptr)) : name_{nullptr} {}
 
   /*
    * The address of the name is what makes a group unique: no one has to hand

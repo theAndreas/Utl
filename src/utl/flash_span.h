@@ -36,21 +36,21 @@ struct FlashRead {
 template <typename T>
 struct FlashRead<T, 1> {
   static void Into(T& to, T const* from) {
-    uint8_t const value = pgm_read_byte(from);
+    uint8_t const value{pgm_read_byte(from)};
     __builtin_memcpy(&to, &value, 1);
   }
 };
 template <typename T>
 struct FlashRead<T, 2> {
   static void Into(T& to, T const* from) {
-    uint16_t const value = pgm_read_word(from);
+    uint16_t const value{pgm_read_word(from)};
     __builtin_memcpy(&to, &value, 2);
   }
 };
 template <typename T>
 struct FlashRead<T, 4> {
   static void Into(T& to, T const* from) {
-    uint32_t const value = pgm_read_dword(from);
+    uint32_t const value{pgm_read_dword(from)};
     __builtin_memcpy(&to, &value, 4);
   }
 };
@@ -62,7 +62,7 @@ struct FlashRead<T, 4> {
 template <typename T>
 T ReadFlash(T const* from) {
   union Bytes {
-    constexpr Bytes() : none() {}
+    constexpr Bytes() : none{} {}
     uint8_t none;
     T value;
   } bytes;
@@ -85,7 +85,7 @@ T ReadFlash(T const* from) {
  * which lies in flash rather than in RAM:
  *
  * \code{.cpp}
- * constexpr uint8_t kSmiley[] PROGMEM = {0x3c, 0x42, 0xa5, 0x81};
+ * constexpr uint8_t kSmiley[] PROGMEM{0x3c, 0x42, 0xa5, 0x81};
  *
  * utl::flash_span<uint8_t> const smiley(kSmiley);
  * for (uint8_t const row : smiley) { ... }  // each read from flash
@@ -123,7 +123,7 @@ class flash_span {
      *
      * \param[in] position The address of an element in flash.
      */
-    explicit const_iterator(T const* position) : position_(position) {}
+    explicit const_iterator(T const* position) : position_{position} {}
 
     /*! \brief Returns the element, read from flash. */
     T operator*() const { return internal::ReadFlash(position_); }
@@ -161,7 +161,7 @@ class flash_span {
   using iterator = const_iterator; /*!< The same: a view cannot write. */
 
   /*! \brief Makes an empty view, with no data. */
-  constexpr flash_span() : data_(nullptr), size_(0) {}
+  constexpr flash_span() : data_{nullptr}, size_{0} {}
 
   /*!
    * \brief Makes a view of `size` elements in flash from `data` on.
@@ -170,7 +170,7 @@ class flash_span {
    * \param[in] size The number of elements.
    */
   constexpr flash_span(T const* data, size_type size)
-      : data_(data), size_(size) {}
+      : data_{data}, size_{size} {}
 
   /*!
    * \brief Makes a view of a whole C array in flash, `PROGMEM`.
@@ -180,7 +180,7 @@ class flash_span {
   template <size_t N>
   // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   constexpr explicit flash_span(T const (&elements)[N])
-      : data_(elements), size_(N) {}
+      : data_{elements}, size_{N} {}
 
   /*!
    * \brief Makes a view of a whole utl::array in flash, `PROGMEM`.
@@ -189,7 +189,7 @@ class flash_span {
    */
   template <size_t N>
   constexpr explicit flash_span(array<T, N> const& elements)
-      : data_(elements.elements), size_(N) {}
+      : data_{elements.elements}, size_{N} {}
 
   /*!
    * \brief Returns the address of the first element, in flash, or null if made
@@ -210,10 +210,10 @@ class flash_span {
   constexpr bool empty() const { return size_ == 0; }
 
   /*! \brief Returns an iterator to the first element. */
-  const_iterator begin() const { return const_iterator(data_); }
+  const_iterator begin() const { return const_iterator{data_}; }
 
   /*! \brief Returns an iterator past the last element. */
-  const_iterator end() const { return const_iterator(data_ + size_); }
+  const_iterator end() const { return const_iterator{data_ + size_}; }
 
   /*!
    * \brief Returns the element at `index`, unchecked.
@@ -274,7 +274,7 @@ class flash_span {
     if (count > size_) {
       return IndexError::kOutOfRange;
     }
-    return flash_span(data_, count);
+    return flash_span{data_, count};
   }
 
   /*!
@@ -287,7 +287,7 @@ class flash_span {
     if (count > size_) {
       return IndexError::kOutOfRange;
     }
-    return flash_span(data_ + (size_ - count), count);
+    return flash_span{data_ + (size_ - count), count};
   }
 
   /*!
@@ -303,7 +303,7 @@ class flash_span {
     if (offset > size_) {
       return IndexError::kOutOfRange;
     }
-    return flash_span(data_ + offset, size_ - offset);
+    return flash_span{data_ + offset, size_ - offset};
   }
 
   /*!
@@ -319,7 +319,7 @@ class flash_span {
     if (offset > size_ || count > size_ - offset) {
       return IndexError::kOutOfRange;
     }
-    return flash_span(data_ + offset, count);
+    return flash_span{data_ + offset, count};
   }
 
  private:

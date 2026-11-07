@@ -26,7 +26,7 @@ constexpr auto kMessages PROGMEM = make_array(kEmptyText);
 void UseOptionalMessages() {
   // The group by its name, a constant: a static whose initializer calls a
   // function would be initialized at run time, with a guard.
-  static Messages messages{ErrorGroup(kOptionalErrorGroup), kMessages};
+  static Messages messages{ErrorGroup{kOptionalErrorGroup}, kMessages};
   UseMessages(messages);
 }
 

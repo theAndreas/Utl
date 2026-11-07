@@ -9,5 +9,5 @@
 #include <utl/result.h>
 
 void Case() {
-  static_cast<void>(utl::Result<int>(1).AndThen([](int v) { return v; }));
+  static_cast<void>(utl::Result<int>{1}.AndThen([](int v) { return v; }));
 }

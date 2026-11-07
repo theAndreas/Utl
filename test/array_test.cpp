@@ -15,7 +15,7 @@ namespace {
 using utl::array;
 
 TEST(ArrayTest, SizeAndElements) {
-  array<int, 3> rows = {{1, 2, 3}};
+  array<int, 3> rows{{1, 2, 3}};
   EXPECT_EQ(rows.size(), 3U);
   EXPECT_EQ(rows.max_size(), 3U);
   EXPECT_FALSE(rows.empty());
@@ -26,14 +26,14 @@ TEST(ArrayTest, SizeAndElements) {
   rows.front() = 4;
   rows.back() = 6;
   rows[1] = 5;
-  array<int, 3> const& same = rows;
+  array<int, 3> const& same{rows};
   EXPECT_EQ(same.front() + same[1] + same.back(), 15);
   EXPECT_EQ(same.data(), rows.data());
 }
 
 TEST(ArrayTest, Iterates) {
-  array<int, 3> rows = {{1, 2, 3}};
-  int sum = 0;
+  array<int, 3> rows{{1, 2, 3}};
+  int sum{0};
   for (int& row : rows) {
     row *= 2;
   }
@@ -45,14 +45,14 @@ TEST(ArrayTest, Iterates) {
 }
 
 TEST(ArrayTest, AtReturnsAResult) {
-  array<int, 3> const rows = {{1, 2, 3}};
+  array<int, 3> const rows{{1, 2, 3}};
   EXPECT_EQ(rows.at(2).ValueOr(0), 3);
   EXPECT_EQ(rows.at(3).status(), utl::IndexError::kOutOfRange);
 }
 
 TEST(ArrayTest, CopiesComparesAndFills) {
-  array<int, 3> const rows = {{1, 2, 3}};
-  array<int, 3> copy = rows;
+  array<int, 3> const rows{{1, 2, 3}};
+  array<int, 3> copy{rows};
   EXPECT_EQ(copy, rows);
   copy.fill(5);
   EXPECT_NE(copy, rows);

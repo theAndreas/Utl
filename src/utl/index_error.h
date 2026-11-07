@@ -35,7 +35,7 @@ extern char const kIndexErrorGroup[] PROGMEM;
 
 /*! \brief Returns the group of a IndexError, for argument-dependent lookup. */
 constexpr ErrorGroup GetErrorGroup(IndexError) {
-  return ErrorGroup(kIndexErrorGroup);
+  return ErrorGroup{kIndexErrorGroup};
 }
 
 /*!

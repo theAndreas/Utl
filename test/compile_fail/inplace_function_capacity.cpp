@@ -10,10 +10,8 @@
 #include <utl/inplace_function.h>
 
 void Case() {
-  int32_t const a = 1;
-  int32_t const b = 2;
-  utl::inplace_function<int32_t(), sizeof(a)> const f = [a, b] {
-    return a + b;
-  };
+  int32_t const a{1};
+  int32_t const b{2};
+  utl::inplace_function<int32_t(), sizeof(a)> const f{[a, b] { return a + b; }};
   static_cast<void>(f);
 }

@@ -37,14 +37,14 @@ class Counter {
   uint8_t count() const { return count_; }
 
  private:
-  uint8_t count_ = 0;
+  uint8_t count_{0};
 };
 
 uint8_t Tripled(uint8_t value) { return static_cast<uint8_t>(3 * value); }
 
 // Made in here, kept out there: the lambda is gone, its copy is not.
 utl::inplace_function<uint8_t()> MakeCode(uint8_t index) {
-  uint8_t const code = codes[index];
+  uint8_t const code{codes[index]};
   return [code] { return code; };
 }
 
@@ -53,26 +53,24 @@ utl::inplace_function<uint8_t()> MakeCode(uint8_t index) {
 void CheckInplaceFunction() {
   Button button;
   button.Press();  // nothing kept, nothing called
-  Counter const counter(button);
+  Counter const counter{button};
   button.Press();
   button.Press();
   Check(counter.count() == 2, F("inplace_function keeps a lambda with this"));
 
-  utl::inplace_function<uint8_t()> const code = MakeCode(2);
+  utl::inplace_function<uint8_t()> const code{MakeCode(2)};
   Check(code() == 7, F("inplace_function keeps a copy of its captures"));
 
-  uint8_t count = codes[0];
-  utl::inplace_function<uint8_t()> first = [count]() mutable {
-    return ++count;
-  };
+  uint8_t count{codes[0]};
+  utl::inplace_function<uint8_t()> first{[count]() mutable { return ++count; }};
   first();
-  utl::inplace_function<uint8_t()> const copy = first;
+  utl::inplace_function<uint8_t()> const copy{first};
   first = nullptr;
   Check(copy() == 2 && !first && count == 0,
         F("inplace_function copies its callable"));
 
-  utl::inplace_function<uint8_t(uint8_t)> f = Tripled;
-  uint8_t const tripled = f(codes[2]);
+  utl::inplace_function<uint8_t(uint8_t)> f{Tripled};
+  uint8_t const tripled{f(codes[2])};
   f = nullptr;
   Check(tripled == 21 && !f, F("inplace_function of a function, and emptied"));
 }

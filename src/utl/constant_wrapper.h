@@ -39,9 +39,9 @@ namespace utl {
  */
 template <typename T, T Value>
 struct constant_wrapper {
-  static constexpr T value = Value; /*!< The value. */
-  using value_type = T;             /*!< The type of the value. */
-  using type = constant_wrapper;    /*!< This type. */
+  static constexpr T value{Value}; /*!< The value. */
+  using value_type = T;            /*!< The type of the value. */
+  using type = constant_wrapper;   /*!< This type. */
 };
 
 /*! \cond */

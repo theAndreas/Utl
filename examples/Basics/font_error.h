@@ -25,7 +25,7 @@ enum class FontError : uint8_t {
 extern char const kFontErrorGroup[] PROGMEM;
 
 constexpr utl::ErrorGroup GetErrorGroup(FontError) {
-  return utl::ErrorGroup(kFontErrorGroup);
+  return utl::ErrorGroup{kFontErrorGroup};
 }
 
 // Turns on the texts of the group: until then its errors print their codes.

@@ -16,7 +16,7 @@ int Twice(int value) { return 2 * value; }
 
 struct Counter {
   int Next() { return ++count; }
-  int count = 0;
+  int count{0};
 };
 
 template <typename A, typename B>
@@ -24,7 +24,7 @@ struct Pair {
   static int First() { return 1; }
 };
 
-constexpr uint8_t kAnswer = 42;
+constexpr uint8_t kAnswer{42};
 
 // Nothing to store or pass.
 static_assert(std::is_empty_v<utl::constant_wrapper<int, 1>>);
@@ -55,7 +55,7 @@ TEST(ConstantWrapperTest, GivesItsValue) {
   Counter counter;
   EXPECT_EQ((counter.*decltype(UTL_CW(&Counter::Next))::value)(), 1);
   // Its value as an object, which needs the definition outside the class.
-  uint8_t const& answer = decltype(UTL_CW(kAnswer))::value;
+  uint8_t const& answer{decltype(UTL_CW(kAnswer))::value};
   EXPECT_EQ(answer, 42);
   EXPECT_EQ(&answer, &decltype(UTL_CW(kAnswer))::value);
 }

@@ -33,15 +33,15 @@ namespace internal {
 // see IsStatusOrResult in internal/fluent.h.
 template <typename T>
 struct IsOptionalImpl {
-  static constexpr bool kValue = false;
+  static constexpr bool kValue{false};
 };
 template <typename T>
 struct IsOptionalImpl<optional<T>> {
-  static constexpr bool kValue = true;
+  static constexpr bool kValue{true};
 };
 template <typename T>
 struct IsOptional {
-  static constexpr bool kValue = IsOptionalImpl<RemoveCvRef<T>>::kValue;
+  static constexpr bool kValue{IsOptionalImpl<RemoveCvRef<T>>::kValue};
 };
 
 }  // namespace internal
@@ -76,7 +76,7 @@ constexpr nullopt_t nullopt{0};
  *   return utl::nullopt;
  * }
  *
- * if (utl::optional<uint8_t> const index = Find(c)) { Use(*index); }
+ * if (utl::optional<uint8_t> const index{Find(c)}) { Use(*index); }
  * Find(c).ValueOr(0);
  * Find(c).OkOr(FontError::kUnknownChar);  // a Result, with your error
  * \endcode
@@ -92,7 +92,7 @@ constexpr nullopt_t nullopt{0};
  *
  * \stddiff value() returns a Result with OptionalError::kEmpty where
  *          std::optional throws `bad_optional_access`, as a sketch is built
- *          without exceptions. reset() sets the value to `T()` rather than
+ *          without exceptions. reset() sets the value to `T{}` rather than
  *          destroying it. AndThen(), Map() and OrElse() are what C++23 calls
  *          `and_then()`, `transform()` and `or_else()`.
  */
@@ -102,7 +102,7 @@ class optional {
   using value_type = T; /*!< The type of the value. */
 
   /*! \brief Makes an empty optional. */
-  constexpr optional() : value_(), has_value_(false) {}
+  constexpr optional() : value_{}, has_value_{false} {}
 
   /*! \brief Makes an empty optional, from nullopt. */
   constexpr optional(nullopt_t)  // NOLINT(runtime/explicit)
@@ -289,9 +289,9 @@ class optional {
     return nullopt;
   }
 
-  /*! \brief Empties it, and sets the value to `T()`. */
+  /*! \brief Empties it, and sets the value to `T{}`. */
   void reset() {
-    value_ = T();
+    value_ = T{};
     has_value_ = false;
   }
 
@@ -352,7 +352,7 @@ class optional {
  * \code{.cpp}
  * utl::optional<Led&> FindLed(uint8_t pin);
  *
- * if (utl::optional<Led&> const led = FindLed(13)) { led->On(); }
+ * if (utl::optional<Led&> const led{FindLed(13)}) { led->On(); }
  * FindLed(13).ValueOr(spare).On();  // the LED, or the spare itself
  * \endcode
  *
@@ -379,7 +379,7 @@ class optional<T&> {
   using value_type = T; /*!< The type referred to. */
 
   /*! \brief Makes an empty optional. */
-  constexpr optional() : pointer_(nullptr) {}
+  constexpr optional() : pointer_{nullptr} {}
 
   /*! \brief Makes an empty optional, from nullopt. */
   constexpr optional(nullopt_t)  // NOLINT(runtime/explicit)

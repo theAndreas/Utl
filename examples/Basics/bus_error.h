@@ -25,7 +25,7 @@ enum class BusError : uint8_t {
 extern char const kBusErrorGroup[] PROGMEM;
 
 constexpr utl::ErrorGroup GetErrorGroup(BusError) {
-  return utl::ErrorGroup(kBusErrorGroup);
+  return utl::ErrorGroup{kBusErrorGroup};
 }
 
 // Turns on the texts of the group: until then its errors print their codes.

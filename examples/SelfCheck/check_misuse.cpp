@@ -23,7 +23,7 @@ namespace {
 // A member function to bind to a null pointer, never called.
 struct Probe {
   uint8_t Read() const { return value; }
-  uint8_t value = 0;
+  uint8_t value{0};
 };
 
 }  // namespace
@@ -36,8 +36,8 @@ void CheckMisuse() {
 #if UTL_CHECK_ACCESS
   using utl::Result;
   using utl::span;
-  uint8_t before = MisuseCount();
-  Result<uint8_t> const failed_result = GetCode(9);
+  uint8_t before{MisuseCount()};
+  Result<uint8_t> const failed_result{GetCode(9)};
   static_cast<void>(failed_result.value());
   Check(
       MisuseCount() == before + 1 && LastMisuse() == utl::Misuse::kResultValue,
@@ -48,7 +48,7 @@ void CheckMisuse() {
   Check(MisuseCount() == before + 1 &&
             LastMisuse() == utl::Misuse::kOptionalValue,
         F("* of an empty optional is reported"));
-  utl::array<uint8_t, 2> pair = {{1, 2}};
+  utl::array<uint8_t, 2> pair{{1, 2}};
   before = MisuseCount();
   static_cast<void>(pair[2]);
   Check(MisuseCount() == before + 1 && LastMisuse() == utl::Misuse::kIndex,
@@ -64,14 +64,14 @@ void CheckMisuse() {
   Check(MisuseCount() == before + 1 &&
             LastMisuse() == utl::Misuse::kOptionalValue,
         F("* of an empty optional<T&> is reported"));
-  Result<uint8_t&> const no_reference = BetaError::kFirst;
+  Result<uint8_t&> const no_reference{BetaError::kFirst};
   before = MisuseCount();
   static_cast<void>(no_reference.value());
   Check(
       MisuseCount() == before + 1 && LastMisuse() == utl::Misuse::kResultValue,
       F("value() of a Result<T&> with an error is reported"));
 
-  utl::string_view shortened = "ab";
+  utl::string_view shortened{"ab"};
   before = MisuseCount();
   shortened.remove_prefix(3);
   Check(MisuseCount() == before + 1 && LastMisuse() == utl::Misuse::kRemove &&
@@ -81,12 +81,12 @@ void CheckMisuse() {
   // Made, never called: a call would jump to address 0 and restart.
   void (*const volatile no_function)() = nullptr;
   before = MisuseCount();
-  utl::function_ref<void()> const null_ref = no_function;
+  utl::function_ref<void()> const null_ref{no_function};
   static_cast<void>(null_ref);
   Check(
       MisuseCount() == before + 1 && LastMisuse() == utl::Misuse::kNullFunction,
       F("a function_ref of a null pointer is reported"));
-  Probe* const volatile no_probe = nullptr;
+  Probe* const volatile no_probe{nullptr};
   before = MisuseCount();
   utl::function_ref<uint8_t()> const null_object{UTL_CW(&Probe::Read),
                                                  no_probe};
@@ -103,7 +103,7 @@ void CheckMisuse() {
           "nothing"));
   utl::inplace_function<uint8_t()> const no_callback;
   before = MisuseCount();
-  uint8_t const placeholder = no_callback();
+  uint8_t const placeholder{no_callback()};
   Check(MisuseCount() == before + 1 &&
             LastMisuse() == utl::Misuse::kEmptyFunction && placeholder == 0,
         F("a call of an empty inplace_function is reported, and gives 0"));

@@ -21,18 +21,18 @@ struct Color {
 };
 
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-constexpr uint8_t kRows[] PROGMEM = {0x3c, 0x42, 0xa5, 0x81};
+constexpr uint8_t kRows[] PROGMEM{0x3c, 0x42, 0xa5, 0x81};
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-constexpr uint16_t kSteps[] PROGMEM = {100, 2000, 40000};
+constexpr uint16_t kSteps[] PROGMEM{100, 2000, 40000};
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-constexpr int32_t kOffsets[] PROGMEM = {-70000, 70000};
+constexpr int32_t kOffsets[] PROGMEM{-70000, 70000};
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-constexpr Color kColors[] PROGMEM = {{255, 0, 0}, {0, 128, 255}};
-constexpr utl::array<uint8_t, 3> kArray PROGMEM = {{7, 8, 9}};
+constexpr Color kColors[] PROGMEM{{255, 0, 0}, {0, 128, 255}};
+constexpr utl::array<uint8_t, 3> kArray PROGMEM{{7, 8, 9}};
 
 // XORs the rows: each read from flash in a range-based for.
 uint8_t Xor(utl::flash_span<uint8_t> rows) {
-  uint8_t result = 0;
+  uint8_t result{0};
   for (uint8_t const row : rows) {
     result ^= row;
   }
@@ -42,10 +42,10 @@ uint8_t Xor(utl::flash_span<uint8_t> rows) {
 }  // namespace
 
 void CheckFlashSpan() {
-  utl::flash_span<uint8_t> const rows(kRows);
-  utl::flash_span<uint16_t> const steps(kSteps);
-  utl::flash_span<int32_t> const offsets(kOffsets);
-  utl::flash_span<Color> const colors(kColors);
+  utl::flash_span<uint8_t> const rows{kRows};
+  utl::flash_span<uint16_t> const steps{kSteps};
+  utl::flash_span<int32_t> const offsets{kOffsets};
+  utl::flash_span<Color> const colors{kColors};
 
   Check(rows.size() == 4 && rows[2] == 0xa5 && rows.front() == 0x3c &&
             rows.back() == 0x81,
@@ -56,7 +56,7 @@ void CheckFlashSpan() {
         F("flash_span reads a struct"));
   Check(Xor(rows) == (0x3cU ^ 0x42U ^ 0xa5U ^ 0x81U),
         F("flash_span in a range-based for"));
-  Check(Xor(utl::flash_span<uint8_t>(kArray)) == (7U ^ 8U ^ 9U),
+  Check(Xor(utl::flash_span<uint8_t>{kArray}) == (7U ^ 8U ^ 9U),
         F("flash_span of a utl::array"));
   Check(rows.at(3).ValueOr(0) == 0x81 &&
             rows.at(4).status() == utl::IndexError::kOutOfRange,

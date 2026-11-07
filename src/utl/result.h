@@ -31,9 +31,9 @@ namespace utl {
  *   return rows[index];
  * }
  *
- * bool const lit = GetRow(3)
- *     .Map([](uint8_t row) { return row != 0; })
- *     .ValueOr(false);
+ * bool const lit{GetRow(3)
+ *                    .Map([](uint8_t row) { return row != 0; })
+ *                    .ValueOr(false)};
  * \endcode
  *
  * The fluent functions follow Rust's `Result`: AndThen() goes on with the
@@ -73,7 +73,7 @@ class [[nodiscard]] Result : public internal::ValueFluent<Result<T>, T const&> {
    *
    * \param[in] code The code; see Error.
    */
-  template <typename Code, typename = decltype(GetErrorGroup(Code()))>
+  template <typename Code, typename = decltype(GetErrorGroup(Code{}))>
   constexpr Result(Code code)  // NOLINT(runtime/explicit)
       : value_(), status_(code) {}
 
@@ -199,7 +199,7 @@ class [[nodiscard]] Result<T&> : public internal::ValueFluent<Result<T&>, T&> {
    *
    * \param[in] code The code; see Error.
    */
-  template <typename Code, typename = decltype(GetErrorGroup(Code()))>
+  template <typename Code, typename = decltype(GetErrorGroup(Code{}))>
   constexpr Result(Code code)  // NOLINT(runtime/explicit)
       : pointer_(nullptr), status_(code) {}
 
@@ -315,7 +315,7 @@ class Result<void> : public Status {
   constexpr Result() = default;
 
   /*! \brief Returns an ok Result. */
-  static constexpr Result Ok() { return Result(); }
+  static constexpr Result Ok() { return Result{}; }
 
   /*!
    * \brief Makes a Result of `status`, which is the same thing.
@@ -325,7 +325,7 @@ class Result<void> : public Status {
    * \param[in] status Ok, or an error.
    */
   constexpr Result(Status const& status)  // NOLINT(runtime/explicit)
-      : Status(status) {}
+      : Status{status} {}
 
   /*! \brief Returns this, as the Status it is. */
   Status const& status() const { return *this; }

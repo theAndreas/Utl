@@ -19,14 +19,14 @@ using utl::function_ref;
 
 int Twice(int value) { return 2 * value; }
 void Nothing() {}
-int calls = 0;
+int calls{0};
 void CountCall() { ++calls; }
 
 // Calls f once per value, the use it is made for: a parameter, which takes a
 // function, a lambda or an object without being a template.
 int Sum(function_ref<int(int)> f) {
-  int sum = 0;
-  for (int value = 1; value <= 3; ++value) {
+  int sum{0};
+  for (int value{1}; value <= 3; ++value) {
     sum += f(value);
   }
   return sum;
@@ -97,29 +97,29 @@ TEST(FunctionRefTest, BindsALambdaButIsNeverAssignedOne) {
   static_assert(std::is_convertible_v<Lambda, function_ref<void()>>);
   static_assert(!std::is_assignable_v<function_ref<void()>&, Lambda>);
   static_assert(!std::is_assignable_v<function_ref<void()>&, Lambda&>);
-  function_ref<void()> const f = nothing;
+  function_ref<void()> const f{nothing};
   f();
 }
 
 TEST(FunctionRefTest, CallsAFunction) {
-  function_ref<int(int)> const by_name = Twice;
-  function_ref<int(int)> const by_pointer = &Twice;
+  function_ref<int(int)> const by_name{Twice};
+  function_ref<int(int)> const by_pointer{&Twice};
   EXPECT_EQ(by_name(3), 6);
   EXPECT_EQ(by_pointer(4), 8);
   EXPECT_EQ(Sum(Twice), 12);
 }
 
 TEST(FunctionRefTest, CallsAFunctionOfOtherTypes) {
-  function_ref<int64_t(int16_t)> const widened = Twice;
+  function_ref<int64_t(int16_t)> const widened{Twice};
   EXPECT_EQ(widened(int16_t{21}), int64_t{42});
-  function_ref<void(int)> const dropped = Twice;  // the result is dropped
+  function_ref<void(int)> const dropped{Twice};  // the result is dropped
   dropped(1);
 }
 
 TEST(FunctionRefTest, CallsALambdaWithItsCaptures) {
-  int offset = 10;
+  int offset{10};
   auto const add = [&offset](int value) { return value + offset; };
-  function_ref<int(int)> const f = add;
+  function_ref<int(int)> const f{add};
   EXPECT_EQ(f(1), 11);
   offset = 20;  // seen, as the lambda is referred to, not copied
   EXPECT_EQ(f(1), 21);
@@ -127,9 +127,9 @@ TEST(FunctionRefTest, CallsALambdaWithItsCaptures) {
 }
 
 TEST(FunctionRefTest, RefersToTheObjectNotACopy) {
-  int count = 0;
+  int count{0};
   auto counter = [count]() mutable { return ++count; };
-  function_ref<int()> const f = counter;
+  function_ref<int()> const f{counter};
   EXPECT_EQ(f(), 1);
   EXPECT_EQ(f(), 2);
   EXPECT_EQ(counter(), 3);  // the same object, counting on
@@ -138,35 +138,35 @@ TEST(FunctionRefTest, RefersToTheObjectNotACopy) {
 TEST(FunctionRefTest, CallsConstOperatorOfAConstObject) {
   Overloaded mutable_object;
   Overloaded const const_object;
-  function_ref<int()> const f = mutable_object;
-  function_ref<int()> const g = const_object;
+  function_ref<int()> const f{mutable_object};
+  function_ref<int()> const g{const_object};
   EXPECT_EQ(f(), 1);
   EXPECT_EQ(g(), 2);
 }
 
 TEST(FunctionRefTest, TakesTheAddressPastAnOverloadedAmpersand) {
   AddressHidden const hidden;
-  function_ref<int()> const f = hidden;
+  function_ref<int()> const f{hidden};
   EXPECT_EQ(f(), 5);
 }
 
 TEST(FunctionRefTest, PassesArgumentsAsTaken) {
   auto const increment = [](int& value) { ++value; };
-  function_ref<void(int&)> const f = increment;
-  int value = 1;
+  function_ref<void(int&)> const f{increment};
+  int value{1};
   f(value);
   EXPECT_EQ(value, 2);
 
   // Moved through to the callable, never copied.
   auto const take = [](std::unique_ptr<int> owned) { return *owned; };
-  function_ref<int(std::unique_ptr<int>)> const g = take;
+  function_ref<int(std::unique_ptr<int>)> const g{take};
   EXPECT_EQ(g(std::make_unique<int>(7)), 7);
 }
 
 TEST(FunctionRefTest, ReturnsAReference) {
-  int target = 1;
+  int target{1};
   auto const get = [&target]() -> int& { return target; };
-  function_ref<int&()> const f = get;
+  function_ref<int&()> const f{get};
   f() = 5;
   EXPECT_EQ(target, 5);
   EXPECT_EQ(&f(), &target);
@@ -174,8 +174,8 @@ TEST(FunctionRefTest, ReturnsAReference) {
 
 TEST(FunctionRefTest, CopiesAndRebinds) {
   calls = 0;
-  function_ref<void()> f = Nothing;
-  function_ref<void()> const copy = f;
+  function_ref<void()> f{Nothing};
+  function_ref<void()> const copy{f};
   f = CountCall;  // a function, assigned by name
   f();
   copy();  // still Nothing
@@ -204,14 +204,14 @@ class Led {
   [[nodiscard]] int Which() const { return on_ ? 2 : -2; }
 
  private:
-  bool on_ = false;
+  bool on_{false};
 };
 
 class DimmedLed : public Led {};
 
 // A data member, which is never called.
 struct Reading {
-  int level = 0;
+  int level{0};
 };
 
 // A function that takes its object first, as a member function would.
@@ -267,7 +267,7 @@ TEST(FunctionRefTest, CallsAMemberFunctionOfItsObject) {
 
 TEST(FunctionRefTest, CallsAMemberFunctionThroughAPointer) {
   Led led;
-  Led* pointer = &led;
+  Led* pointer{&led};
   function_ref<void()> const toggle{UTL_CW(&Led::Toggle), pointer};
   Led other;
   pointer = &other;  // the pointer was copied, not referred to
@@ -278,7 +278,7 @@ TEST(FunctionRefTest, CallsAMemberFunctionThroughAPointer) {
 
 TEST(FunctionRefTest, CallsTheConstMemberFunctionOfAConstObject) {
   Led led;
-  Led const& const_led = led;
+  Led const& const_led{led};
   function_ref<int()> const mutable_which{
       UTL_CW(static_cast<int (Led::*)()>(&Led::Which)), led};
   function_ref<int()> const const_which{
@@ -319,7 +319,7 @@ class Square : public Shape {
 
 TEST(FunctionRefTest, CallsAVirtualMemberFunctionOfTheDerivedClass) {
   Square const square;
-  Shape const& shape = square;
+  Shape const& shape{square};
   function_ref<int()> const of_reference{UTL_CW(&Shape::Corners), shape};
   function_ref<int()> const of_pointer{UTL_CW(&Shape::Corners), &shape};
   EXPECT_EQ(of_reference(), 4);
@@ -329,8 +329,8 @@ TEST(FunctionRefTest, CallsAVirtualMemberFunctionOfTheDerivedClass) {
 TEST(FunctionRefTest, CallsAMemberFunctionOnTheFirstArgument) {
   Led first;
   Led second;
-  function_ref<void(Led&)> const toggle = UTL_CW(&Led::Toggle);
-  function_ref<void(Led*)> const toggle_pointed = UTL_CW(&Led::Toggle);
+  function_ref<void(Led&)> const toggle{UTL_CW(&Led::Toggle)};
+  function_ref<void(Led*)> const toggle_pointed{UTL_CW(&Led::Toggle)};
   toggle(first);
   toggle_pointed(&second);
   EXPECT_TRUE(first.IsOn());
@@ -344,13 +344,13 @@ TEST(FunctionRefTest, BindsAnObjectToAFunctionThatTakesItFirst) {
   EXPECT_EQ(scaled(100), 50);
   EXPECT_EQ(Sum(scaled), 2);  // 0 + 1 + 1
   // A pointer that a function, not a member function, takes may be null.
-  Led const* const none = nullptr;
+  Led const* const none{nullptr};
   function_ref<int()> const count{UTL_CW(Count), none};
   EXPECT_EQ(count(), -1);
 }
 
 TEST(FunctionRefTest, CallsAFunctionGivenAsAConstant) {
-  function_ref<int(int)> const twice = UTL_CW(Twice);
+  function_ref<int(int)> const twice{UTL_CW(Twice)};
   EXPECT_EQ(twice(5), 10);
   EXPECT_EQ(Sum(UTL_CW(Twice)), 12);
   // An object, not the declaration of a function, as UTL_CW() gives braces.
@@ -361,7 +361,7 @@ TEST(FunctionRefTest, CallsAFunctionGivenAsAConstant) {
 TEST(FunctionRefTest, IsAConstantOfAMemberFunctionAndAnObject) {
   static Led led;
   static constexpr function_ref<void()> kToggle{UTL_CW(&Led::Toggle), led};
-  static constexpr function_ref<int(int)> kTwice = UTL_CW(Twice);
+  static constexpr function_ref<int(int)> kTwice{UTL_CW(Twice)};
   kToggle();
   EXPECT_TRUE(led.IsOn());
   EXPECT_EQ(kTwice(2), 4);
@@ -369,7 +369,7 @@ TEST(FunctionRefTest, IsAConstantOfAMemberFunctionAndAnObject) {
 
 TEST(FunctionRefTest, IsAConstantOfAnObjectWithStaticStorage) {
   static constexpr Overloaded kObject{};
-  constexpr function_ref<int()> kF = kObject;
+  constexpr function_ref<int()> kF{kObject};
   EXPECT_EQ(kF(), 2);
 }
 

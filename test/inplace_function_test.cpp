@@ -25,12 +25,12 @@ struct Counted {
   static int copies;
   static int moves;
 
-  explicit Counted(int value_in) : value(value_in) { ++alive; }
-  Counted(Counted const& other) : value(other.value) {
+  explicit Counted(int value_in) : value{value_in} { ++alive; }
+  Counted(Counted const& other) : value{other.value} {
     ++alive;
     ++copies;
   }
-  Counted(Counted&& other) noexcept : value(other.value) {
+  Counted(Counted&& other) noexcept : value{other.value} {
     other.value = -1;
     ++alive;
     ++moves;
@@ -58,7 +58,7 @@ struct NotCallable {};
 // Makes an inplace_function of a lambda that is gone when it returns: what is
 // kept must be a copy.
 inplace_function<int()> MakeAdder(int offset) {
-  int const base = Twice(5);
+  int const base{Twice(5)};
   return [base, offset] { return base + offset; };
 }
 
@@ -82,12 +82,13 @@ static_assert(!std::is_assignable_v<inplace_function<void()>&, NotCallable>);
 
 TEST(InplaceFunctionTest, IsEmptyWithoutACallable) {
   inplace_function<int(int)> const by_default;
+  // = rather than braces: what is checked is that nullptr converts implicitly.
   inplace_function<int(int)> const of_null = nullptr;
   int (*const no_function)(int) = nullptr;
-  inplace_function<int(int)> const of_null_pointer = no_function;
+  inplace_function<int(int)> const of_null_pointer{no_function};
   // Of other types, which take a null pointer the same way.
-  inplace_function<int64_t(int16_t)> const widened = no_function;
-  inplace_function<void(int)> const dropped = no_function;
+  inplace_function<int64_t(int16_t)> const widened{no_function};
+  inplace_function<void(int)> const dropped{no_function};
   EXPECT_FALSE(by_default);
   EXPECT_FALSE(of_null);
   EXPECT_FALSE(of_null_pointer);
@@ -103,10 +104,10 @@ TEST(InplaceFunctionTest, CallOfAnEmptyOneGivesTheDefault) {
 }
 
 TEST(InplaceFunctionTest, CallsAFunction) {
-  inplace_function<int(int)> const by_name = Twice;
-  inplace_function<int(int)> const by_pointer = &Twice;
-  inplace_function<int64_t(int16_t)> const widened = Twice;
-  inplace_function<void(int)> const dropped = Twice;
+  inplace_function<int(int)> const by_name{Twice};
+  inplace_function<int(int)> const by_pointer{&Twice};
+  inplace_function<int64_t(int16_t)> const widened{Twice};
+  inplace_function<void(int)> const dropped{Twice};
   EXPECT_TRUE(by_name);
   EXPECT_EQ(by_name(3), 6);
   EXPECT_EQ(by_pointer(4), 8);
@@ -115,22 +116,22 @@ TEST(InplaceFunctionTest, CallsAFunction) {
 }
 
 TEST(InplaceFunctionTest, KeepsACopyOfTheLambda) {
-  inplace_function<int()> const adder = MakeAdder(5);
+  inplace_function<int()> const adder{MakeAdder(5)};
   EXPECT_EQ(adder(), 15);  // the lambda and its captures are gone, the copy not
 
-  int count = 0;
+  int count{0};
   auto counter = [count]() mutable { return ++count; };
-  inplace_function<int()> const f = counter;
+  inplace_function<int()> const f{counter};
   EXPECT_EQ(f(), 1);
   EXPECT_EQ(f(), 2);        // the kept copy counts on, through a const one
   EXPECT_EQ(counter(), 1);  // the original is apart
 }
 
 TEST(InplaceFunctionTest, CopiesTheCallable) {
-  int count = 0;
-  inplace_function<int()> original = [count]() mutable { return ++count; };
+  int count{0};
+  inplace_function<int()> original{[count]() mutable { return ++count; }};
   EXPECT_EQ(original(), 1);
-  inplace_function<int()> const copy = original;
+  inplace_function<int()> const copy{original};
   inplace_function<int()> assigned;
   assigned = original;
   original = nullptr;  // the copies keep their own
@@ -140,9 +141,9 @@ TEST(InplaceFunctionTest, CopiesTheCallable) {
 }
 
 TEST(InplaceFunctionTest, MovingLeavesTheSourceEmpty) {
-  inplace_function<int(int)> source = Twice;
-  inplace_function<int(int)> const moved =
-      static_cast<inplace_function<int(int)>&&>(source);
+  inplace_function<int(int)> source{Twice};
+  inplace_function<int(int)> const moved{
+      static_cast<inplace_function<int(int)>&&>(source)};
   EXPECT_EQ(moved(2), 4);
   EXPECT_FALSE(source);  // NOLINT(bugprone-use-after-move)
 
@@ -154,18 +155,18 @@ TEST(InplaceFunctionTest, MovingLeavesTheSourceEmpty) {
 }
 
 TEST(InplaceFunctionTest, AssigningReplacesTheCallable) {
-  inplace_function<int(int)> f = Twice;
-  int const offset = Twice(1) - 1;
+  inplace_function<int(int)> f{Twice};
+  int const offset{Twice(1) - 1};
   f = [offset](int value) { return value + offset; };
   EXPECT_EQ(f(1), 2);
   f = nullptr;
   EXPECT_FALSE(f);
   f = &Twice;
   EXPECT_EQ(f(5), 10);
-  inplace_function<int(int)> const& same = f;
+  inplace_function<int(int)> const& same{f};
   f = same;  // to itself
   EXPECT_EQ(f(5), 10);
-  inplace_function<int(int)>& moved_same = f;
+  inplace_function<int(int)>& moved_same{f};
   f = static_cast<inplace_function<int(int)>&&>(moved_same);  // to itself
   EXPECT_EQ(f(5), 10);
 }
@@ -173,18 +174,18 @@ TEST(InplaceFunctionTest, AssigningReplacesTheCallable) {
 TEST(InplaceFunctionTest, ManagesACallableThatIsNotTriviallyCopyable) {
   Counted::Clear();
   {
-    Counted const counted(7);
-    inplace_function<int(), sizeof(Counted)> first = counted;
+    Counted const counted{7};
+    inplace_function<int(), sizeof(Counted)> first{counted};
     EXPECT_EQ(Counted::alive, 2);
     EXPECT_EQ(Counted::copies, 1);
     EXPECT_EQ(first(), 7);
 
-    inplace_function<int(), sizeof(Counted)> second = first;
+    inplace_function<int(), sizeof(Counted)> second{first};
     EXPECT_EQ(Counted::alive, 3);
     EXPECT_EQ(second(), 7);
 
-    inplace_function<int(), sizeof(Counted)> third =
-        static_cast<inplace_function<int(), sizeof(Counted)>&&>(first);
+    inplace_function<int(), sizeof(Counted)> third{
+        static_cast<inplace_function<int(), sizeof(Counted)>&&>(first)};
     EXPECT_EQ(Counted::alive, 3);  // moved, and the moved-from one destroyed
     EXPECT_EQ(Counted::moves, 1);
     EXPECT_EQ(third(), 7);
@@ -194,7 +195,7 @@ TEST(InplaceFunctionTest, ManagesACallableThatIsNotTriviallyCopyable) {
     EXPECT_EQ(Counted::alive, 2);
     third = second;  // empty over full: destroys
     EXPECT_EQ(Counted::alive, 1);
-    second = Counted(9);  // moved in, the temporary gone
+    second = Counted{9};  // moved in, the temporary gone
     EXPECT_EQ(second(), 9);
     EXPECT_EQ(Counted::alive, 2);
   }
@@ -202,19 +203,18 @@ TEST(InplaceFunctionTest, ManagesACallableThatIsNotTriviallyCopyable) {
 }
 
 TEST(InplaceFunctionTest, TakesALargerCallableWithMoreCapacity) {
-  int64_t const a = Twice(1) - 1;
-  int64_t const b = Twice(1);
-  int64_t const c = Twice(1) + 1;
-  inplace_function<int64_t(), 3 * sizeof(int64_t)> const sum = [a, b, c] {
-    return a + b + c;
-  };
+  int64_t const a{Twice(1) - 1};
+  int64_t const b{Twice(1)};
+  int64_t const c{Twice(1) + 1};
+  inplace_function<int64_t(), 3 * sizeof(int64_t)> const sum{
+      [a, b, c] { return a + b + c; }};
   EXPECT_EQ(sum(), 6);
 }
 
 TEST(InplaceFunctionTest, KeepsAFunctionRef) {
   auto const add_one = [](int value) { return value + 1; };
-  utl::function_ref<int(int)> const reference = add_one;
-  inplace_function<int(int)> const kept = reference;
+  utl::function_ref<int(int)> const reference{add_one};
+  inplace_function<int(int)> const kept{reference};
   EXPECT_EQ(kept(1), 2);
 }
 

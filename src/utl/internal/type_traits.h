@@ -76,29 +76,29 @@ using RemoveCvRef = RemoveCv<RemoveReference<T>>;
 // std::is_same: kValue is whether A and B are one type.
 template <typename A, typename B>
 struct IsSame {
-  static constexpr bool kValue = false;
+  static constexpr bool kValue{false};
 };
 template <typename A>
 struct IsSame<A, A> {
-  static constexpr bool kValue = true;
+  static constexpr bool kValue{true};
 };
 
 // std::is_void: kValue is whether T is void, const or not; for a function
 // passed only to look, whose result would otherwise be dropped unseen.
 template <typename T>
 struct IsVoid {
-  static constexpr bool kValue = IsSame<RemoveCv<T>, void>::kValue;
+  static constexpr bool kValue{IsSame<RemoveCv<T>, void>::kValue};
 };
 
 // std::is_lvalue_reference: kValue is whether T is a T&, for a function that
 // has to return a reference to something that outlives the call.
 template <typename T>
 struct IsLvalueReference {
-  static constexpr bool kValue = false;
+  static constexpr bool kValue{false};
 };
 template <typename T>
 struct IsLvalueReference<T&> {
-  static constexpr bool kValue = true;
+  static constexpr bool kValue{true};
 };
 
 // std::enable_if_t: void, if B is true; no type, and so no overload, if not.
@@ -115,25 +115,25 @@ using EnableIf = typename EnableIfImpl<B>::Type;
 // object or to a function.
 template <typename T>
 struct IsPointer {
-  static constexpr bool kValue = false;
+  static constexpr bool kValue{false};
 };
 template <typename T>
 struct IsPointer<T*> {
-  static constexpr bool kValue = true;
+  static constexpr bool kValue{true};
 };
 template <typename T>
 struct IsPointer<T* const> {
-  static constexpr bool kValue = true;
+  static constexpr bool kValue{true};
 };
 
 // std::is_const: kValue is whether T is const at the top.
 template <typename T>
 struct IsConst {
-  static constexpr bool kValue = false;
+  static constexpr bool kValue{false};
 };
 template <typename T>
 struct IsConst<T const> {
-  static constexpr bool kValue = true;
+  static constexpr bool kValue{true};
 };
 
 // std::is_function: kValue is whether T is a function type, such as
@@ -141,19 +141,19 @@ struct IsConst<T const> {
 // two alone are not const with one added.
 template <typename T>
 struct IsFunction {
-  static constexpr bool kValue =
-      !IsConst<T const>::kValue && IsSame<RemoveReference<T>, T>::kValue;
+  static constexpr bool kValue{!IsConst<T const>::kValue &&
+                               IsSame<RemoveReference<T>, T>::kValue};
 };
 
 // std::is_member_pointer: kValue is whether T is a pointer to a member, of a
 // function or of data.
 template <typename T>
 struct IsMemberPointer {
-  static constexpr bool kValue = false;
+  static constexpr bool kValue{false};
 };
 template <typename M, typename C>
 struct IsMemberPointer<M C::*> {
-  static constexpr bool kValue = true;
+  static constexpr bool kValue{true};
 };
 
 // The type of a template parameter that takes a value of type T: a pointer

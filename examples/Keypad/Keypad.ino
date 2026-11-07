@@ -21,18 +21,18 @@
 namespace {
 
 // Pins 8 to 11 are PB0 to PB3, whose changes raise PCINT0.
-constexpr uint8_t kFirstPin = 8;
-constexpr uint8_t kKeyCount = 4;
-constexpr uint8_t kKeyMask = 0x0f;
+constexpr uint8_t kFirstPin{8};
+constexpr uint8_t kKeyCount{4};
+constexpr uint8_t kKeyMask{0x0f};
 // A press within this time of the last one is the bounce of a contact.
-constexpr uint16_t kBounceMs = 30;
+constexpr uint16_t kBounceMs{30};
 
 // The char of each key, and the code that opens the lock: in flash, not RAM.
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-constexpr char kKeyChars[] PROGMEM = {'A', 'B', 'C', 'D'};
+constexpr char kKeyChars[] PROGMEM{'A', 'B', 'C', 'D'};
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-constexpr char kCode[] PROGMEM = {'C', 'A', 'B', 'A'};
-constexpr size_t kCodeLength = sizeof(kCode);
+constexpr char kCode[] PROGMEM{'C', 'A', 'B', 'A'};
+constexpr size_t kCodeLength{sizeof(kCode)};
 
 class Lock {
  public:
@@ -51,7 +51,7 @@ class Lock {
   bool IsOpen() const { return open_; }
 
  private:
-  bool open_ = false;
+  bool open_{false};
 };
 
 Lock lock;
@@ -64,12 +64,12 @@ utl::spsc_queue<uint8_t, 8> presses;
 // Presses the queue had no room for: written by the interrupt alone, as each
 // count of the queue is by one side, and read by loop(), which keeps its own
 // count of those it reported.
-uint8_t volatile dropped = 0;
-uint8_t reported = 0;
+uint8_t volatile dropped{0};
+uint8_t reported{0};
 
 // The interrupt's own.
-uint8_t last_pins = kKeyMask;  // all up, pulled high
-uint16_t last_press = 0;
+uint8_t last_pins{kKeyMask};  // all up, pulled high
+uint16_t last_press{0};
 
 // The last keys entered, at most as many as the code has.
 utl::inplace_vector<char, kCodeLength> entered;
@@ -79,7 +79,7 @@ bool Matches(utl::span<char const> keys, utl::flash_span<char> code) {
   if (keys.size() != code.size()) {
     return false;
   }
-  for (size_t index = 0; index < keys.size(); ++index) {
+  for (size_t index{0}; index < keys.size(); ++index) {
     if (keys[index] != code[index]) {
       return false;
     }
@@ -98,7 +98,7 @@ void Enter(char key) {
   }
   static_cast<void>(entered.push_back(key));  // room was made above
   Serial.print(key);
-  if (Matches(entered, utl::flash_span<char>(kCode))) {
+  if (Matches(entered, utl::flash_span<char>{kCode})) {
     kOnMatch();
     entered.clear();
   }
@@ -119,7 +119,7 @@ ISR(PCINT0_vect) {
     return;
   }
   last_press = now;
-  for (uint8_t key = 0; key < kKeyCount; ++key) {
+  for (uint8_t key{0}; key < kKeyCount; ++key) {
     if ((went_down & (1U << key)) != 0 && !presses.push(key).IsOk()) {
       dropped = static_cast<uint8_t>(dropped + 1);
     }
@@ -129,7 +129,7 @@ ISR(PCINT0_vect) {
 void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
-  for (uint8_t key = 0; key < kKeyCount; ++key) {
+  for (uint8_t key{0}; key < kKeyCount; ++key) {
     pinMode(kFirstPin + key, INPUT_PULLUP);
   }
   PCMSK0 |= kKeyMask;   // pins 8 to 11 raise PCINT0
@@ -138,11 +138,11 @@ void setup() {
 }
 
 void loop() {
-  utl::flash_span<char> const key_chars(kKeyChars);
-  while (utl::optional<uint8_t> const key = presses.pop()) {
+  utl::flash_span<char> const key_chars{kKeyChars};
+  while (utl::optional<uint8_t> const key{presses.pop()}) {
     Enter(key_chars.at(*key).ValueOr('?'));
   }
-  uint8_t const lost = dropped;
+  uint8_t const lost{dropped};
   if (lost != reported) {
     Serial.println(F(" (keys lost: loop() was too slow)"));
     reported = lost;

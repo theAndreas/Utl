@@ -22,14 +22,14 @@ inline uint8_t pgm_read_byte(void const* address) {
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 inline uint16_t pgm_read_word(void const* address) {
-  uint16_t value = 0;
+  uint16_t value{0};
   memcpy(&value, address, sizeof(value));
   return value;
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 inline uint32_t pgm_read_dword(void const* address) {
-  uint32_t value = 0;
+  uint32_t value{0};
   memcpy(&value, address, sizeof(value));
   return value;
 }

@@ -23,7 +23,7 @@ using utl::CharconvError;
 // What to_chars() writes for `value`, or the error as "error".
 template <typename T>
 std::string Written(T value, uint8_t base = 10, size_t size = 24) {
-  utl::array<char, 24> buffer = {};
+  utl::array<char, 24> buffer{};
   auto const end =
       utl::to_chars(buffer.data(), buffer.data() + size, value, base);
   if (!end.IsOk()) {
@@ -41,11 +41,11 @@ struct Read {
 };
 template <typename T>
 Read<T> ReadFrom(char const* text, uint8_t base = 10, T initial = T{7}) {
-  T value = initial;
-  size_t const size = std::strlen(text);
+  T value{initial};
+  size_t const size{std::strlen(text)};
   auto const end = utl::from_chars(text, text + size, value, base);
-  size_t const taken =
-      end.IsOk() ? static_cast<size_t>(end.value() - text) : size_t{0};
+  size_t const taken{end.IsOk() ? static_cast<size_t>(end.value() - text)
+                                : size_t{0}};
   return Read<T>{end.status(), value, taken};
 }
 
@@ -77,13 +77,13 @@ TEST(ToCharsTest, ValueTooLarge) {
   EXPECT_EQ(Written(uint8_t{255}, 10, 2), "error");
   EXPECT_EQ(Written(int8_t{-5}, 10, 1), "error");  // no room after the minus
   EXPECT_EQ(Written(int8_t{-5}, 10, 0), "error");  // no room for the minus
-  utl::array<char, 2> buffer = {};
+  utl::array<char, 2> buffer{};
   EXPECT_EQ(utl::to_chars(buffer.data(), buffer.data() + 2, 100).status(),
             CharconvError::kValueTooLarge);
 }
 
 TEST(ToCharsTest, InvalidBase) {
-  utl::array<char, 4> buffer = {};
+  utl::array<char, 4> buffer{};
   EXPECT_EQ(utl::to_chars(buffer.data(), buffer.data() + 4, 1, 1).status(),
             CharconvError::kInvalidArgument);
   EXPECT_EQ(utl::to_chars(buffer.data(), buffer.data() + 4, 1, 37).status(),
@@ -91,7 +91,7 @@ TEST(ToCharsTest, InvalidBase) {
 }
 
 TEST(ToCharsTest, IntoASpanGivesTheText) {
-  utl::array<char, 6> buffer = {};
+  utl::array<char, 6> buffer{};
   EXPECT_EQ(utl::to_chars(buffer, -273).ValueOr("x"), "-273");
   EXPECT_EQ(utl::to_chars(buffer, 0x1f, 16).ValueOr("x"), "1f");
   EXPECT_EQ(utl::to_chars(buffer, 1234567).status(),
@@ -99,7 +99,7 @@ TEST(ToCharsTest, IntoASpanGivesTheText) {
 }
 
 TEST(FromCharsTest, ReadsAndStopsAfterTheDigits) {
-  Read<uint8_t> const read = ReadFrom<uint8_t>("42,7");
+  Read<uint8_t> const read{ReadFrom<uint8_t>("42,7")};
   EXPECT_TRUE(read.status.IsOk());
   EXPECT_EQ(read.value, 42);
   EXPECT_EQ(read.taken, 2U);
@@ -126,7 +126,7 @@ TEST(FromCharsTest, ReadsInAnyBase) {
 
 TEST(FromCharsTest, InvalidArgumentLeavesTheValue) {
   for (char const* text : {"", "-", "+1", " 1", "x", "-x", "[", "~"}) {
-    Read<int> const read = ReadFrom<int>(text);
+    Read<int> const read{ReadFrom<int>(text)};
     EXPECT_EQ(read.status, CharconvError::kInvalidArgument) << text;
     EXPECT_EQ(read.value, 7) << text;
   }
@@ -141,7 +141,7 @@ TEST(FromCharsTest, NoMinusForAnUnsignedAndNoBadBase) {
 
 TEST(FromCharsTest, OutOfRangeLeavesTheValue) {
   for (char const* text : {"256", "1000", "99999999999999999999"}) {
-    Read<uint8_t> const read = ReadFrom<uint8_t>(text);
+    Read<uint8_t> const read{ReadFrom<uint8_t>(text)};
     EXPECT_EQ(read.status, CharconvError::kOutOfRange) << text;
     EXPECT_EQ(read.value, 7) << text;
   }
@@ -157,7 +157,7 @@ TEST(FromCharsTest, OutOfRangeAtEachEnd) {
 }
 
 TEST(FromCharsTest, FromAStringViewTakesWhatItReads) {
-  utl::string_view line = "42,-7";
+  utl::string_view line{"42,-7"};
   EXPECT_EQ(utl::from_chars<uint8_t>(line).ValueOr(0), 42);
   EXPECT_EQ(line, ",-7");
   line.remove_prefix(1);
@@ -165,11 +165,11 @@ TEST(FromCharsTest, FromAStringViewTakesWhatItReads) {
   EXPECT_TRUE(line.empty());
 
   // On an error the view stays as it is.
-  utl::string_view rest = "x1";
+  utl::string_view rest{"x1"};
   EXPECT_EQ(utl::from_chars<int>(rest).status(),
             CharconvError::kInvalidArgument);
   EXPECT_EQ(rest, "x1");
-  utl::string_view large = "300";
+  utl::string_view large{"300"};
   EXPECT_EQ(utl::from_chars<uint8_t>(large).status(),
             CharconvError::kOutOfRange);
   EXPECT_EQ(large, "300");
@@ -182,12 +182,12 @@ void RoundTrip(uint8_t base) {
   using Limits = std::numeric_limits<T>;
   // Sign-extended on purpose: every value of T, as an int64_t.
   // NOLINTNEXTLINE(bugprone-signed-char-misuse)
-  for (int64_t i = Limits::min(); i <= Limits::max(); ++i) {
-    T const value = static_cast<T>(i);
-    utl::array<char, 20> buffer = {};
-    char* const end =
+  for (int64_t i{Limits::min()}; i <= Limits::max(); ++i) {
+    T const value{static_cast<T>(i)};
+    utl::array<char, 20> buffer{};
+    char* const end{
         utl::to_chars(buffer.data(), buffer.data() + buffer.size(), value, base)
-            .value();
+            .value()};
     T back{};
     ASSERT_EQ(utl::from_chars(buffer.data(), end, back, base).value(), end);
     ASSERT_EQ(back, value) << i << " base " << base;

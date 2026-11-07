@@ -17,7 +17,7 @@ using utl::Error;
 // The functions after Rust that look on the way, end a chain, or make a
 // fallback only when it is needed.
 void CheckRustFluent() {
-  uint8_t seen = 0;
+  uint8_t seen{0};
   auto const look = [&seen](uint8_t const& code) { seen = code; };
   auto const count = [&seen](Error const&) { ++seen; };
 

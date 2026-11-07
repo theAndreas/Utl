@@ -9,7 +9,7 @@
 #include <utl/result.h>
 
 void Case() {
-  int target = 0;
-  static_cast<void>(utl::Result<int&>(target).MapError(
+  int target{0};
+  static_cast<void>(utl::Result<int&>{target}.MapError(
       [](utl::Error const&) { return utl::Status::Ok(); }));
 }

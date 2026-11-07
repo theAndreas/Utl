@@ -67,10 +67,10 @@ utl::Result<char> Receive(bool acknowledged) {
 }
 
 // The first error ends the chain.
-utl::Status const status =
-    Receive(false).AndThen([](char c) { return SetChar(c); });
+utl::Status const status{
+    Receive(false).AndThen([](char c) { return SetChar(c); })};
 if (status == BusError::kNack) { ... }
-if (utl::Error const* error = status.error()) {
+if (utl::Error const* error{status.error()}) {
   Serial.println(error->code());  // 0: kNack, within the group "bus"
 }
 status.PrintTo(Serial);  // "bus: nack", or "ok"
@@ -97,7 +97,7 @@ enum class FontError : uint8_t {
 extern char const kFontErrorGroup[] PROGMEM;  // "font"; its address is the group
 
 constexpr utl::ErrorGroup GetErrorGroup(FontError) {
-  return utl::ErrorGroup(kFontErrorGroup);
+  return utl::ErrorGroup{kFontErrorGroup};
 }
 
 void UseFontMessages();  // turns the texts on
@@ -115,7 +115,7 @@ constexpr auto kMessages PROGMEM =
     utl::make_array(kUnknownCharText, kNullTextText);
 
 void UseFontMessages() {
-  static utl::Messages messages{utl::ErrorGroup(kFontErrorGroup), kMessages};
+  static utl::Messages messages{utl::ErrorGroup{kFontErrorGroup}, kMessages};
   utl::UseMessages(messages);
 }
 ```
@@ -196,7 +196,7 @@ Receive(true)
 `Map()` with a function that returns nothing gives a `Result<void>`, which is a `Status`:
 
 ```cpp
-utl::Result<void> const printed = Receive(true).Map([](char c) { Serial.println(c); });
+utl::Result<void> const printed{Receive(true).Map([](char c) { Serial.println(c); })};
 ```
 
 An `Error` and a `Result<T>` are `[[nodiscard]]`: a call that returns a value and has it dropped
@@ -237,14 +237,14 @@ any text.
 ## Containers
 
 ```cpp
-utl::array<uint8_t, 3> rows = {{0x18, 0x3c, 0x18}};
+utl::array<uint8_t, 3> rows{{0x18, 0x3c, 0x18}};
 for (uint8_t const row : rows) { ... }
 rows.at(5).ValueOr(0);  // 0, as 5 lies beyond the end: at() returns a Result
 
 // A span takes a C array, a utl::array and another span alike.
 uint16_t Sum(utl::span<uint8_t const> values);
 Sum(rows);
-utl::span<uint8_t>(rows).subspan(1).Map(Sum);  // a Result: subspan() can fail
+utl::span<uint8_t>{rows}.subspan(1).Map(Sum);  // a Result: subspan() can fail
 
 constexpr auto kPins = utl::make_array(uint8_t{2}, uint8_t{3});  // utl::array<uint8_t, 2>
 ```
@@ -299,7 +299,7 @@ elements, which `resize()` does; and `reserve()`, `shrink_to_fit()`, `swap()`, `
 ### flash_span
 
 ```cpp
-constexpr uint8_t kSmiley[] PROGMEM = {0x3c, 0x42, 0xa5, 0x81, 0xa5, 0x99, 0x42, 0x3c};
+constexpr uint8_t kSmiley[] PROGMEM{0x3c, 0x42, 0xa5, 0x81, 0xa5, 0x99, 0x42, 0x3c};
 
 utl::flash_span<uint8_t> const smiley(kSmiley);  // explicit: the array lies in flash
 for (uint8_t const row : smiley) { ... }         // each row read from flash
@@ -316,7 +316,7 @@ RAM to refer to; so `T` is trivially copyable, and not `const`, as nothing write
 Its names are those of `span`, and `at()`, `first()`, `last()` and `subspan()` return a `Result`
 as there; `[]`, `front()` and `back()` are [checked](#checked-access).
 
-It is made of a C array or a `utl::array` only explicitly, `flash_span<uint8_t>(kSmiley)`, as the
+It is made of a C array or a `utl::array` only explicitly, `flash_span<uint8_t>{kSmiley}`, as the
 type of an array does not tell where it lies: one of an array in RAM reads whatever lies in flash
 at that address, and nothing stops it. Flash beyond 64 KB, which `pgm_read_byte_far()` reads on a
 Mega, is left out, as Utl is for the Uno.
@@ -329,7 +329,7 @@ utl::spsc_queue<uint8_t, 16> received;           // 16 bytes and two counts, 18 
 ISR(USART_RX_vect) { received.push(UDR0); }      // a Status: ok, or IndexError::kFull
 
 void loop() {
-  while (utl::optional<uint8_t> const byte = received.pop()) {
+  while (utl::optional<uint8_t> const byte{received.pop()}) {
     Handle(*byte);
   }
 }
@@ -356,7 +356,7 @@ core: two producers, or threads on cores of their own, need more than this. A gl
 ```cpp
 utl::optional<uint8_t> FindRow(uint8_t value);  // returns utl::nullopt if there is none
 
-if (utl::optional<uint8_t> const row = FindRow(0x3c)) { Use(*row); }
+if (utl::optional<uint8_t> const row{FindRow(0x3c)}) { Use(*row); }
 FindRow(0x3c).ValueOr(0);
 FindRow(0x3c).value();                         // a Result: OptionalError::kEmpty if none
 FindRow(0x3c).OkOr(PanelError::kNoSuchRow);  // a Result, with an error of your own
@@ -377,7 +377,7 @@ unless the predicate holds.
 ```cpp
 utl::optional<Led&> FindLed(uint8_t pin);  // a reference, or utl::nullopt
 
-if (utl::optional<Led&> const led = FindLed(13)) { led->On(); }
+if (utl::optional<Led&> const led{FindLed(13)}) { led->On(); }
 FindLed(13).ValueOr(spare).On();  // the LED, or the spare itself, not a copy
 ```
 
@@ -404,7 +404,7 @@ class Panel {
   utl::reference_wrapper<Display> display_;  // not Display&, not Display*
 };
 
-utl::array<utl::reference_wrapper<Led>, 2> leds = {{red, green}};
+utl::array<utl::reference_wrapper<Led>, 2> leds{{red, green}};
 auto const read_only = utl::cref(red);  // a utl::reference_wrapper<Led const>
 ```
 
@@ -426,7 +426,7 @@ void ForEachLed(utl::function_ref<void(Led&)> f) {  // no template, and no heap
   }
 }
 
-uint8_t on = 0;
+uint8_t on{0};
 ForEachLed([&on](Led& led) { on += led.IsOn(); });  // a lambda with its captures
 ForEachLed(SwitchOff);                              // or a function
 ```
@@ -519,7 +519,7 @@ utl::Status Execute(utl::string_view line) {
 
 line.find('=');  // 4 in "text=Hi", or utl::string_view::npos
 
-utl::flash_string_view const keyword = F("text=");
+utl::flash_string_view const keyword{F("text=")};
 for (char const c : keyword) { ... }  // each char read from flash
 ```
 
@@ -538,8 +538,8 @@ standard does; `compare()` gives an `int8_t`, -1, 0 or 1, not an `int`. `starts_
 
 ```cpp
 // "speed=42" typed on Serial: the number after the "=".
-utl::string_view rest = line.substr(6).ValueOr("");
-utl::Result<uint8_t> const speed = utl::from_chars<uint8_t>(rest);  // rest is "" now
+utl::string_view rest{line.substr(6).ValueOr("")};
+utl::Result<uint8_t> const speed{utl::from_chars<uint8_t>(rest)};  // rest is "" now
 
 // A number on a display, without Print.
 utl::array<char, 6> buffer;
@@ -623,7 +623,7 @@ examples are built with it to show that utl does not depend on it.
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
 | Keypad | 2484 | 2484 | 2802 | 212 | 194 | 212 |
-| SelfCheck | 20586 | 20586 | 23552 | 354 | 336 | 368 |
+| SelfCheck | 20582 | 20582 | 23552 | 354 | 336 | 368 |
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the
 plugin; `checked` is `ram` with `UTL_CHECK_ACCESS` at 1. `SelfCheck` checks more in `checked`,

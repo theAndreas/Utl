@@ -15,11 +15,11 @@ namespace self_check {
 namespace {
 
 void CheckOptional() {
-  utl::optional<uint8_t> const none = FindCode(42);
-  utl::optional<uint8_t> const found = FindCode(7);
+  utl::optional<uint8_t> const none{FindCode(42)};
+  utl::optional<uint8_t> const found{FindCode(7)};
 
   Check(!none.HasValue() && !none && none == utl::nullopt &&
-            utl::optional<uint8_t>() == none,
+            utl::optional<uint8_t>{} == none,
         F("optional is empty"));
   Check(found.HasValue() && static_cast<bool>(found) && *found == 2 &&
             found == uint8_t{2} && found != none,
@@ -34,7 +34,7 @@ void CheckOptional() {
             found.OkOr(AlphaError::kSecond).ValueOr(0) == 2,
         F("optional::OkOr"));
 
-  utl::optional<uint8_t> changed = found;
+  utl::optional<uint8_t> changed{found};
   changed.reset();
   Check(!changed.HasValue(), F("optional::reset"));
   changed.emplace(5);
@@ -46,7 +46,7 @@ void CheckOptional() {
   changed = {};
   Check(!changed.HasValue(), F("optional = {} is empty"));
 
-  uint8_t calls = 0;
+  uint8_t calls{0};
   auto const find_again = [](uint8_t index) { return FindCode(index); };
   Check(FindCode(1).AndThen(find_again) == uint8_t{1} &&
             found.AndThen(find_again) == utl::nullopt,
@@ -60,7 +60,7 @@ void CheckOptional() {
         F("optional::Map"));
   auto const three = [&calls] {
     ++calls;
-    return utl::optional<uint8_t>(3);
+    return utl::optional<uint8_t>{3};
   };
   Check(none.OrElse(three) == uint8_t{3} && calls == 1 &&
             found.OrElse(three) == uint8_t{2} && calls == 1,
@@ -79,16 +79,16 @@ utl::optional<uint8_t&> FindRow(utl::array<uint8_t, 3>& rows, uint8_t wanted) {
 }
 
 void CheckOptionalReference() {
-  utl::array<uint8_t, 3> rows = {{codes[0], codes[1], codes[2]}};
-  uint8_t spare = 9;
-  utl::optional<uint8_t&> const none = FindRow(rows, 42);
-  utl::optional<uint8_t&> const found = FindRow(rows, 7);
+  utl::array<uint8_t, 3> rows{{codes[0], codes[1], codes[2]}};
+  uint8_t spare{9};
+  utl::optional<uint8_t&> const none{FindRow(rows, 42)};
+  utl::optional<uint8_t&> const found{FindRow(rows, 7)};
 
   Check(!none && none == utl::nullopt && found && &*found == &rows[2],
         F("optional<T&> is empty or refers"));
   *found = 8;
   Check(rows[2] == 8 && found == uint8_t{8}, F("optional<T&> writes through"));
-  utl::optional<uint8_t&> rebound = found;
+  utl::optional<uint8_t&> rebound{found};
   rebound = spare;
   Check(&*rebound == &spare && rows[2] == 8,
         F("optional<T&> rebinds when assigned"));

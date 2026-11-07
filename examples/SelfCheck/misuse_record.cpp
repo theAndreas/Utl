@@ -10,8 +10,8 @@
 namespace self_check {
 namespace {
 
-uint8_t count = 0;
-utl::Misuse last = utl::Misuse::kResultValue;
+uint8_t count{0};
+utl::Misuse last{utl::Misuse::kResultValue};
 
 }  // namespace
 

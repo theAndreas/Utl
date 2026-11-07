@@ -42,7 +42,7 @@ extern char const kCharconvErrorGroup[] PROGMEM;
 /*! \brief Returns the group of a CharconvError, for argument-dependent lookup.
  */
 constexpr ErrorGroup GetErrorGroup(CharconvError) {
-  return ErrorGroup(kCharconvErrorGroup);
+  return ErrorGroup{kCharconvErrorGroup};
 }
 
 /*!

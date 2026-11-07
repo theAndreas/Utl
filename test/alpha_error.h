@@ -26,7 +26,7 @@ enum class AlphaError : uint8_t {
 extern char const kAlphaErrorGroup[] PROGMEM;
 
 constexpr utl::ErrorGroup GetErrorGroup(AlphaError) {
-  return utl::ErrorGroup(kAlphaErrorGroup);
+  return utl::ErrorGroup{kAlphaErrorGroup};
 }
 
 // Turns on the texts of the group: until then its errors print their codes.

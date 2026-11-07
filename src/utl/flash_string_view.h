@@ -31,7 +31,7 @@ namespace utl {
  * pointer into RAM cannot be passed by mistake:
  *
  * \code{.cpp}
- * utl::flash_string_view const keyword = F("text=");
+ * utl::flash_string_view const keyword{F("text=")};
  * if (line.starts_with(keyword)) { ... }  // line, a string_view in RAM
  * if (line == F("clear")) { ... }
  * \endcode
@@ -55,7 +55,7 @@ class basic_flash_string_view {
   using size_type = size_t; /*!< The type of a size. */
 
   /*! \brief What find() returns when it finds nothing. */
-  static constexpr size_type npos = static_cast<size_type>(-1);
+  static constexpr size_type npos{static_cast<size_type>(-1)};
 
   /*! \brief Walks the chars, reading each from flash. */
   class const_iterator {
@@ -65,7 +65,7 @@ class basic_flash_string_view {
      *
      * \param[in] position The address of a char in flash.
      */
-    explicit const_iterator(CharT const* position) : position_(position) {}
+    explicit const_iterator(CharT const* position) : position_{position} {}
 
     /*! \brief Returns the char, read from flash. */
     CharT operator*() const {
@@ -105,7 +105,7 @@ class basic_flash_string_view {
   using iterator = const_iterator; /*!< The same: a view cannot write. */
 
   /*! \brief Makes an empty view, with no data. */
-  constexpr basic_flash_string_view() : data_(nullptr), size_(0) {}
+  constexpr basic_flash_string_view() : data_{nullptr}, size_{0} {}
 
   /*!
    * \brief Makes a view of the chars of a text in flash up to its `'\0'`.
@@ -130,7 +130,7 @@ class basic_flash_string_view {
    * \param[in] size The number of chars.
    */
   basic_flash_string_view(__FlashStringHelper const* data, size_type size)
-      : data_(reinterpret_cast<CharT const*>(data)), size_(size) {}
+      : data_{reinterpret_cast<CharT const*>(data)}, size_{size} {}
 
   /*!
    * \brief Returns the text in flash, for `Serial.print()`.
@@ -151,10 +151,10 @@ class basic_flash_string_view {
   constexpr bool empty() const { return size_ == 0; }
 
   /*! \brief Returns an iterator to the first char. */
-  const_iterator begin() const { return const_iterator(data_); }
+  const_iterator begin() const { return const_iterator{data_}; }
 
   /*! \brief Returns an iterator past the last char. */
-  const_iterator end() const { return const_iterator(data_ + size_); }
+  const_iterator end() const { return const_iterator{data_ + size_}; }
 
   /*!
    * \brief Returns the char at `index`, unchecked.
@@ -215,9 +215,9 @@ class basic_flash_string_view {
     if (position > size_) {
       return IndexError::kOutOfRange;
     }
-    size_type const rest = size_ - position;
-    return basic_flash_string_view(data_ + position,
-                                   count < rest ? count : rest);
+    size_type const rest{size_ - position};
+    return basic_flash_string_view{data_ + position,
+                                   count < rest ? count : rest};
   }
 
   /*!
@@ -253,7 +253,7 @@ class basic_flash_string_view {
     if (text.size() > size_) {
       return npos;
     }
-    for (size_type index = position; index <= size_ - text.size(); ++index) {
+    for (size_type index{position}; index <= size_ - text.size(); ++index) {
       if (memcmp_P(text.data(), data_ + index, text.size()) == 0) {
         return index;
       }
@@ -269,7 +269,7 @@ class basic_flash_string_view {
    * \return The position, or npos if there is none.
    */
   size_type find(CharT c, size_type position = 0) const {
-    for (size_type index = position; index < size_; ++index) {
+    for (size_type index{position}; index < size_; ++index) {
       if (Read(index) == c) {
         return index;
       }
@@ -287,7 +287,7 @@ class basic_flash_string_view {
     if (a.size_ != b.size_) {
       return false;
     }
-    for (size_type index = 0; index < a.size_; ++index) {
+    for (size_type index{0}; index < a.size_; ++index) {
       if (a.Read(index) != b.Read(index)) {
         return false;
       }
@@ -316,7 +316,7 @@ class basic_flash_string_view {
   friend class basic_string_view<CharT>;
 
   basic_flash_string_view(CharT const* data, size_type size)
-      : data_(data), size_(size) {}
+      : data_{data}, size_{size} {}
 
   bool Equals(basic_string_view<CharT> text) const {
     return text.size() == size_ && memcmp_P(text.data(), data_, size_) == 0;

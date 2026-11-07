@@ -30,21 +30,21 @@ struct Color {
 };
 
 struct Pin {
-  explicit constexpr Pin(uint8_t number_in) : number(number_in) {}
+  explicit constexpr Pin(uint8_t number_in) : number{number_in} {}
   uint8_t number;
 };
 
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-constexpr uint8_t kRows[] PROGMEM = {0x3c, 0x42, 0xa5, 0x81};
+constexpr uint8_t kRows[] PROGMEM{0x3c, 0x42, 0xa5, 0x81};
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-constexpr uint16_t kSteps[] PROGMEM = {100, 200, 400};
+constexpr uint16_t kSteps[] PROGMEM{100, 200, 400};
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-constexpr int32_t kOffsets[] PROGMEM = {-70000, 70000};
+constexpr int32_t kOffsets[] PROGMEM{-70000, 70000};
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-constexpr Color kColors[] PROGMEM = {{255, 0, 0}, {0, 128, 255}};
+constexpr Color kColors[] PROGMEM{{255, 0, 0}, {0, 128, 255}};
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-constexpr Pin kPins[] PROGMEM = {Pin(2), Pin(13)};
-constexpr utl::array<uint8_t, 3> kArray PROGMEM = {{7, 8, 9}};
+constexpr Pin kPins[] PROGMEM{Pin{2}, Pin{13}};
+constexpr utl::array<uint8_t, 3> kArray PROGMEM{{7, 8, 9}};
 
 static_assert(sizeof(flash_span<uint8_t>) == sizeof(void*) + sizeof(size_t));
 static_assert(std::is_trivially_copyable_v<flash_span<Color>>);
@@ -59,7 +59,7 @@ static_assert(!std::is_constructible_v<flash_span<uint16_t>, Rows>);
 
 constexpr flash_span<uint8_t> kRowsSpan(kRows);
 static_assert(kRowsSpan.size() == 4 && kRowsSpan.size_bytes() == 4);
-static_assert(flash_span<uint16_t>(kSteps).size_bytes() == 6);
+static_assert(flash_span<uint16_t>{kSteps}.size_bytes() == 6);
 
 template <typename T>
 std::vector<T> Read(flash_span<T> elements) {
@@ -71,29 +71,29 @@ std::vector<T> Read(flash_span<T> elements) {
 }
 
 TEST(FlashSpanTest, ReadsEachWidth) {
-  flash_span<uint8_t> const rows(kRows);
-  flash_span<uint16_t> const steps(kSteps);
-  flash_span<int32_t> const offsets(kOffsets);
-  flash_span<Color> const colors(kColors);
+  flash_span<uint8_t> const rows{kRows};
+  flash_span<uint16_t> const steps{kSteps};
+  flash_span<int32_t> const offsets{kOffsets};
+  flash_span<Color> const colors{kColors};
   EXPECT_EQ(rows[2], 0xa5);
   EXPECT_EQ(steps[1], 200);
   EXPECT_EQ(offsets[0], -70000);
   EXPECT_EQ(colors[1].blue, 255);
-  EXPECT_EQ(flash_span<Pin>(kPins)[1].number, 13);
+  EXPECT_EQ(flash_span<Pin>{kPins}[1].number, 13);
 }
 
 TEST(FlashSpanTest, GoesThroughARangeBasedFor) {
-  EXPECT_EQ(Read(flash_span<uint8_t>(kRows)),
+  EXPECT_EQ(Read(flash_span<uint8_t>{kRows}),
             (std::vector<uint8_t>{0x3c, 0x42, 0xa5, 0x81}));
-  EXPECT_EQ(Read(flash_span<uint16_t>(kSteps)),
+  EXPECT_EQ(Read(flash_span<uint16_t>{kSteps}),
             (std::vector<uint16_t>{100, 200, 400}));
-  EXPECT_TRUE(Read(flash_span<uint8_t>()).empty());
+  EXPECT_TRUE(Read(flash_span<uint8_t>{}).empty());
 }
 
 TEST(FlashSpanTest, IsMadeOfAnArrayOrAPointerAndASize) {
-  flash_span<uint8_t> const of_array(kArray);
+  flash_span<uint8_t> const of_array{kArray};
   EXPECT_EQ(Read(of_array), (std::vector<uint8_t>{7, 8, 9}));
-  flash_span<uint8_t> const of_pointer(kRows + 1, 2);
+  flash_span<uint8_t> const of_pointer{kRows + 1, 2};
   EXPECT_EQ(Read(of_pointer), (std::vector<uint8_t>{0x42, 0xa5}));
   EXPECT_EQ(of_pointer.data(), kRows + 1);
   flash_span<uint8_t> const none;
@@ -102,7 +102,7 @@ TEST(FlashSpanTest, IsMadeOfAnArrayOrAPointerAndASize) {
 }
 
 TEST(FlashSpanTest, GivesItsElements) {
-  flash_span<uint16_t> const steps(kSteps);
+  flash_span<uint16_t> const steps{kSteps};
   EXPECT_FALSE(steps.empty());
   EXPECT_EQ(steps.front(), 100);
   EXPECT_EQ(steps.back(), 400);
@@ -111,7 +111,7 @@ TEST(FlashSpanTest, GivesItsElements) {
 }
 
 TEST(FlashSpanTest, TakesAPart) {
-  flash_span<uint8_t> const rows(kRows);
+  flash_span<uint8_t> const rows{kRows};
   EXPECT_EQ(Read(rows.first(2).value()), (std::vector<uint8_t>{0x3c, 0x42}));
   EXPECT_EQ(Read(rows.last(1).value()), (std::vector<uint8_t>{0x81}));
   EXPECT_EQ(Read(rows.subspan(3).value()), (std::vector<uint8_t>{0x81}));
@@ -129,7 +129,7 @@ TEST(FlashSpanTest, TakesAPart) {
 }
 
 TEST(FlashSpanTest, ComparesIterators) {
-  flash_span<uint8_t> const rows(kRows);
+  flash_span<uint8_t> const rows{kRows};
   auto position = rows.begin();
   EXPECT_TRUE(position == rows.begin());
   EXPECT_TRUE(position != rows.end());

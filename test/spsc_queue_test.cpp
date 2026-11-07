@@ -62,7 +62,7 @@ TEST(SpscQueueTest, TakesInTheOrderAdded) {
 // one not pushed.
 template <size_t N>
 int PushFrom(spsc_queue<uint8_t, N>& queue, int first, int last) {
-  int next = first;
+  int next{first};
   while (next < last && queue.push(static_cast<uint8_t>(next)).IsOk()) {
     ++next;
   }
@@ -72,8 +72,8 @@ int PushFrom(spsc_queue<uint8_t, N>& queue, int first, int last) {
 // Pops each, and returns how many came in order from `first` on.
 template <size_t N>
 int PopInOrder(spsc_queue<uint8_t, N>& queue, int first) {
-  int next = first;
-  while (utl::optional<uint8_t> const value = queue.pop()) {
+  int next{first};
+  while (utl::optional<uint8_t> const value{queue.pop()}) {
     if (*value != static_cast<uint8_t>(next)) {
       break;
     }
@@ -98,14 +98,14 @@ TEST(SpscQueueTest, CountsOnPastTheWrapOfAByte) {
   // 300 through a queue of 4, three at a time: the counts wrap at 256, and
   // their difference still says how many it holds.
   Keys keys;
-  int next_in = 0;
-  int next_out = 0;
-  bool sizes_right = true;
+  int next_in{0};
+  int next_out{0};
+  bool sizes_right{true};
   while (next_out < 300) {
     next_in = PushFrom(keys, next_in, std::min(next_in + 3, 300));
     sizes_right =
         sizes_right && keys.size() == static_cast<size_t>(next_in - next_out);
-    int const popped = PopInOrder(keys, next_out);
+    int const popped{PopInOrder(keys, next_out)};
     ASSERT_EQ(popped, next_in - next_out);
     next_out += popped;
   }
@@ -135,7 +135,7 @@ TEST(SpscQueueTest, ClearsWhatItHolds) {
 TEST(SpscQueueTest, CarriesAStruct) {
   spsc_queue<Event, 2> events;
   EXPECT_TRUE(events.push(Event{1, 1000}).IsOk());
-  utl::optional<Event> const event = events.pop();
+  utl::optional<Event> const event{events.pop()};
   ASSERT_TRUE(event.HasValue());
   EXPECT_EQ(event->kind, 1);
   EXPECT_EQ(event->value, 1000);

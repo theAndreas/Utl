@@ -19,24 +19,24 @@ using utl::span;
 namespace {
 
 void CheckArray() {
-  utl::array<uint8_t, 3> rows = {{codes[0], codes[1], codes[2]}};
+  utl::array<uint8_t, 3> rows{{codes[0], codes[1], codes[2]}};
 
   Check(rows.size() == 3 && !rows.empty(), F("array::size"));
   Check(rows[2] == 7 && rows.front() == 0 && rows.back() == 7,
         F("array::operator[], front, back"));
-  uint16_t sum = 0;
+  uint16_t sum{0};
   for (uint8_t const row : rows) {
     sum += row;
   }
   Check(sum == 8, F("array in a range-based for"));
   Check(rows.at(2).ValueOr(0) == 7, F("array::at"));
-  Result<uint8_t> const beyond = rows.at(3);
+  Result<uint8_t> const beyond{rows.at(3)};
   PrintStatus(beyond.status());
   Check(beyond.status() == IndexError::kOutOfRange,
         F("array::at beyond the end"));
   Check(rows.data() == &rows.front(), F("array::data"));
 
-  utl::array<uint8_t, 3> copy = rows;
+  utl::array<uint8_t, 3> copy{rows};
   Check(copy == rows, F("array copies and compares"));
   copy.fill(5);
   Check(copy != rows && copy[0] == 5 && copy[2] == 5, F("array::fill"));
@@ -44,7 +44,7 @@ void CheckArray() {
 
 // Takes a C array, a utl::array and a span alike, through a span of const.
 uint16_t Sum(span<uint8_t const> values) {
-  uint16_t sum = 0;
+  uint16_t sum{0};
   for (uint8_t const value : values) {
     sum += value;
   }
@@ -52,13 +52,13 @@ uint16_t Sum(span<uint8_t const> values) {
 }
 
 void CheckSpan() {
-  utl::array<uint8_t, 4> rows = {{codes[0], codes[1], codes[2], 3}};
-  utl::array<uint8_t, 4> const& const_rows = rows;
+  utl::array<uint8_t, 4> rows{{codes[0], codes[1], codes[2], 3}};
+  utl::array<uint8_t, 4> const& const_rows{rows};
   // The C array is what this checks a span of.
-  uint8_t c_array[] = {codes[2], codes[2]};  // NOLINT(modernize-avoid-c-arrays)
-  span<uint8_t> const all = rows;
+  uint8_t c_array[]{codes[2], codes[2]};  // NOLINT(modernize-avoid-c-arrays)
+  span<uint8_t> const all{rows};
 
-  Check(span<uint8_t>().empty() && span<uint8_t>().data() == nullptr,
+  Check(span<uint8_t>{}.empty() && span<uint8_t>{}.data() == nullptr,
         F("span() is empty"));
   Check(all.size() == 4 && all.data() == rows.data() && all.size_bytes() == 4,
         F("span of an array"));
@@ -98,8 +98,8 @@ utl::inplace_vector<uint8_t, 4> pressed;
 // destroyed once.
 struct Tracked {
   static uint8_t alive;
-  explicit Tracked(uint8_t code_in) : code(code_in) { ++alive; }
-  Tracked(Tracked const& other) : code(other.code) { ++alive; }
+  explicit Tracked(uint8_t code_in) : code{code_in} { ++alive; }
+  Tracked(Tracked const& other) : code{other.code} { ++alive; }
   Tracked& operator=(Tracked const&) = default;
   ~Tracked() { --alive; }
   uint8_t code;
@@ -115,7 +115,7 @@ void CheckInplaceVector() {
         F("inplace_vector made when compiled"));
 
   Check(codes_kept.push_back(9).IsOk(), F("inplace_vector::push_back"));
-  utl::Status const full = codes_kept.push_back(10);
+  utl::Status const full{codes_kept.push_back(10)};
   PrintStatus(full);
   Check(full == IndexError::kFull && codes_kept.size() == 4,
         F("inplace_vector::push_back when full"));
@@ -138,7 +138,7 @@ void CheckInplaceVector() {
     utl::inplace_vector<Tracked, 3> tracked;
     static_cast<void>(tracked.emplace_back(codes[1]));
     static_cast<void>(tracked.emplace_back(codes[2]));
-    utl::inplace_vector<Tracked, 3> const copy = tracked;
+    utl::inplace_vector<Tracked, 3> const copy{tracked};
     tracked.erase(tracked.begin());
     Check(Tracked::alive == 3 && copy.size() == 2 && tracked[0].code == 7,
           F("inplace_vector of elements with a destructor"));
