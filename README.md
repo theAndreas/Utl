@@ -9,8 +9,9 @@ standard where it has an answer, and checked where the standard leaves a call un
   library or sketch adds without changing this one.
 - **Containers**: `array`, `span` and `make_array`, as in the standard, and `inplace_vector`, as
   in C++26, a vector without the heap, except that what can go out of range or be full returns a
-  `Result` or a `Status` rather than being undefined or throwing; and `flash_span`, a span of a
-  table in flash, which the standard does not know.
+  `Result` or a `Status` rather than being undefined or throwing; and, which the standard does not
+  know, `flash_span`, a span of a table in flash, and `spsc_queue`, a queue from an interrupt to
+  `loop()` without turning interrupts off.
 - **`optional`**, a value or none, as in the standard, except that `value()` of an empty one
   returns a `Result` rather than throwing; also of a reference, `optional<T&>`, as in C++26.
 - **`reference_wrapper`**, a reference that copies, as in the standard, for a member that refers to
@@ -320,6 +321,36 @@ type of an array does not tell where it lies: one of an array in RAM reads whate
 at that address, and nothing stops it. Flash beyond 64 KB, which `pgm_read_byte_far()` reads on a
 Mega, is left out, as Utl is for the Uno.
 
+### spsc_queue
+
+```cpp
+utl::spsc_queue<uint8_t, 16> received;           // 16 bytes and two counts, 18 bytes
+
+ISR(USART_RX_vect) { received.push(UDR0); }      // a Status: ok, or IndexError::kFull
+
+void loop() {
+  while (utl::optional<uint8_t> const byte = received.pop()) {
+    Handle(*byte);
+  }
+}
+```
+
+`spsc_queue<T, N>` (`spsc_queue.h`) carries elements from one producer to one consumer, such as an
+interrupt and `loop()`, in the order added, without turning interrupts off. Each side writes a
+count of its own, a byte, which the other side reads at once on the AVR: `push()` writes the
+element, then its count, `pop()` reads the element, then its count, and `__atomic_signal_fence()`
+keeps the compiler to that order, with no instruction of its own. The counts run on and wrap, and
+an element's place is its count masked: so `N` is a power of two from 1 to 128, and all `N` places
+are used. In the interrupt `push()` is a test, a store and a count, with no `cli()`.
+
+`push()` takes the element by value, so that a register passes as it is, and returns a `Status`
+with `IndexError::kFull` when full, which leaves it out; `pop()` and `front()` return an `optional`,
+as empty is no error. `size()`, `empty()` and `full()` say what is now, which the other side may
+change at once. `T` is trivially copyable, so that copying it in an interrupt runs no code of its
+own, and has a default constructor, for the `optional`. One producer and one consumer, on one
+core: two producers, or threads on cores of their own, need more than this. A global one lies in
+`.bss` and costs no code to set up.
+
 ## optional
 
 ```cpp
@@ -586,7 +617,7 @@ examples are built with it to show that utl does not depend on it.
 | Example | Flash, ram | Flash, flash | Flash, checked | RAM, ram | RAM, flash | RAM, checked |
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
-| SelfCheck | 20146 | 20146 | 23106 | 343 | 325 | 357 |
+| SelfCheck | 20586 | 20586 | 23552 | 354 | 336 | 368 |
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the
 plugin; `checked` is `ram` with `UTL_CHECK_ACCESS` at 1. `SelfCheck` checks more in `checked`,
