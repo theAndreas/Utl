@@ -37,7 +37,7 @@ enum class Misuse : uint8_t {
    */
   kIndex,
   /*!
-   * \brief `front()` or `back()` of an empty span, string_view or
+   * \brief `front()` or `back()` of an empty span, flash_span, string_view or
    *        inplace_vector, or `pop_back()` of an empty one.
    */
   kEmpty,

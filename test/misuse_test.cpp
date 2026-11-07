@@ -21,6 +21,7 @@
 #include <Arduino.h>
 #include <utl/array.h>
 #include <utl/constant_wrapper.h>
+#include <utl/flash_span.h>
 #include <utl/function_ref.h>
 #include <utl/inplace_function.h>
 #include <utl/inplace_vector.h>
@@ -215,6 +216,23 @@ TEST(MisuseTest, ReportsAMisusedInplaceVector) {
               EXPECT_EQ(three, (Bytes{1, 2}));
             }),
             "utl: [] beyond the end\r\n");
+}
+
+// What follows each report is the read unchecked: of the array that is there
+// all the same, as the views below see only part of it.
+TEST(MisuseTest, ReportsAMisusedFlashSpan) {
+  EXPECT_EQ(Reported([] {
+              static constexpr utl::array<uint8_t, 2> kRows = {{1, 2}};
+              utl::flash_span<uint8_t> const one(kRows.data(), 1);
+              // Empty, after the first: back() reads the one before.
+              utl::flash_span<uint8_t> const none(kRows.data() + 1, 0);
+              EXPECT_EQ(one[1], 2);
+              EXPECT_EQ(none.front(), 2);
+              EXPECT_EQ(none.back(), 1);
+            }),
+            "utl: [] beyond the end\r\n"
+            "utl: front(), back() or pop_back() when empty\r\n"
+            "utl: front(), back() or pop_back() when empty\r\n");
 }
 
 TEST(MisuseTest, RightAccessIsNotReported) {
