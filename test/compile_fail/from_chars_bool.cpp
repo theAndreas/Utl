@@ -9,6 +9,6 @@
 
 void Case() {
   char const text[] = "1";
-  bool value = false;
+  bool value{false};
   static_cast<void>(utl::from_chars(text, text + 1, value));
 }

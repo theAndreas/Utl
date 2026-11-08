@@ -16,7 +16,7 @@ namespace {
 using utl::reference_wrapper;
 
 struct Base {
-  int id = 0;
+  int id{0};
 };
 struct Derived : Base {};
 
@@ -26,7 +26,7 @@ int* AddressOf(int& object) { return &object; }
 // A class that refers to an object another owns, the use it is made for.
 class Holder {
  public:
-  explicit Holder(int& counter) : counter_(counter) {}
+  explicit Holder(int& counter) : counter_{counter} {}
   void Increment() { ++counter_.get(); }
   [[nodiscard]] int const& counter() const { return counter_; }
 
@@ -42,7 +42,7 @@ template <typename T>
 struct RefTakesImpl<T, std::void_t<decltype(utl::ref(std::declval<T>()))>>
     : std::true_type {};
 template <typename T>
-constexpr bool kRefTakes = RefTakesImpl<T>::value;
+constexpr bool kRefTakes{RefTakesImpl<T>::value};
 
 template <typename T, typename = void>
 struct CrefTakesImpl : std::false_type {};
@@ -50,7 +50,7 @@ template <typename T>
 struct CrefTakesImpl<T, std::void_t<decltype(utl::cref(std::declval<T>()))>>
     : std::true_type {};
 template <typename T>
-constexpr bool kCrefTakes = CrefTakesImpl<T>::value;
+constexpr bool kCrefTakes{CrefTakesImpl<T>::value};
 
 // A pointer, and nothing it owns: copied as one, without a destructor of its
 // own.
@@ -94,13 +94,13 @@ static_assert(
 static_assert(std::is_same_v<reference_wrapper<int>::type, int>);
 
 // A reference_wrapper of an object with static storage is a constant.
-int constant_target = 0;
+int constant_target{0};
 constexpr reference_wrapper<int> kConstant(constant_target);
 static_assert(&kConstant.get() == &constant_target);
 
 TEST(ReferenceWrapperTest, RefersToItsObject) {
-  int value = 3;
-  reference_wrapper<int> const wrapper = value;
+  int value{3};
+  reference_wrapper<int> const wrapper{value};
   EXPECT_EQ(&wrapper.get(), &value);
   wrapper.get() = 4;
   EXPECT_EQ(value, 4);
@@ -108,10 +108,12 @@ TEST(ReferenceWrapperTest, RefersToItsObject) {
 }
 
 TEST(ReferenceWrapperTest, CopiesAndRebinds) {
-  int first = 1;
-  int second = 2;
+  int first{1};
+  int second{2};
+  // = rather than braces: what is checked is that an lvalue converts
+  // implicitly.
   reference_wrapper<int> wrapper = first;
-  reference_wrapper<int> const copy = wrapper;
+  reference_wrapper<int> const copy{wrapper};
   EXPECT_EQ(&copy.get(), &first);
   wrapper = second;
   EXPECT_EQ(&wrapper.get(), &second);
@@ -120,17 +122,17 @@ TEST(ReferenceWrapperTest, CopiesAndRebinds) {
 }
 
 TEST(ReferenceWrapperTest, AsAMember) {
-  int counter = 0;
-  int other = 10;
-  Holder holder(counter);
+  int counter{0};
+  int other{10};
+  Holder holder{counter};
   holder.Increment();
   EXPECT_EQ(counter, 1);
 
-  Holder copy = holder;  // copyable, as a T& member would not be
+  Holder copy{holder};  // copyable, as a T& member would not be
   copy.Increment();
   EXPECT_EQ(counter, 2);
 
-  copy = Holder(other);  // assignable, as a T& member would not be
+  copy = Holder{other};  // assignable, as a T& member would not be
   copy.Increment();
   EXPECT_EQ(other, 11);
   EXPECT_EQ(&holder.counter(), &counter);
@@ -138,18 +140,21 @@ TEST(ReferenceWrapperTest, AsAMember) {
 
 TEST(ReferenceWrapperTest, ConvertsAsAPointer) {
   Derived derived;
+  // = rather than braces: what is checked is that it converts implicitly.
   reference_wrapper<Base> const base = derived;
   EXPECT_EQ(&base.get(), &derived);
+  // = rather than braces: what is checked is that it converts implicitly.
   reference_wrapper<Base const> const from_wrapper = utl::ref(derived);
   EXPECT_EQ(&from_wrapper.get(), &derived);
 
-  int value = 5;
+  int value{5};
+  // = rather than braces: what is checked is that it converts implicitly.
   reference_wrapper<int const> const read_only = utl::ref(value);
   EXPECT_EQ(&read_only.get(), &value);
 }
 
 TEST(ReferenceWrapperTest, RefAndCref) {
-  int value = 7;
+  int value{7};
   auto const wrapper = utl::ref(value);
   auto const read_only = utl::cref(value);
   EXPECT_EQ(&wrapper.get(), &value);
@@ -159,9 +164,9 @@ TEST(ReferenceWrapperTest, RefAndCref) {
 }
 
 TEST(ReferenceWrapperTest, InAnArray) {
-  int red = 1;
-  int green = 2;
-  utl::array<reference_wrapper<int>, 2> const leds = {{red, green}};
+  int red{1};
+  int green{2};
+  utl::array<reference_wrapper<int>, 2> const leds{{red, green}};
   for (int& led : leds) {
     led *= 10;
   }

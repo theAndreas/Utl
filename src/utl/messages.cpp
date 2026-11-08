@@ -12,12 +12,12 @@ namespace utl {
 namespace {
 
 // The groups whose texts are on, the last one turned on first.
-Messages* first_messages = nullptr;
+Messages* first_messages{nullptr};
 
 }  // namespace
 
 __FlashStringHelper const* Messages::Find(ErrorGroup group, uint8_t code) {
-  for (Messages const* messages = first_messages; messages != nullptr;
+  for (Messages const* messages{first_messages}; messages != nullptr;
        messages = messages->next_) {
     if (messages->group_ == group) {
       if (code >= messages->count_) {
@@ -31,7 +31,7 @@ __FlashStringHelper const* Messages::Find(ErrorGroup group, uint8_t code) {
 }
 
 void UseMessages(Messages& messages) {
-  for (Messages const* on = first_messages; on != nullptr; on = on->next_) {
+  for (Messages const* on{first_messages}; on != nullptr; on = on->next_) {
     if (on == &messages) {
       return;
     }

@@ -20,7 +20,7 @@ using utl::Status;
 namespace {
 
 void CheckResult() {
-  uint8_t calls = 0;
+  uint8_t calls{0};
 
   Check(GetCode(1).IsOk() && GetCode(1).value() == 1,
         F("Result holds a value"));
@@ -56,17 +56,17 @@ void CheckResult() {
   Check(broken.status() == BetaError::kFirst && calls == 0,
         F("Result::AndThen stops at an error"));
   Status const checked = GetCode(2).AndThen([](uint8_t code) {
-    return code == 7 ? Status::Ok() : Status(AlphaError::kFirst);
+    return code == 7 ? Status::Ok() : Status{AlphaError::kFirst};
   });
   Check(checked.IsOk(), F("Result::AndThen into a Status"));
 
-  Result<uint8_t> const recovered =
-      GetCode(9).OrElse([](Error const&) -> uint8_t { return 3; });
+  Result<uint8_t> const recovered{
+      GetCode(9).OrElse([](Error const&) -> uint8_t { return 3; })};
   Check(recovered.IsOk() && recovered.value() == 3, F("Result::OrElse"));
   calls = 0;
   Result<uint8_t> const kept = GetCode(2).OrElse([&calls](Error const&) {
     ++calls;
-    return Result<uint8_t>(0);
+    return Result<uint8_t>{0};
   });
   Check(kept.value() == 7 && calls == 0, F("Result::OrElse keeps a value"));
 }
@@ -78,19 +78,19 @@ Result<void> StoreCode(uint8_t index, uint8_t& stored) {
 }
 
 void CheckResultVoid() {
-  uint8_t stored = 0;
-  uint8_t calls = 0;
+  uint8_t stored{0};
+  uint8_t calls{0};
 
-  Result<void> const ok = Result<void>::Ok();
-  Result<void> const failed_result = AlphaError::kFirst;
-  Check(ok.IsOk() && ok.error() == nullptr && Result<void>() == ok,
+  Result<void> const ok{Result<void>::Ok()};
+  Result<void> const failed_result{AlphaError::kFirst};
+  Check(ok.IsOk() && ok.error() == nullptr && Result<void>{} == ok,
         F("Result<void>::Ok() is ok"));
   Check(failed_result == AlphaError::kFirst &&
             *failed_result.error() == AlphaError::kFirst,
         F("Result<void> holds its Error"));
 
-  Status const status = failed_result;
-  Result<void> const from_status = Status(BetaError::kFirst);
+  Status const status{failed_result};
+  Result<void> const from_status{Status{BetaError::kFirst}};
   Check(status == AlphaError::kFirst && from_status == BetaError::kFirst &&
             failed_result.status() == AlphaError::kFirst,
         F("Result<void> is a Status, and back"));
@@ -103,10 +103,10 @@ void CheckResultVoid() {
 
   Check(Result<void>::Ok().Map([] { return uint8_t{5}; }).ValueOr(0) == 5,
         F("Result<void>::Map makes a value"));
-  Result<uint8_t> const not_made = failed_result.Map([&calls] {
+  Result<uint8_t> const not_made{failed_result.Map([&calls] {
     ++calls;
     return uint8_t{5};
-  });
+  })};
   Check(not_made.status() == AlphaError::kFirst && calls == 0,
         F("Result<void>::Map keeps the error"));
   Check(failed_result.OrElse([](Error const&) { return Status::Ok(); }).IsOk(),
@@ -123,9 +123,9 @@ Result<uint8_t&> GetRow(utl::array<uint8_t, 3>& rows, uint8_t index) {
 }
 
 void CheckResultReference() {
-  utl::array<uint8_t, 3> rows = {{codes[0], codes[1], codes[2]}};
-  uint8_t spare = 9;
-  Result<uint8_t&> const found = GetRow(rows, 2);
+  utl::array<uint8_t, 3> rows{{codes[0], codes[1], codes[2]}};
+  uint8_t spare{9};
+  Result<uint8_t&> const found{GetRow(rows, 2)};
 
   Check(found.IsOk() && &found.value() == &rows[2],
         F("Result<T&> holds a reference"));

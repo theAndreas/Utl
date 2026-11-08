@@ -17,10 +17,10 @@
 namespace self_check {
 namespace {
 
-constexpr uint8_t kTicks = 200;
+constexpr uint8_t kTicks{200};
 
 utl::spsc_queue<uint8_t, 8> ticks;
-uint8_t volatile next_tick = 0;  // the interrupt's own: the one to push next
+uint8_t volatile next_tick{0};  // the interrupt's own: the one to push next
 
 }  // namespace
 
@@ -32,19 +32,19 @@ void PushTick() {
 }
 
 void CheckSpscQueue() {
-  uint8_t const saved_a = TCCR2A;
-  uint8_t const saved_b = TCCR2B;
-  uint8_t const saved_compare = OCR2A;
-  uint8_t const saved_mask = TIMSK2;
+  uint8_t const saved_a{TCCR2A};
+  uint8_t const saved_b{TCCR2B};
+  uint8_t const saved_compare{OCR2A};
+  uint8_t const saved_mask{TIMSK2};
   TCCR2A = _BV(WGM21);  // CTC: counts to OCR2A, then from 0
   TCCR2B = _BV(CS21);   // a tick every 8 cycles
   OCR2A = 49;
   TIMSK2 = _BV(OCIE2A);
 
-  uint8_t expected = 0;
-  bool in_order = true;
-  bool was_full = false;
-  uint32_t spins = 0;
+  uint8_t expected{0};
+  bool in_order{true};
+  bool was_full{false};
+  uint32_t spins{0};
   while (expected != kTicks && spins < 1000000UL) {
     ++spins;
     if (expected == kTicks / 2 && !was_full) {
@@ -54,7 +54,7 @@ void CheckSpscQueue() {
       }
       was_full = ticks.full();
     }
-    utl::optional<uint8_t> const tick = ticks.pop();
+    utl::optional<uint8_t> const tick{ticks.pop()};
     if (tick) {
       in_order = in_order && *tick == expected;
       expected = static_cast<uint8_t>(expected + 1);

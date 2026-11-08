@@ -34,7 +34,7 @@ extern char const kOptionalErrorGroup[] PROGMEM;
 /*! \brief Returns the group of a OptionalError, for argument-dependent lookup.
  */
 constexpr ErrorGroup GetErrorGroup(OptionalError) {
-  return ErrorGroup(kOptionalErrorGroup);
+  return ErrorGroup{kOptionalErrorGroup};
 }
 
 /*!

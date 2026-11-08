@@ -29,7 +29,7 @@ constexpr auto kMessages PROGMEM =
 void UseCharconvMessages() {
   // The group by its name, a constant: a static whose initializer calls a
   // function would be initialized at run time, with a guard.
-  static Messages messages{ErrorGroup(kCharconvErrorGroup), kMessages};
+  static Messages messages{ErrorGroup{kCharconvErrorGroup}, kMessages};
   UseMessages(messages);
 }
 

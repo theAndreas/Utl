@@ -47,7 +47,7 @@ class initializer_list {  // NOLINT(bugprone-std-namespace-modification)
   using iterator = E const*;
   using const_iterator = E const*;
 
-  constexpr initializer_list() noexcept : array_(nullptr), len_(0) {}
+  constexpr initializer_list() noexcept : array_{nullptr}, len_{0} {}
 
   constexpr size_type size() const noexcept { return len_; }
   constexpr const_iterator begin() const noexcept { return array_; }
@@ -56,7 +56,7 @@ class initializer_list {  // NOLINT(bugprone-std-namespace-modification)
  private:
   // The one the compiler calls for a braced list.
   constexpr initializer_list(const_iterator array, size_type len)
-      : array_(array), len_(len) {}
+      : array_{array}, len_{len} {}
 
   iterator array_;
   size_type len_;

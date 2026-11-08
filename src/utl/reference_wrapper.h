@@ -91,7 +91,7 @@ class reference_wrapper {
                             internal::DeclVal<U*>()))>
   constexpr reference_wrapper(  // NOLINT(runtime/explicit)
       reference_wrapper<U> const& other)
-      : pointer_(__builtin_addressof(other.get())) {}
+      : pointer_{__builtin_addressof(other.get())} {}
 
   /*! \brief Returns the object referred to. */
   constexpr T& get() const { return *pointer_; }
@@ -118,7 +118,7 @@ class reference_wrapper {
  */
 template <typename T>
 constexpr reference_wrapper<T> ref(T& object) {
-  return reference_wrapper<T>(object);
+  return reference_wrapper<T>{object};
 }
 
 /*!
@@ -142,7 +142,7 @@ void ref(T const&&) = delete;
  */
 template <typename T>
 constexpr reference_wrapper<T const> cref(T const& object) {
-  return reference_wrapper<T const>(object);
+  return reference_wrapper<T const>{object};
 }
 
 /*!
@@ -152,7 +152,7 @@ constexpr reference_wrapper<T const> cref(T const& object) {
  */
 template <typename T>
 constexpr reference_wrapper<T const> cref(reference_wrapper<T> wrapper) {
-  return reference_wrapper<T const>(wrapper.get());
+  return reference_wrapper<T const>{wrapper.get()};
 }
 
 /*! \brief Deleted: a temporary would be gone before the first use. */

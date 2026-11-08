@@ -28,26 +28,26 @@ constexpr ErrorGroup kBeta{kBetaErrorGroup};
 
 std::string Printed(Error const& error) {
   StringPrint out;
-  size_t const count = error.PrintTo(out);
+  size_t const count{error.PrintTo(out)};
   EXPECT_EQ(count, out.text.size());
   return out.text;
 }
 
 // An error knows its group by address and its code.
 TEST(ErrorTest, HasGroupAndCode) {
-  Error const error = AlphaError::kSecond;
+  Error const error{AlphaError::kSecond};
   EXPECT_EQ(error.group(), kAlpha);
   EXPECT_EQ(error.code(), 1);
 }
 
 // Equal only if group and code are; codes of two groups may overlap.
 TEST(ErrorTest, ComparesGroupAndCode) {
-  Error const alpha_first = AlphaError::kFirst;
+  Error const alpha_first{AlphaError::kFirst};
   EXPECT_EQ(alpha_first, AlphaError::kFirst);
   EXPECT_EQ(AlphaError::kFirst, alpha_first);
   EXPECT_NE(alpha_first, AlphaError::kSecond);
   EXPECT_NE(alpha_first, BetaError::kFirst);
-  EXPECT_EQ(Error(kBeta, 0), BetaError::kFirst);
+  EXPECT_EQ((Error{kBeta, 0}), BetaError::kFirst);
 }
 
 // The group is its address: an error made in another file is equal.
@@ -56,6 +56,7 @@ TEST(ErrorTest, EqualAcrossTranslationUnits) {
 }
 
 TEST(ErrorTest, IsAssignable) {
+  // = rather than braces: what is checked is that a code converts implicitly.
   Error error = AlphaError::kFirst;
   error = BetaError::kFirst;
   EXPECT_EQ(error, BetaError::kFirst);
@@ -65,7 +66,7 @@ TEST(ErrorTest, IsAssignable) {
 TEST(ErrorTest, SaysWhatWentWrong) {
   UseAlphaMessages();
   EXPECT_STREQ(
-      reinterpret_cast<char const*>(Error(AlphaError::kSecond).Message()),
+      reinterpret_cast<char const*>(Error{AlphaError::kSecond}.Message()),
       "alpha second");
   EXPECT_EQ(Printed(AlphaError::kFirst), "alpha: alpha first");
 }
@@ -73,27 +74,27 @@ TEST(ErrorTest, SaysWhatWentWrong) {
 // A code beyond a group's table of texts prints as a code, and has no text.
 TEST(ErrorTest, CodeBeyondTheTexts) {
   UseAlphaMessages();
-  EXPECT_EQ(Printed(Error(kAlpha, 7)), "alpha: 7");
-  EXPECT_STREQ(reinterpret_cast<char const*>(Error(kAlpha, 7).Message()), "");
+  EXPECT_EQ(Printed(Error{kAlpha, 7}), "alpha: 7");
+  EXPECT_STREQ(reinterpret_cast<char const*>((Error{kAlpha, 7}).Message()), "");
 }
 
 // A group is the address of its name, not its words: another array that
 // says "alpha" is another group.
 TEST(ErrorTest, SameWordsAreAnotherGroup) {
   static char const kOtherAlpha[] = "alpha";
-  EXPECT_NE(ErrorGroup(kOtherAlpha), kAlpha);
-  EXPECT_NE(Error(ErrorGroup(kOtherAlpha), 0), AlphaError::kFirst);
+  EXPECT_NE(ErrorGroup{kOtherAlpha}, kAlpha);
+  EXPECT_NE((Error{ErrorGroup{kOtherAlpha}, 0}), AlphaError::kFirst);
 }
 
 // A group whose texts are off prints its code, every digit of it, and has an
 // empty text.
 TEST(ErrorTest, PrintsCodeWithoutTexts) {
   EXPECT_STREQ(
-      reinterpret_cast<char const*>(Error(BetaError::kFirst).Message()), "");
+      reinterpret_cast<char const*>(Error{BetaError::kFirst}.Message()), "");
   EXPECT_EQ(Printed(BetaError::kFirst), "beta: 0");
-  EXPECT_EQ(Printed(Error(kBeta, 10)), "beta: 10");
-  EXPECT_EQ(Printed(Error(kBeta, 105)), "beta: 105");
-  EXPECT_EQ(Printed(Error(kBeta, 255)), "beta: 255");
+  EXPECT_EQ(Printed(Error{kBeta, 10}), "beta: 10");
+  EXPECT_EQ(Printed(Error{kBeta, 105}), "beta: 105");
+  EXPECT_EQ(Printed(Error{kBeta, 255}), "beta: 255");
 }
 
 // Turning the texts on twice keeps one entry: the list does not loop.

@@ -39,7 +39,7 @@ static_assert(sizeof(utl::inplace_vector<uint8_t, 8>) == 9,
 static_assert(sizeof(utl::string_view) == 4 &&
                   sizeof(utl::flash_string_view) == 4,
               "a string_view is a pointer and a size");
-constexpr utl::array<uint8_t, 3> kConstantRows = {{1, 2, 3}};
+constexpr utl::array<uint8_t, 3> kConstantRows{{1, 2, 3}};
 static_assert(kConstantRows[1] == 2 && kConstantRows.size() == 3,
               "an array is constexpr");
 constexpr auto kMadeRows = utl::make_array(uint8_t{1}, uint8_t{2}, uint8_t{3});

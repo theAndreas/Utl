@@ -35,7 +35,7 @@ namespace utl {
  * ISR(PCINT0_vect) { keys.push(ReadKey()); }  // drops a key when full
  *
  * void loop() {
- *   while (utl::optional<uint8_t> const key = keys.pop()) {
+ *   while (utl::optional<uint8_t> const key{keys.pop()}) {
  *     Handle(*key);
  *   }
  * }
@@ -74,7 +74,9 @@ class spsc_queue {
   using size_type = size_t; /*!< The type of a size. */
 
   /*! \brief Makes an empty queue. */
-  constexpr spsc_queue() : storage_() {}
+  // Not = default, which would not be constexpr, as the counts are volatile.
+  // NOLINTNEXTLINE(modernize-use-equals-default)
+  constexpr spsc_queue() {}
 
   /*! \brief Deleted: the two sides refer to one queue. */
   spsc_queue(spsc_queue const&) = delete;
@@ -94,7 +96,7 @@ class spsc_queue {
    *         `value` out.
    */
   Status push(T value) {
-    uint8_t const pushed = pushed_;
+    uint8_t const pushed{pushed_};
     if (static_cast<uint8_t>(pushed - popped_) == N) {
       return IndexError::kFull;
     }
@@ -113,13 +115,13 @@ class spsc_queue {
    * \return The element, or nullopt if there is none.
    */
   optional<T> pop() {
-    uint8_t const popped = popped_;
+    uint8_t const popped{popped_};
     if (pushed_ == popped) {
       return nullopt;
     }
     // The element is there once pushed_ says so, not before.
     __atomic_signal_fence(__ATOMIC_ACQUIRE);
-    T const value(storage_.elements[popped & kMask]);
+    T const value{storage_.elements[popped & kMask]};
     // The element is read before the count hands its place back.
     __atomic_signal_fence(__ATOMIC_RELEASE);
     popped_ = static_cast<uint8_t>(popped + 1);
@@ -133,7 +135,7 @@ class spsc_queue {
    * \return The element, or nullopt if there is none.
    */
   optional<T> front() const {
-    uint8_t const popped = popped_;
+    uint8_t const popped{popped_};
     if (pushed_ == popped) {
       return nullopt;
     }
@@ -169,22 +171,22 @@ class spsc_queue {
   static constexpr size_type capacity() { return N; }
 
  private:
-  static constexpr uint8_t kMask = N - 1;
+  static constexpr uint8_t kMask{N - 1};
 
   // Room for N elements, none of them made: a union, so that a constexpr
   // constructor makes it by its byte alone, and T needs no constructor here.
   union Storage {
-    constexpr Storage() : none() {}
+    constexpr Storage() : none{} {}
 
     uint8_t none;
     T elements[N];  // NOLINT(modernize-avoid-c-arrays)
   };
 
-  Storage storage_;
+  Storage storage_{};
   // How many were pushed and popped, each written by one side only, and
   // wrapping: their difference is the number held.
-  uint8_t volatile pushed_ = 0;
-  uint8_t volatile popped_ = 0;
+  uint8_t volatile pushed_{0};
+  uint8_t volatile popped_{0};
 };
 
 }  // namespace utl

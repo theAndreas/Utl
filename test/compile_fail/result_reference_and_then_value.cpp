@@ -9,7 +9,7 @@
 #include <utl/result.h>
 
 void Case() {
-  int target = 0;
+  int target{0};
   static_cast<void>(
-      utl::Result<int&>(target).AndThen([](int& v) { return v; }));
+      utl::Result<int&>{target}.AndThen([](int& v) { return v; }));
 }

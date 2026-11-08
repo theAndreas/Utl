@@ -14,7 +14,7 @@ size_t Print::print(__FlashStringHelper const* text) {
 }
 
 size_t Print::print(char const* text) {
-  size_t count = 0;
+  size_t count{0};
   while (*text != '\0') {
     count += write(static_cast<uint8_t>(*text++));
   }

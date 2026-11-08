@@ -21,21 +21,21 @@ using utl::nullopt;
 using utl::optional;
 
 struct Base {
-  int id = 0;
+  int id{0};
 };
 struct Derived : Base {};
 
 // A T without a default constructor, which an optional<T> could not hold.
 class Led {
  public:
-  explicit Led(int pin) : pin_(pin) {}
+  explicit Led(int pin) : pin_{pin} {}
   void On() { on_ = true; }
   [[nodiscard]] int pin() const { return pin_; }
   [[nodiscard]] bool on() const { return on_; }
 
  private:
   int pin_;
-  bool on_ = false;
+  bool on_{false};
 };
 
 // Returns the element of `values` equal to `value`, or none.
@@ -57,7 +57,7 @@ struct ValueOrTakesImpl<
     T, std::void_t<decltype(std::declval<optional<int&>>().ValueOr(
            std::declval<T>()))>> : std::true_type {};
 template <typename T>
-constexpr bool kValueOrTakes = ValueOrTakesImpl<T>::value;
+constexpr bool kValueOrTakes{ValueOrTakesImpl<T>::value};
 
 // A pointer, null if empty, and nothing it owns.
 static_assert(sizeof(optional<int&>) == sizeof(int*));
@@ -80,15 +80,15 @@ static_assert(!std::is_convertible_v<optional<long&>,  // NOLINT
                                      optional<int&>>);
 
 // One of an object with static storage is a constant.
-int constant_target = 0;
+int constant_target{0};
 constexpr optional<int&> kConstant(constant_target);
 static_assert(kConstant.HasValue() && &*kConstant == &constant_target);
-static_assert(!optional<int&>().HasValue());
+static_assert(!optional<int&>{}.HasValue());
 
 TEST(OptionalReferenceTest, EmptyOrAReference) {
-  utl::array<int, 3> values = {{0, 1, 7}};
-  optional<int&> const none = Find(values, 42);
-  optional<int&> const found = Find(values, 7);
+  utl::array<int, 3> values{{0, 1, 7}};
+  optional<int&> const none{Find(values, 42)};
+  optional<int&> const found{Find(values, 7)};
   EXPECT_FALSE(none.HasValue());
   EXPECT_FALSE(static_cast<bool>(none));
   EXPECT_EQ(none, nullopt);
@@ -98,27 +98,27 @@ TEST(OptionalReferenceTest, EmptyOrAReference) {
 }
 
 TEST(OptionalReferenceTest, WritesThrough) {
-  utl::array<int, 3> values = {{0, 1, 7}};
-  optional<int&> const found = Find(values, 7);
+  utl::array<int, 3> values{{0, 1, 7}};
+  optional<int&> const found{Find(values, 7)};
   *found = 8;  // a const optional<int&> still gives an int&
   EXPECT_EQ(values[2], 8);
 
-  Led led(13);
-  optional<Led&> const some = led;
+  Led led{13};
+  optional<Led&> const some{led};
   some->On();
   EXPECT_TRUE(led.on());
   EXPECT_EQ((*some).pin(), 13);
 }
 
 TEST(OptionalReferenceTest, AssigningRebinds) {
-  int first = 1;
-  int second = 2;
-  optional<int&> reference = first;
+  int first{1};
+  int second{2};
+  optional<int&> reference{first};
   reference = second;
   EXPECT_EQ(&*reference, &second);
   EXPECT_EQ(first, 1);  // rebound, not written
 
-  optional<int&> const copy = reference;
+  optional<int&> const copy{reference};
   EXPECT_EQ(&*copy, &second);
 
   reference = nullopt;
@@ -134,26 +134,26 @@ TEST(OptionalReferenceTest, AssigningRebinds) {
 
 TEST(OptionalReferenceTest, ConvertsAsAPointer) {
   Derived derived;
-  optional<Derived&> const some = derived;
-  optional<Base&> const base = some;
+  optional<Derived&> const some{derived};
+  optional<Base&> const base{some};
   EXPECT_EQ(&*base, &derived);
   optional<Derived&> const nothing;
-  optional<Base&> const empty = nothing;
+  optional<Base&> const empty{nothing};
   EXPECT_FALSE(empty.HasValue());
 
-  int value = 4;
-  optional<int const&> const read_only = optional<int&>(value);
+  int value{4};
+  optional<int const&> const read_only{optional<int&>{value}};
   EXPECT_EQ(&*read_only, &value);
   optional<int&> const no_int;
-  optional<int const&> const none = no_int;
+  optional<int const&> const none{no_int};
   EXPECT_FALSE(none.HasValue());
 }
 
 TEST(OptionalReferenceTest, ValueAndOkOrReturnAResult) {
-  int target = 3;
-  optional<int&> const some = target;
+  int target{3};
+  optional<int&> const some{target};
   optional<int&> const none;
-  utl::Result<int&> const value = some.value();
+  utl::Result<int&> const value{some.value()};
   EXPECT_EQ(&value.value(), &target);
   EXPECT_EQ(none.value().status(), utl::OptionalError::kEmpty);
   EXPECT_EQ(&some.OkOr(AlphaError::kFirst).value(), &target);
@@ -161,9 +161,9 @@ TEST(OptionalReferenceTest, ValueAndOkOrReturnAResult) {
 }
 
 TEST(OptionalReferenceTest, ValueOrGivesAReference) {
-  Led led(13);
-  Led spare(7);
-  optional<Led&> const some = led;
+  Led led{13};
+  Led spare{7};
+  optional<Led&> const some{led};
   optional<Led&> const none;
   EXPECT_EQ(&some.ValueOr(spare), &led);
   none.ValueOr(spare).On();  // the spare itself, not a copy
@@ -171,28 +171,27 @@ TEST(OptionalReferenceTest, ValueOrGivesAReference) {
 }
 
 TEST(OptionalReferenceTest, AndThen) {
-  int target = 3;
-  optional<int&> const some = target;
+  int target{3};
+  optional<int&> const some{target};
   optional<int&> const none;
-  auto const twice = [](int& value) { return optional<int>(value * 2); };
+  auto const twice = [](int& value) { return optional<int>{value * 2}; };
   EXPECT_EQ(some.AndThen(twice), 6);
   EXPECT_EQ(none.AndThen(twice), nullopt);
 }
 
 TEST(OptionalReferenceTest, MapGetsTheReference) {
-  int target = 3;
-  optional<int&> const some = target;
+  int target{3};
+  optional<int&> const some{target};
   some.Map([](int& value) { return value += 1; });
   EXPECT_EQ(target, 4);
   // A function that returns a reference gives an optional of one.
-  optional<int&> const same =
-      some.Map([](int& value) -> int& { return value; });
+  optional<int&> const same{some.Map([](int& value) -> int& { return value; })};
   EXPECT_EQ(&*same, &target);
 }
 
 TEST(OptionalReferenceTest, MapCallsNothingWhenEmpty) {
   optional<int&> const none;
-  int calls = 0;
+  int calls{0};
   optional<int> const mapped = none.Map([&calls](int&) {
     ++calls;
     return 1;
@@ -202,34 +201,34 @@ TEST(OptionalReferenceTest, MapCallsNothingWhenEmpty) {
 }
 
 TEST(OptionalReferenceTest, OrElse) {
-  int target = 3;
-  int other = 9;
-  optional<int&> const some = target;
+  int target{3};
+  int other{9};
+  optional<int&> const some{target};
   optional<int&> const none;
-  auto const fallback = [&other] { return optional<int&>(other); };
+  auto const fallback = [&other] { return optional<int&>{other}; };
   EXPECT_EQ(&*none.OrElse(fallback), &other);
   EXPECT_EQ(&*some.OrElse(fallback), &target);
 }
 
 TEST(OptionalReferenceTest, ComparesTheObjects) {
-  int a = 5;
-  int b = 5;
-  int c = 6;
+  int a{5};
+  int b{5};
+  int c{6};
   optional<int&> const none;
-  EXPECT_EQ(optional<int&>(a), optional<int&>(b));  // equal values, two objects
-  EXPECT_NE(optional<int&>(a), optional<int&>(c));
-  EXPECT_NE(optional<int&>(a), none);
-  EXPECT_NE(none, optional<int&>(a));
-  EXPECT_EQ(none, optional<int&>());
-  EXPECT_TRUE(optional<int&>(a) == 5 && 5 == optional<int&>(a));
-  EXPECT_TRUE(optional<int&>(a) != 6 && 6 != optional<int&>(a));
+  EXPECT_EQ(optional<int&>{a}, optional<int&>{b});  // equal values, two objects
+  EXPECT_NE(optional<int&>{a}, optional<int&>{c});
+  EXPECT_NE(optional<int&>{a}, none);
+  EXPECT_NE(none, optional<int&>{a});
+  EXPECT_EQ(none, optional<int&>{});
+  EXPECT_TRUE(optional<int&>{a} == 5 && 5 == optional<int&>{a});
+  EXPECT_TRUE(optional<int&>{a} != 6 && 6 != optional<int&>{a});
   EXPECT_TRUE(none != 5 && !(none == 5));
 }
 
 TEST(OptionalReferenceTest, ValueOrElseGivesAReference) {
-  int target = 3;
-  int other = 9;
-  optional<int&> const some = target;
+  int target{3};
+  int other{9};
+  optional<int&> const some{target};
   optional<int&> const none;
   auto const fallback = [&other]() -> int& { return other; };
   EXPECT_EQ(&some.ValueOrElse(fallback), &target);
@@ -237,10 +236,10 @@ TEST(OptionalReferenceTest, ValueOrElseGivesAReference) {
 }
 
 TEST(OptionalReferenceTest, InspectAndFilterPassTheReferenceOn) {
-  int target = 4;
-  optional<int&> const some = target;
+  int target{4};
+  optional<int&> const some{target};
   optional<int&> const none;
-  int seen = 0;
+  int seen{0};
   auto const look = [&seen](int const& value) { seen = value; };
   EXPECT_EQ(&*some.Inspect(look), &target);
   EXPECT_EQ(seen, 4);

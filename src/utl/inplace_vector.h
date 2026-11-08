@@ -51,14 +51,14 @@ using CountFor = typename CountForImpl<N>::Type;
  */
 template <typename T, size_t N, bool = __is_trivially_copyable(T)>
 union VectorStorage {
-  constexpr VectorStorage() : none() {}
+  constexpr VectorStorage() : none{} {}
 
   uint8_t none;
   T elements[N];  // NOLINT(modernize-avoid-c-arrays)
 };
 template <typename T, size_t N>
 union VectorStorage<T, N, false> {
-  constexpr VectorStorage() : none() {}
+  constexpr VectorStorage() : none{} {}
   // NOLINTNEXTLINE(modernize-use-equals-default): = default would be deleted.
   ~VectorStorage() {}
 
@@ -74,10 +74,8 @@ union VectorStorage<T, N, false> {
  */
 template <typename T, size_t N, bool = __is_trivially_copyable(T)>
 struct VectorBase {
-  constexpr VectorBase() : storage(), length(0) {}
-
-  VectorStorage<T, N> storage;
-  CountFor<N> length;
+  VectorStorage<T, N> storage{};
+  CountFor<N> length{0};
 };
 
 // For elements that are not: each is copied, moved and destroyed itself.
@@ -85,13 +83,11 @@ struct VectorBase {
 // a sketch sees nothing of it.
 template <typename T, size_t N>
 struct VectorBase<T, N, false> {
-  constexpr VectorBase() : storage(), length(0) {}
+  constexpr VectorBase() {}  // NOLINT(modernize-use-equals-default)
 
-  VectorBase(VectorBase const& other) : storage(), length(0) {
-    CopyFrom(other);
-  }
+  VectorBase(VectorBase const& other) { CopyFrom(other); }
 
-  VectorBase(VectorBase&& other) : storage(), length(0) { MoveFrom(other); }
+  VectorBase(VectorBase&& other) { MoveFrom(other); }
 
   VectorBase& operator=(VectorBase const& other) {
     if (this != &other) {
@@ -111,8 +107,8 @@ struct VectorBase<T, N, false> {
 
   ~VectorBase() { DestroyAll(); }
 
-  VectorStorage<T, N> storage;
-  CountFor<N> length;
+  VectorStorage<T, N> storage{};
+  CountFor<N> length{0};
 
   void CopyFrom(VectorBase const& other) {
     for (; length != other.length; ++length) {
@@ -424,14 +420,15 @@ class inplace_vector : private internal::VectorBase<T, N> {
       return IndexError::kFull;
     }
     // Made first, as an argument may refer to an element that moves.
-    T value(static_cast<Args&&>(args)...);
-    T* const target = begin() + index;
+    T value(
+        static_cast<Args&&>(args)...);  // forwarded: () as emplace_back() has
+    T* const target{begin() + index};
     if (target == end()) {
       ::new (internal::InPlace{end()}) T(static_cast<T&&>(value));
     } else {
       // The last moves into room not made yet, the others into elements.
       ::new (internal::InPlace{end()}) T(static_cast<T&&>(end()[-1]));
-      for (pointer to = end() - 1; to != target; --to) {
+      for (pointer to{end() - 1}; to != target; --to) {
         *to = static_cast<T&&>(to[-1]);
       }
       *target = static_cast<T&&>(value);
@@ -486,8 +483,8 @@ class inplace_vector : private internal::VectorBase<T, N> {
     if (!internal::Check(from <= to && to <= this->length, Misuse::kIndex)) {
       return end();
     }
-    pointer kept = begin() + from;
-    for (pointer moved = begin() + to; moved != end(); ++moved, ++kept) {
+    pointer kept{begin() + from};
+    for (pointer moved{begin() + to}; moved != end(); ++moved, ++kept) {
       *kept = static_cast<T&&>(*moved);
     }
     DestroyFrom(static_cast<size_type>(kept - begin()));
@@ -537,8 +534,8 @@ class inplace_vector : private internal::VectorBase<T, N> {
 
   void Append(std::initializer_list<T> values) {
     static_cast<void>(internal::Check(values.size() <= N, Misuse::kIndex));
-    size_type const count = values.size() < N ? values.size() : N;
-    for (T const* value = values.begin(); this->length != count; ++value) {
+    size_type const count{values.size() < N ? values.size() : N};
+    for (T const* value{values.begin()}; this->length != count; ++value) {
       ::new (internal::InPlace{end()}) T(*value);
       ++this->length;
     }
@@ -570,7 +567,7 @@ bool operator==(inplace_vector<T, N> const& a, inplace_vector<T, N> const& b) {
   if (a.size() != b.size()) {
     return false;
   }
-  for (size_t index = 0; index < a.size(); ++index) {
+  for (size_t index{0}; index < a.size(); ++index) {
     if (!(a[index] == b[index])) {
       return false;
     }

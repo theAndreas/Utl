@@ -9,5 +9,5 @@
 #include <utl/optional.h>
 
 void Case() {
-  static_cast<void>(utl::optional<int>(1).Inspect([](int v) { return v > 0; }));
+  static_cast<void>(utl::optional<int>{1}.Inspect([](int v) { return v > 0; }));
 }

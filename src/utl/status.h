@@ -32,9 +32,9 @@ namespace utl {
  *   return utl::Status::Ok();
  * }
  *
- * utl::Status const status = SetChar(c);
+ * utl::Status const status{SetChar(c)};
  * if (status == FontError::kUnknownChar) { ... }
- * if (utl::Error const* error = status.error()) {
+ * if (utl::Error const* error{status.error()}) {
  *   error->group().Name();
  * }
  * \endcode
@@ -51,10 +51,10 @@ namespace utl {
 class Status : public internal::ErrorFluent<Status> {
  public:
   /*! \brief Makes an ok Status; Ok() says the same where it is returned. */
-  constexpr Status() : error_(nullptr) {}
+  constexpr Status() : error_{nullptr} {}
 
   /*! \brief Returns an ok Status. */
-  static constexpr Status Ok() { return Status(); }
+  static constexpr Status Ok() { return Status{}; }
 
   /*!
    * \brief Makes a Status of `error`.
@@ -72,7 +72,7 @@ class Status : public internal::ErrorFluent<Status> {
    *
    * \param[in] code The code; see Error.
    */
-  template <typename Code, typename = decltype(GetErrorGroup(Code()))>
+  template <typename Code, typename = decltype(GetErrorGroup(Code{}))>
   constexpr Status(Code code)  // NOLINT(runtime/explicit)
       : error_(code) {
     // Without it, `return FontError::kUnknownChar;` would need two conversions

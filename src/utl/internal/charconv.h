@@ -26,12 +26,12 @@ namespace internal {
 // and no floating point, where 1 / 2 is not 0.
 template <typename T>
 struct IsCharconvInteger {
-  static constexpr bool kValue =
-      static_cast<T>(1) / static_cast<T>(2) == static_cast<T>(0);
+  static constexpr bool kValue{static_cast<T>(1) / static_cast<T>(2) ==
+                               static_cast<T>(0)};
 };
 template <>
 struct IsCharconvInteger<bool> {
-  static constexpr bool kValue = false;
+  static constexpr bool kValue{false};
 };
 
 /*
@@ -64,7 +64,7 @@ using UnsignedOf = typename UnsignedOfSizeImpl<sizeof(T)>::Type;
 // unsigned compared with 0 and warns about.
 template <typename T>
 struct IsSigned {
-  static constexpr bool kValue = static_cast<T>(-1) < static_cast<T>(1);
+  static constexpr bool kValue{static_cast<T>(-1) < static_cast<T>(1)};
 };
 
 // The minus, for a signed T; Sign<false> has none, so an unsigned T has no
@@ -100,7 +100,7 @@ using SignOf = Sign<IsSigned<T>::kValue>;
 
 // The base to_chars() and from_chars() take when given none, as in the
 // standard.
-constexpr uint8_t kDecimal = 10;
+constexpr uint8_t kDecimal{10};
 
 constexpr bool IsBase(uint8_t base) { return base >= 2 && base <= 36; }
 
@@ -109,7 +109,7 @@ constexpr bool IsBase(uint8_t base) { return base >= 2 && base <= 36; }
 template <typename T>
 UnsignedOf<T> Magnitude(T value, bool negative) {
   using U = UnsignedOf<T>;
-  U const bits = static_cast<U>(value);
+  U const bits{static_cast<U>(value)};
   return negative ? static_cast<U>(static_cast<U>(0) - bits) : bits;
 }
 
@@ -126,21 +126,21 @@ T FromMagnitude(UnsignedOf<T> magnitude, bool negative) {
 template <typename T>
 UnsignedOf<T> MagnitudeLimit(bool negative) {
   using U = UnsignedOf<T>;
-  U const all = static_cast<U>(~U{0});
-  U const highest = IsSigned<T>::kValue ? static_cast<U>(all / 2U) : all;
+  U const all{static_cast<U>(~U{0})};
+  U const highest{IsSigned<T>::kValue ? static_cast<U>(all / 2U) : all};
   return negative ? static_cast<U>(highest + 1) : highest;
 }
 
 // The char of a digit below 36, in lower case as in the standard.
 inline char DigitChar(uint8_t digit) {
-  constexpr uint8_t kTen = 10;
+  constexpr uint8_t kTen{10};
   return static_cast<char>(digit < kTen ? '0' + digit : 'a' + (digit - kTen));
 }
 
 // The value of a digit char in either case, or 36, which no base takes.
 inline uint8_t DigitValue(char c) {
-  constexpr uint8_t kTen = 10;
-  constexpr uint8_t kNone = 36;
+  constexpr uint8_t kTen{10};
+  constexpr uint8_t kNone{36};
   if (c >= '0' && c <= '9') {
     return static_cast<uint8_t>(c - '0');
   }
@@ -157,7 +157,7 @@ inline uint8_t DigitValue(char c) {
 inline void Reverse(char* first, char* last) {
   while (first < last) {
     --last;
-    char const c = *first;
+    char const c{*first};
     *first = *last;
     *last = c;
     ++first;
@@ -173,13 +173,13 @@ inline void Reverse(char* first, char* last) {
 template <typename U>
 Result<char*> WriteDigits(char* first, char const* last, U magnitude,
                           uint8_t base) {
-  U const radix = base;
-  char* out = first;
+  U const radix{base};
+  char* out{first};
   do {
     if (out == last) {
       return CharconvError::kValueTooLarge;
     }
-    U const rest = static_cast<U>(magnitude / radix);
+    U const rest{static_cast<U>(magnitude / radix)};
     *out++ = DigitChar(static_cast<uint8_t>(magnitude - (rest * radix)));
     magnitude = rest;
   } while (magnitude != 0);
@@ -197,9 +197,9 @@ template <typename U>
 class DigitAppender {
  public:
   DigitAppender(uint8_t base, U limit)
-      : radix_(base),
-        cutoff_(static_cast<U>(limit / radix_)),
-        cutlim_(static_cast<U>(limit - (cutoff_ * radix_))) {}
+      : radix_{base},
+        cutoff_{static_cast<U>(limit / radix_)},
+        cutlim_{static_cast<U>(limit - (cutoff_ * radix_))} {}
 
   // Appends `digit` to `magnitude`, or returns false if that passed the limit.
   bool Append(U& magnitude, uint8_t digit) const {
@@ -224,10 +224,10 @@ class DigitAppender {
 template <typename U>
 Result<char const*> ReadDigits(char const* first, char const* last,
                                uint8_t base, U limit, U& magnitude) {
-  DigitAppender<U> const appender(base, limit);
-  char const* in = first;
+  DigitAppender<U> const appender{base, limit};
+  char const* in{first};
   for (; in != last; ++in) {
-    uint8_t const digit = DigitValue(*in);
+    uint8_t const digit{DigitValue(*in)};
     if (digit >= base) {
       break;
     }

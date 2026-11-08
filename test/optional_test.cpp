@@ -18,8 +18,8 @@ using utl::optional;
 
 // Returns the index of `value` in {0, 1, 7}, or none.
 optional<int> Find(int value) {
-  utl::array<int, 3> const values = {{0, 1, 7}};
-  for (int index = 0; index < 3; ++index) {
+  utl::array<int, 3> const values{{0, 1, 7}};
+  for (int index{0}; index < 3; ++index) {
     if (values[index] == value) {
       return index;
     }
@@ -28,12 +28,12 @@ optional<int> Find(int value) {
 }
 
 TEST(OptionalTest, EmptyOrAValue) {
-  optional<int> const none = Find(42);
-  optional<int> const found = Find(7);
+  optional<int> const none{Find(42)};
+  optional<int> const found{Find(7)};
   EXPECT_FALSE(none.HasValue());
   EXPECT_FALSE(static_cast<bool>(none));
   EXPECT_EQ(none, nullopt);
-  EXPECT_EQ(optional<int>(), none);
+  EXPECT_EQ(optional<int>{}, none);
   EXPECT_TRUE(found.HasValue());
   EXPECT_EQ(*found, 2);
   EXPECT_EQ(found, 2);
@@ -49,10 +49,10 @@ TEST(OptionalTest, ArrowReachesTheValue) {
       return first == other.first && second == other.second;
     }
   };
-  optional<Pair> pair = Pair{1, 2};
+  optional<Pair> pair{Pair{1, 2}};
   EXPECT_EQ(pair->second, 2);
   pair->second = 3;
-  optional<Pair> const& same = pair;
+  optional<Pair> const& same{pair};
   EXPECT_EQ(same->second, 3);
   *pair = Pair{4, 5};
   EXPECT_EQ((*same).first, 4);
@@ -71,6 +71,7 @@ TEST(OptionalTest, OkOrGivesYourError) {
 }
 
 TEST(OptionalTest, ResetEmplaceAndAssign) {
+  // = rather than braces: what is checked is that a value converts implicitly.
   optional<int> changed = 2;
   changed.reset();
   EXPECT_FALSE(changed.HasValue());
@@ -92,7 +93,7 @@ TEST(OptionalTest, AndThen) {
 
 TEST(OptionalTest, Map) {
   EXPECT_EQ(Find(7).Map([](int index) { return index * 10; }), 20);
-  int calls = 0;
+  int calls{0};
   EXPECT_EQ(Find(42).Map([&calls](int) {
     ++calls;
     return 1;
@@ -102,10 +103,10 @@ TEST(OptionalTest, Map) {
 }
 
 TEST(OptionalTest, OrElse) {
-  int calls = 0;
+  int calls{0};
   auto const three = [&calls] {
     ++calls;
-    return optional<int>(3);
+    return optional<int>{3};
   };
   EXPECT_EQ(Find(42).OrElse(three), 3);
   EXPECT_EQ(Find(7).OrElse(three), 2);
@@ -113,7 +114,7 @@ TEST(OptionalTest, OrElse) {
 }
 
 TEST(OptionalTest, ValueOrElseCallsOnlyWhenEmpty) {
-  int calls = 0;
+  int calls{0};
   auto const fallback = [&calls] {
     ++calls;
     return 9;
@@ -125,7 +126,7 @@ TEST(OptionalTest, ValueOrElseCallsOnlyWhenEmpty) {
 }
 
 TEST(OptionalTest, InspectLooksAtTheValue) {
-  int seen = -1;
+  int seen{-1};
   auto const look = [&seen](int const& index) { seen = index; };
   EXPECT_EQ(Find(7).Inspect(look), 2);
   EXPECT_EQ(seen, 2);
@@ -143,7 +144,7 @@ TEST(OptionalTest, FilterKeepsWhatHolds) {
 
 TEST(OptionalTest, AndThenMayChangeTheType) {
   auto const letter = [](int index) {
-    return optional<char>(static_cast<char>('a' + index));
+    return optional<char>{static_cast<char>('a' + index)};
   };
   EXPECT_EQ(Find(7).AndThen(letter), 'c');
 }

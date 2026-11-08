@@ -24,7 +24,7 @@ enum class BetaError : uint8_t {
 extern char const kBetaErrorGroup[] PROGMEM;
 
 constexpr utl::ErrorGroup GetErrorGroup(BetaError) {
-  return utl::ErrorGroup(kBetaErrorGroup);
+  return utl::ErrorGroup{kBetaErrorGroup};
 }
 
 }  // namespace utl_test

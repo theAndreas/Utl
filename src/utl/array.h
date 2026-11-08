@@ -24,7 +24,7 @@ namespace utl {
  * It is copied and compared as a whole, and goes through a range-based `for`:
  *
  * \code{.cpp}
- * utl::array<uint8_t, 3> rows = {{0x18, 0x3c, 0x18}};
+ * utl::array<uint8_t, 3> rows{{0x18, 0x3c, 0x18}};
  * for (uint8_t row : rows) { ... }
  * rows.at(5).ValueOr(0);  // 0, as 5 lies beyond the end
  * \endcode
@@ -197,7 +197,7 @@ constexpr array<T, 1 + sizeof...(Ts)> make_array(T first, Ts... rest) {
  */
 template <typename T, size_t N>
 bool operator==(array<T, N> const& a, array<T, N> const& b) {
-  for (size_t index = 0; index < N; ++index) {
+  for (size_t index{0}; index < N; ++index) {
     if (!(a[index] == b[index])) {
       return false;
     }

@@ -54,13 +54,14 @@ using Stored = typename StoredImpl<F>::Type;
 
 // kValue is whether R() is an expression: R is void, or has a default
 // constructor, so that an empty inplace_function has something to return.
+// Parentheses, not braces: void() is an expression, void{} only from C++23.
 template <typename R, typename = void>
 struct IsValueInitializable {
-  static constexpr bool kValue = false;
+  static constexpr bool kValue{false};
 };
 template <typename R>
 struct IsValueInitializable<R, Void<decltype(R())>> {
-  static constexpr bool kValue = true;
+  static constexpr bool kValue{true};
 };
 
 }  // namespace internal
@@ -139,11 +140,11 @@ class inplace_function<R(Args...), Capacity> {
 
  public:
   /*! \brief Makes an empty one. */
-  inplace_function() : storage_(), call_(&CallEmpty), manage_(nullptr) {}
+  inplace_function() : storage_{}, call_{&CallEmpty}, manage_{nullptr} {}
 
   /*! \brief Makes an empty one, as `= nullptr` does. */
   inplace_function(decltype(nullptr))  // NOLINT(runtime/explicit)
-      : inplace_function() {}
+      : inplace_function{} {}
 
   /*!
    * \brief Keeps a copy of `f`: a function, a lambda or an object with
@@ -163,7 +164,7 @@ class inplace_function<R(Args...), Capacity> {
             typename = internal::CallableAs<R, T, Args...>>
   // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
   inplace_function(F&& f)  // NOLINT(runtime/explicit)
-      : inplace_function() {
+      : inplace_function{} {
     // The EnableIf leaves an inplace_function to the copy and move
     // constructors; clang-tidy sees only std::enable_if, which avr-gcc lacks.
     Store<T>(static_cast<F&&>(f));
@@ -174,7 +175,7 @@ class inplace_function<R(Args...), Capacity> {
    *
    * \param[in] other The one to copy.
    */
-  inplace_function(inplace_function const& other) : inplace_function() {
+  inplace_function(inplace_function const& other) : inplace_function{} {
     CopyFrom(other);
   }
 
@@ -183,7 +184,7 @@ class inplace_function<R(Args...), Capacity> {
    *
    * \param[in,out] other The one to move from.
    */
-  inplace_function(inplace_function&& other) : inplace_function() {
+  inplace_function(inplace_function&& other) : inplace_function{} {
     MoveFrom(other);
   }
 
@@ -282,7 +283,7 @@ class inplace_function<R(Args...), Capacity> {
             typename = internal::EnableIf<internal::IsPointer<T>::kValue>,
             typename = void>
   void Store(F&& f) {
-    T const pointer = f;
+    T const pointer{f};
     if (pointer != nullptr) {
       Construct<T>(pointer);
     }
@@ -339,7 +340,7 @@ class inplace_function<R(Args...), Capacity> {
 
   static R CallEmpty(void* /*storage*/, Args... /*args*/) {
     static_cast<void>(internal::Check(false, Misuse::kEmptyFunction));
-    return R();
+    return R();  // not R{}: R may be void, and void{} is C++23
   }
 
   template <typename T>

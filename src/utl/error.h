@@ -27,7 +27,7 @@ class Status;
  * neither an Error nor a code that a group would have to keep free.
  *
  * \code{.cpp}
- * utl::Error const error = FontError::kUnknownChar;
+ * utl::Error const error{FontError::kUnknownChar};
  * error.group().Name();  // "font", never null
  * error.Message();       // "unknown char", once UseFontMessages() was called
  * \endcode
@@ -45,7 +45,7 @@ class [[nodiscard]] Error {
    * \param[in] code The code within the group.
    */
   constexpr Error(ErrorGroup group, uint8_t code)
-      : group_(group), code_(code) {}
+      : group_{group}, code_{code} {}
 
   /*!
    * \brief Makes the error of a code of a group, as `FontError::kUnknownChar`.
@@ -56,7 +56,7 @@ class [[nodiscard]] Error {
    *
    * \param[in] code The code; its group is `GetErrorGroup(code)`.
    */
-  template <typename Code, typename = decltype(GetErrorGroup(Code()))>
+  template <typename Code, typename = decltype(GetErrorGroup(Code{}))>
   constexpr Error(Code code)  // NOLINT(runtime/explicit)
       : group_(GetErrorGroup(code)), code_(static_cast<uint8_t>(code)) {
     /*
@@ -122,10 +122,10 @@ class [[nodiscard]] Error {
    * hands it out.
    */
   constexpr explicit Error(decltype(nullptr))
-      : group_(ErrorGroup(nullptr)), code_(0) {}
+      : group_{ErrorGroup{nullptr}}, code_{0} {}
 
   // Whether this is the Error of an ok Status.
-  constexpr bool IsNone() const { return group_ == ErrorGroup(nullptr); }
+  constexpr bool IsNone() const { return group_ == ErrorGroup{nullptr}; }
 
   ErrorGroup group_;
   uint8_t code_;

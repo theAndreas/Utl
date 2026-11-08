@@ -9,7 +9,7 @@
 #include <utl/function_ref.h>
 
 void Case() {
-  int const value = 1;
-  utl::function_ref<int> const f = value;
+  int const value{1};
+  utl::function_ref<int> const f{value};
   static_cast<void>(f);
 }

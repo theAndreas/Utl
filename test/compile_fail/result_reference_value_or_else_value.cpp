@@ -9,7 +9,7 @@
 #include <utl/result.h>
 
 void Case() {
-  int target = 0;
-  static_cast<void>(utl::Result<int&>(target).ValueOrElse(
+  int target{0};
+  static_cast<void>(utl::Result<int&>{target}.ValueOrElse(
       [](utl::Error const&) { return 1; }));
 }

@@ -50,38 +50,38 @@ struct MapCall;
 // kValue: whether T is a Status or a Result, what AndThen() goes on with.
 template <typename T>
 struct IsStatusOrResultImpl {
-  static constexpr bool kValue = false;
+  static constexpr bool kValue{false};
 };
 template <>
 struct IsStatusOrResultImpl<Status> {
-  static constexpr bool kValue = true;
+  static constexpr bool kValue{true};
 };
 template <typename T>
 struct IsStatusOrResultImpl<Result<T>> {
-  static constexpr bool kValue = true;
+  static constexpr bool kValue{true};
 };
 template <typename T>
 struct IsStatusOrResult {
-  static constexpr bool kValue = IsStatusOrResultImpl<RemoveCvRef<T>>::kValue;
+  static constexpr bool kValue{IsStatusOrResultImpl<RemoveCvRef<T>>::kValue};
 };
 
 // kValue: whether T is an Error or a code of a group, what MapError() turns
 // an error into; never a Status, which could be ok.
 template <typename T, typename = void>
 struct IsErrorOrCodeImpl {
-  static constexpr bool kValue = false;
+  static constexpr bool kValue{false};
 };
 template <typename T>
-struct IsErrorOrCodeImpl<T, Void<decltype(GetErrorGroup(T()))>> {
-  static constexpr bool kValue = true;
+struct IsErrorOrCodeImpl<T, Void<decltype(GetErrorGroup(T{}))>> {
+  static constexpr bool kValue{true};
 };
 template <>
 struct IsErrorOrCodeImpl<Error, void> {
-  static constexpr bool kValue = true;
+  static constexpr bool kValue{true};
 };
 template <typename T>
 struct IsErrorOrCode {
-  static constexpr bool kValue = IsErrorOrCodeImpl<RemoveCvRef<T>>::kValue;
+  static constexpr bool kValue{IsErrorOrCodeImpl<RemoveCvRef<T>>::kValue};
 };
 
 /*! \endcond */
@@ -153,7 +153,7 @@ class ErrorFluent {
     if (AsSelf().IsOk()) {
       return AsSelf();
     }
-    Error const mapped = f(*AsSelf().error());
+    Error const mapped{f(*AsSelf().error())};
     return mapped;
   }
 

@@ -31,7 +31,7 @@ namespace utl {
  * constexpr auto kMessages PROGMEM = utl::make_array(kUnknownCharText);
  *
  * void UseFontMessages() {
- *   static utl::Messages messages{utl::ErrorGroup(kFontErrorGroup),
+ *   static utl::Messages messages{utl::ErrorGroup{kFontErrorGroup},
  *                                 kMessages};
  *   utl::UseMessages(messages);
  * }
@@ -57,7 +57,7 @@ class Messages {
    */
   template <size_t N>
   constexpr Messages(ErrorGroup group, array<char const*, N> const& texts)
-      : group_(group), texts_(texts.data()), count_(static_cast<uint8_t>(N)) {
+      : group_{group}, texts_{texts.data()}, count_{static_cast<uint8_t>(N)} {
     // Not UINT8_MAX: avr-libc defines it in C++ only with __STDC_LIMIT_MACROS.
     static_assert(static_cast<uint8_t>(N) == N,
                   "a code is a uint8_t: a group has at most 255 texts");
@@ -93,7 +93,7 @@ class Messages {
   uint8_t count_;
   // The next group whose texts are on, a list through the objects that
   // UseMessages() was given, so that it takes no memory of its own.
-  Messages* next_ = nullptr;
+  Messages* next_{nullptr};
 };
 
 /*!

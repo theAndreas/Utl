@@ -14,11 +14,11 @@ using utl::IndexError;
 using utl::string_view;
 
 TEST(StringViewTest, OfAString) {
-  string_view const line = "text=Hi";
+  string_view const line{"text=Hi"};
   EXPECT_EQ(line.size(), 7U);
   EXPECT_EQ(line.length(), 7U);
   EXPECT_FALSE(line.empty());
-  EXPECT_TRUE(string_view().empty());
+  EXPECT_TRUE(string_view{}.empty());
   EXPECT_EQ(line, "text=Hi");
   EXPECT_NE(line, "text=Ho");
   EXPECT_NE(line, "text");
@@ -26,11 +26,11 @@ TEST(StringViewTest, OfAString) {
   EXPECT_EQ(line.front(), 't');
   EXPECT_EQ(line.back(), 'i');
   EXPECT_EQ(line.end() - line.begin(), 7);
-  EXPECT_EQ(string_view(line.data(), 4), "text");
+  EXPECT_EQ((string_view{line.data(), 4}), "text");
 }
 
 TEST(StringViewTest, StartsAndEndsWith) {
-  string_view const line = "text=Hi";
+  string_view const line{"text=Hi"};
   EXPECT_TRUE(line.starts_with("text="));
   EXPECT_FALSE(line.starts_with("texts"));
   EXPECT_FALSE(line.starts_with("text=Hi!"));
@@ -40,7 +40,7 @@ TEST(StringViewTest, StartsAndEndsWith) {
 }
 
 TEST(StringViewTest, Find) {
-  string_view const line = "text=Hi";
+  string_view const line{"text=Hi"};
   EXPECT_EQ(line.find('='), 4U);
   EXPECT_EQ(line.find('t', 1), 3U);
   EXPECT_EQ(line.find('x', 4), string_view::npos);
@@ -51,7 +51,7 @@ TEST(StringViewTest, Find) {
 }
 
 TEST(StringViewTest, SubstrAndAt) {
-  string_view const line = "text=Hi";
+  string_view const line{"text=Hi"};
   EXPECT_EQ(line.substr(5).ValueOr(""), "Hi");
   EXPECT_EQ(line.substr(1, 3).ValueOr(""), "ext");
   EXPECT_TRUE(line.substr(7).value().empty());
@@ -61,8 +61,8 @@ TEST(StringViewTest, SubstrAndAt) {
 }
 
 TEST(StringViewTest, RemovePrefixAndSuffix) {
-  string_view const line = "text=Hi";
-  string_view trimmed = line;
+  string_view const line{"text=Hi"};
+  string_view trimmed{line};
   trimmed.remove_prefix(5);
   EXPECT_EQ(trimmed, "Hi");
   trimmed = line;
@@ -71,14 +71,14 @@ TEST(StringViewTest, RemovePrefixAndSuffix) {
 }
 
 TEST(StringViewTest, CompareOrdersAsUnsignedChar) {
-  EXPECT_LT(string_view("abc"), "abd");
-  EXPECT_LT(string_view("ab"), "abc");
-  EXPECT_GT(string_view("b"), "abc");
-  EXPECT_LE(string_view("ab"), "ab");
-  EXPECT_GE(string_view("b"), "a");
-  EXPECT_EQ(string_view("ab").compare("ab"), 0);
-  EXPECT_GT(string_view("abc").compare("ab"), 0);
-  EXPECT_GT(string_view("\xe4"), "z");
+  EXPECT_LT(string_view{"abc"}, "abd");
+  EXPECT_LT(string_view{"ab"}, "abc");
+  EXPECT_GT(string_view{"b"}, "abc");
+  EXPECT_LE(string_view{"ab"}, "ab");
+  EXPECT_GE(string_view{"b"}, "a");
+  EXPECT_EQ(string_view{"ab"}.compare("ab"), 0);
+  EXPECT_GT(string_view{"abc"}.compare("ab"), 0);
+  EXPECT_GT(string_view{"\xe4"}, "z");
 }
 
 }  // namespace

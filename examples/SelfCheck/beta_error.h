@@ -23,7 +23,7 @@ enum class BetaError : uint8_t {
 extern char const kBetaErrorGroup[] PROGMEM;
 
 constexpr utl::ErrorGroup GetErrorGroup(BetaError) {
-  return utl::ErrorGroup(kBetaErrorGroup);
+  return utl::ErrorGroup{kBetaErrorGroup};
 }
 
 // Turns on the texts of the group: until then its errors print their codes.

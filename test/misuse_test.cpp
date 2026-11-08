@@ -44,7 +44,7 @@ using utl::Misuse;
 // A member function to bind to a pointer, and a function that takes one.
 struct Switch {
   void Flip() { on = !on; }
-  bool on = false;
+  bool on{false};
 };
 void FlipIfAny(Switch* pointer) {
   if (pointer != nullptr) {
@@ -55,7 +55,7 @@ void FlipIfAny(Switch* pointer) {
 
 std::string Printed(Misuse misuse) {
   StringPrint out;
-  size_t const count = utl::PrintMisuse(out, misuse);
+  size_t const count{utl::PrintMisuse(out, misuse)};
   EXPECT_EQ(count, out.text.size());
   return out.text;
 }
@@ -94,20 +94,20 @@ TEST(MisuseTest, ReportsEachMisuseOnSerial) {
   // reference reads nothing, so the sanitizers have nothing to stop. The views
   // point at memory that is there all the same, the array of three below.
   utl::array<int, 3> storage = {{1, 2, 3}};
-  utl::span<int> const two(storage.data(), 2);
-  utl::span<int> const none(storage.data() + 1, 0);
+  utl::span<int> const two{storage.data(), 2};
+  utl::span<int> const none{storage.data() + 1, 0};
   char const text[] = "ab";
-  utl::string_view const one(text, 1);
+  utl::string_view const one{text, 1};
 
   EXPECT_EQ(Reported([] {
-              utl::Result<int> const failed = BetaError::kFirst;
+              utl::Result<int> const failed{BetaError::kFirst};
               static_cast<void>(failed.value());
             }),
             "utl: value() of a Result with an error\r\n");
   EXPECT_EQ(Reported([] {
               utl::optional<int> empty;
               static_cast<void>(*empty);
-              utl::optional<int> const& same = empty;
+              utl::optional<int> const& same{empty};
               static_cast<void>(*same);
             }),
             "utl: * or -> of an empty optional\r\n"
@@ -133,7 +133,7 @@ TEST(MisuseTest, ReportsEachMisuseOnSerial) {
             "utl: front(), back() or pop_back() when empty\r\n"
             "utl: front(), back() or pop_back() when empty\r\n");
   EXPECT_EQ(Reported([] {
-              utl::string_view shortened = "ab";
+              utl::string_view shortened{"ab"};
               shortened.remove_prefix(3);
               EXPECT_TRUE(shortened.empty());
               shortened = "ab";
@@ -145,12 +145,12 @@ TEST(MisuseTest, ReportsEachMisuseOnSerial) {
   // Made, never called: a call would jump to address 0.
   EXPECT_EQ(Reported([] {
               void (*const volatile none)() = nullptr;
-              utl::function_ref<void()> const f = none;
+              utl::function_ref<void()> const f{none};
               static_cast<void>(f);
             }),
             "utl: function_ref of a null pointer\r\n");
   EXPECT_EQ(Reported([] {
-              Switch* const volatile none = nullptr;
+              Switch* const volatile none{nullptr};
               utl::function_ref<void()> const f{UTL_CW(&Switch::Flip), none};
               static_cast<void>(f);
             }),
@@ -164,8 +164,8 @@ TEST(MisuseTest, ReportsEachMisuseOnSerial) {
 
 TEST(MisuseTest, ReportsAnArrayIndexBeyondTheEnd) {
   EXPECT_EQ(Reported([] {
-              size_t const volatile beyond = 2;
-              utl::array<int, 2> pair = {{1, 2}};
+              size_t const volatile beyond{2};
+              utl::array<int, 2> pair{{1, 2}};
               static_cast<void>(pair[beyond]);
             }),
             "utl: [] beyond the end\r\n");
@@ -178,14 +178,14 @@ TEST(MisuseTest, ReportsAMisusedInplaceVector) {
   EXPECT_EQ(Reported([] {
               Bytes bytes{1};
               static_cast<void>(bytes[1]);
-              Bytes const& const_bytes = bytes;
+              Bytes const& const_bytes{bytes};
               static_cast<void>(const_bytes[1]);
             }),
             "utl: [] beyond the end\r\n"
             "utl: [] beyond the end\r\n");
   EXPECT_EQ(Reported([] {
               Bytes empty;
-              Bytes const& const_empty = empty;
+              Bytes const& const_empty{empty};
               static_cast<void>(empty.front());
               static_cast<void>(const_empty.front());
               static_cast<void>(empty.back());
@@ -222,10 +222,10 @@ TEST(MisuseTest, ReportsAMisusedInplaceVector) {
 // all the same, as the views below see only part of it.
 TEST(MisuseTest, ReportsAMisusedFlashSpan) {
   EXPECT_EQ(Reported([] {
-              static constexpr utl::array<uint8_t, 2> kRows = {{1, 2}};
-              utl::flash_span<uint8_t> const one(kRows.data(), 1);
+              static constexpr utl::array<uint8_t, 2> kRows{{1, 2}};
+              utl::flash_span<uint8_t> const one{kRows.data(), 1};
               // Empty, after the first: back() reads the one before.
-              utl::flash_span<uint8_t> const none(kRows.data() + 1, 0);
+              utl::flash_span<uint8_t> const none{kRows.data() + 1, 0};
               EXPECT_EQ(one[1], 2);
               EXPECT_EQ(none.front(), 2);
               EXPECT_EQ(none.back(), 1);
@@ -237,30 +237,30 @@ TEST(MisuseTest, ReportsAMisusedFlashSpan) {
 
 TEST(MisuseTest, RightAccessIsNotReported) {
   EXPECT_EQ(Reported([] {
-              utl::array<int, 2> pair = {{1, 2}};
+              utl::array<int, 2> pair{{1, 2}};
               static_cast<void>(pair[1]);
-              utl::Result<int> const ok = 1;
+              utl::Result<int> const ok{1};
               static_cast<void>(ok.value());
-              utl::optional<int> const found = 2;
+              utl::optional<int> const found{2};
               static_cast<void>(*found);
-              int target = 3;
-              utl::optional<int&> const some = target;
+              int target{3};
+              utl::optional<int&> const some{target};
               static_cast<void>(*some);
-              utl::Result<int&> const ok_reference = target;
+              utl::Result<int&> const ok_reference{target};
               static_cast<void>(ok_reference.value());
               auto const nothing = [] {};
-              utl::function_ref<void()> const f = nothing;
+              utl::function_ref<void()> const f{nothing};
               f();
-              utl::function_ref<void()> const g = +nothing;  // a pointer
+              utl::function_ref<void()> const g{+nothing};  // a pointer
               g();
-              utl::inplace_function<void()> const kept = nothing;
+              utl::inplace_function<void()> const kept{nothing};
               kept();
               Switch light;
               utl::function_ref<void()> const flip{UTL_CW(&Switch::Flip),
                                                    &light};
               flip();
               // A function, not a member function, may take a null pointer.
-              Switch* const none = nullptr;
+              Switch* const none{nullptr};
               utl::function_ref<void()> const flip_any{UTL_CW(FlipIfAny), none};
               flip_any();
             }),

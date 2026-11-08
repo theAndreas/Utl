@@ -51,6 +51,10 @@ CheckOptions:
   # A text in PROGMEM is a char array: F() and the tables of the groups need
   # one. Any other array is a utl::array.
   modernize-avoid-c-arrays.AllowStringArrays: true
+  # A list over several lines ends in a comma, unless it is one value whose
+  # expression wraps, as in Result<...> const end{ReadDigits(...)}: there a
+  # comma would read as the start of a second value.
+  readability-trailing-comma.MultiLineCommaPolicy: Ignore
   # A struct with only public members is what Google calls a struct, and
   # utl::array has to be one to stay an aggregate.
   misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: true

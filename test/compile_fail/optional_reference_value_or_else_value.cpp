@@ -9,6 +9,6 @@
 #include <utl/optional.h>
 
 void Case() {
-  int target = 0;
-  static_cast<void>(utl::optional<int&>(target).ValueOrElse([] { return 1; }));
+  int target{0};
+  static_cast<void>(utl::optional<int&>{target}.ValueOrElse([] { return 1; }));
 }

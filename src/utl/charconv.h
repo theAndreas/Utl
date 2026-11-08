@@ -61,8 +61,8 @@ Result<char*> to_chars(char* first, char const* last, T value,
   if (!internal::IsBase(base)) {
     return CharconvError::kInvalidArgument;
   }
-  bool const negative = internal::SignOf<T>::IsNegative(value);
-  char* digits = first;
+  bool const negative{internal::SignOf<T>::IsNegative(value)};
+  char* digits{first};
   if (negative) {
     if (digits == last) {
       return CharconvError::kValueTooLarge;
@@ -92,12 +92,12 @@ Result<char*> to_chars(char* first, char const* last, T value,
 template <typename T>
 Result<string_view> to_chars(span<char> buffer, T value,
                              uint8_t base = internal::kDecimal) {
-  char* const first = buffer.data();
-  Result<char*> const end = to_chars(first, first + buffer.size(), value, base);
+  char* const first{buffer.data()};
+  Result<char*> const end{to_chars(first, first + buffer.size(), value, base)};
   if (!end.IsOk()) {
     return *end.error();
   }
-  return string_view(first, static_cast<size_t>(end.value() - first));
+  return string_view{first, static_cast<size_t>(end.value() - first)};
 }
 
 /*!
@@ -132,11 +132,11 @@ Result<char const*> from_chars(char const* first, char const* last, T& value,
   if (!internal::IsBase(base)) {
     return CharconvError::kInvalidArgument;
   }
-  char const* digits = first;
-  bool const negative = internal::SignOf<T>::ReadMinus(digits, last);
-  internal::UnsignedOf<T> magnitude = 0;
-  Result<char const*> const end = internal::ReadDigits(
-      digits, last, base, internal::MagnitudeLimit<T>(negative), magnitude);
+  char const* digits{first};
+  bool const negative{internal::SignOf<T>::ReadMinus(digits, last)};
+  internal::UnsignedOf<T> magnitude{0};
+  Result<char const*> const end{internal::ReadDigits(
+      digits, last, base, internal::MagnitudeLimit<T>(negative), magnitude)};
   if (end.IsOk()) {
     value = internal::FromMagnitude<T>(magnitude, negative);
   }
@@ -149,7 +149,7 @@ Result<char const*> from_chars(char const* first, char const* last, T& value,
  * `text` then begins after the number; on an error it is left as it is.
  *
  * \code{.cpp}
- * utl::string_view line = "42,7";
+ * utl::string_view line{"42,7"};
  * utl::from_chars<uint8_t>(line);  // 42; line is ",7"
  * \endcode
  *
@@ -161,9 +161,9 @@ Result<char const*> from_chars(char const* first, char const* last, T& value,
 template <typename T>
 Result<T> from_chars(string_view& text, uint8_t base = internal::kDecimal) {
   T value{};
-  char const* const first = text.data();
-  Result<char const*> const end =
-      from_chars(first, first + text.size(), value, base);
+  char const* const first{text.data()};
+  Result<char const*> const end{
+      from_chars(first, first + text.size(), value, base)};
   if (!end.IsOk()) {
     return *end.error();
   }

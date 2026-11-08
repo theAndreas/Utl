@@ -25,7 +25,7 @@ constexpr auto kMessages PROGMEM =
 void UseFontMessages() {
   // The group by its name, a constant: a static whose initializer calls a
   // function would be initialized at run time, with a guard.
-  static utl::Messages messages{utl::ErrorGroup(kFontErrorGroup), kMessages};
+  static utl::Messages messages{utl::ErrorGroup{kFontErrorGroup}, kMessages};
   utl::UseMessages(messages);
 }
 
