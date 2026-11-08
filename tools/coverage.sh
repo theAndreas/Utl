@@ -5,9 +5,9 @@
 #
 # Runs the tests on the host with --coverage and reports which lines of src/
 # they reach: the lines no test reaches on the terminal, and all of it as HTML
-# in build/coverage/html/. The three variants count together, as each takes
-# other branches of #if. gcovr comes from PyPI through uvx, at a fixed
-# version, like the tools of lint.sh.
+# in build/coverage/html/. The variants of CMakeLists.txt count together, as
+# each takes other branches of #if. gcovr comes from PyPI through uvx, at a
+# fixed version, like the tools of lint.sh.
 
 set -euo pipefail
 
@@ -42,8 +42,8 @@ main() {
   remove_stale_notes
 
   mkdir -p "${COVERAGE_DIR}/html"
-  # separate: a function such as internal::Check() lies on another line in
-  # each variant, under its own #if, and is two functions, not one to merge.
+  # separate: a function under an #if of a variant lies on another line in
+  # each, and is two functions, not one to merge.
   # --merge-lines: gcov counts a template per instance, and each lambda is a
   # type of its own, so a line reached by one instance stood as missed by
   # another; merged, a line counts as reached if any instance reaches it.

@@ -77,7 +77,7 @@ Result<value_type> at(size_type index) const;
 | `\tparam` | Each template parameter that the user chooses. |
 | `\param[in]`, `[out]`, `[in,out]` | Each parameter, with its direction. |
 | `\return` | What comes back. For a `Result`, the value and each error, with when. A one-line block whose brief already says it, "Returns the number of elements.", leaves it out. |
-| `\pre` | What the caller must ensure, and what happens if not: undefined, or reported with `UTL_CHECK_ACCESS`. |
+| `\pre` | What the caller must ensure, and what happens if not: undefined, or reported by a check the library makes on request. |
 | `\note`, `\warning` | What is easy to miss. `\warning` only where a mistake is costly. |
 | `\stddiff` | Where it differs from the entity of the standard it follows, and why. |
 | `\see` | A related entity, where the link helps. |
@@ -107,9 +107,9 @@ A function that returns nothing has no `\return`. Every parameter has its `\para
   member, enum and enum value, type alias, constant and macro, and each header with `\file`.
 - **Overloads** that differ only in their parameters share one text: the first is documented,
   the others take it with `\copydoc`, or are grouped with `\overload` and their own `\param`s.
-- **`utl::internal`** is not part of the API. A block is welcome but not required. The exception
-  is `internal/fluent.h`, whose functions `Status` and `Result` give a sketch: it is documented
-  as the API.
+- **`utl::internal`** is not part of the API. A block is welcome but not required. The
+  exception is a file whose functions a public class gives a sketch, as a base it inherits
+  from: it is documented as the API, and `DOCS_INTERNAL_API` in `tools/project.sh` names it.
 - **Helpers a sketch never sees**, in a file that is otherwise documented as the API, are put
   between `/*! \cond */` and `/*! \endcond */`: Doxygen leaves them out, and they keep their
   `//` comments.
@@ -136,8 +136,9 @@ block for the file:
 
 - **`tools/docs.sh`** builds the reference with Doxygen and fails on every warning: a block
   Doxygen cannot read, a parameter without `\param` or a `\param` without parameter, an entity
-  of the API without a block. It lets two pass: a gap in `utl::internal`, except
-  `internal/fluent.h`, and a missing `\return`, which a one-line block needs not have.
+  of the API without a block. It lets two pass: a gap in `utl::internal`, except in
+  the files `DOCS_INTERNAL_API` names, and a missing `\return`, which a one-line block needs not
+  have.
 - **clang's `-Wdocumentation`**, through clang-tidy and clangd, checks each block against the
   declaration it stands at: a `\param` whose name the function does not have, a `\return` on a
   function that returns nothing, an unknown command. clangd shows these in the editor as you

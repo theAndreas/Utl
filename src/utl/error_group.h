@@ -55,6 +55,8 @@ class ErrorGroup {
 
   /*! \brief Returns the name of the group, from flash. */
   __FlashStringHelper const* Name() const {
+    // Chars in flash, as F() makes them.
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     return reinterpret_cast<__FlashStringHelper const*>(name_);
   }
 

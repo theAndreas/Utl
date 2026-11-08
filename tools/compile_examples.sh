@@ -3,10 +3,9 @@
 # Copyright 2026 Andreas Burnickl
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Compiles every example in each variant and prints flash and RAM of each,
-# as a Markdown table. Fails on a warning outside the Arduino core, and if a
-# vtable of the flash variant lies in RAM: then some file was compiled without
-# the plugin, and a virtual call through it would jump anywhere.
+# Compiles every example in each variant and prints flash and RAM of each, as a Markdown table.
+# Fails on a warning outside the Arduino core, and where check_elf() of tools/project.sh fails
+# on what was built.
 
 set -euo pipefail
 
@@ -20,20 +19,12 @@ size_of() {
   sed -n "s/^${label} uses* \([0-9]*\) bytes.*/\1/p" <<< "${output}"
 }
 
-# Fails if a vtable lies in .data, that is, in RAM.
-check_vtables_in_flash() {
-  local elf="$1"
-  local in_ram
-  in_ram="$("$(avr_gcc_bin_dir)/avr-nm" -C "${elf}" \
-    | grep ' [dD] vtable for ' || true)"
-  if [[ -n "${in_ram}" ]]; then
-    err "vtables in RAM despite the plugin, in ${elf}:"
-    err "${in_ram}"
-    return 1
-  fi
-}
-
 main() {
+  if [[ $# -gt 0 ]]; then
+    err "Usage: $0"
+    exit 2
+  fi
+
   local failed=0
   local example
   local variant
@@ -59,12 +50,9 @@ main() {
         err "${warnings}"
         failed=1
       fi
-      if [[ "${variant}" == "flash" ]]; then
-        check_vtables_in_flash "$(elf_of flash "${example}")" || failed=1
-      fi
+      check_elf "${variant}" "$(elf_of "${variant}" "${example}")" || failed=1
       flash_size["${example}/${variant}"]="$(size_of 'Sketch' "${output}")"
-      ram_size["${example}/${variant}"]="$(size_of 'Global variables' \
-        "${output}")"
+      ram_size["${example}/${variant}"]="$(size_of 'Global variables' "${output}")"
     done
   done
 

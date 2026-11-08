@@ -4,26 +4,27 @@
 # The tag has no hyphen. devcontainers/cpp publishes ubuntu-24.04 and ubuntu24.04 both,
 # but from 26.04 only the unhyphenated form exists, so the older spelling looks like the
 # newest release when it is not. The base image carries build-essential and gdb: the host
-# g++ builds the tests against the mock of the core, and the GCC plugin avr-flash-vtbl
-# against the plugin headers of the AVR core's avr-gcc (tools/build_plugin.sh).
+# g++ builds the tests against the mock of the core, and whatever tools/project.sh prepares
+# for the build, such as a GCC plugin against the plugin headers of the AVR core's avr-gcc.
 ARG BASE_IMAGE=mcr.microsoft.com/devcontainers/cpp:ubuntu26.04
 FROM ${BASE_IMAGE}
 
 # CMake, Ninja and GoogleTest build and run the tests on the host; simavr runs
-# examples/SelfCheck as an Uno would (tools/self_check.sh); jq writes the compilation
-# database of tools/tidy.sh; Doxygen builds the reference (tools/docs.sh), and is not on
-# PyPI. From apt rather than pinned like the tools below: the distribution's versions are
-# what CI installs as well, and none of them has a bug that forces a newer release.
+# examples/SelfCheck as the board would (tools/self_check.sh); jq writes the compilation
+# database of tools/tidy.sh; Doxygen builds the reference (tools/docs.sh), and cppcheck reads
+# the library beside clang-tidy (tools/cppcheck.sh); neither of the two is on PyPI. From apt
+# rather than pinned like the tools below: the distribution's versions are what CI installs
+# as well, and none of them has a bug that forces a newer release.
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        cmake ninja-build libgtest-dev simavr jq doxygen && \
+        cmake ninja-build libgtest-dev simavr jq doxygen cppcheck && \
     rm -rf /var/lib/apt/lists/*
 
 # arduino-cli compiles the library and its examples with the real Arduino AVR core, which
 # is the one check the tests on the host cannot replace: they build against a mock of
 # Arduino.h, not against avr-gcc, and flash is RAM there. Not gcc-avr from apt - the AVR
 # core brings its own toolchain, and that one is what the Arduino IDE compiles a user's
-# sketch with; tools/build_plugin.sh needs that very compiler as well.
+# sketch with.
 # A pinned release tarball with its published checksum, for the same reason as gh below:
 # the trust stays anchored to something visible in this file, at the cost of bumping the
 # version by hand.

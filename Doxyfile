@@ -4,7 +4,7 @@
 # block is written is in docs/Documentation.md.
 
 PROJECT_NAME           = Utl
-PROJECT_BRIEF          = "A small standard library for Arduino on the AVR"
+PROJECT_BRIEF          = "A small standard library for Arduino on the AVR."
 OUTPUT_DIRECTORY       = build/docs
 
 # The examples are not read: they are sketches, not reference, and the README links them. The
@@ -22,14 +22,13 @@ MARKDOWN_ID_STYLE      = GITHUB
 ALIASES                = "stddiff=\par Differs from the standard:^^"
 
 # PROGMEM and the attributes mean nothing to Doxygen; read as they are, a name in flash would
-# be a symbol "not declared". UTL_CHECK_ACCESS is left to config.h, so that the switch is in
-# the reference with its default; ReportMisuse() is declared whatever its value.
+# be a symbol "not declared". A switch of the library is left to its header, so that it is in
+# the reference with its default.
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
 PREDEFINED             = PROGMEM= "__attribute__(x)="
 
-# A Result shows AndThen() and the rest, which it takes from its base in utl::internal, on its
-# own page.
+# A class shows the members it takes from a base in the namespace internal on its own page.
 INLINE_INHERITED_MEMB  = YES
 
 # No graphs: they need Graphviz, and the parts are few enough to read from the README.

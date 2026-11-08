@@ -1,2 +1,4 @@
 build/
+# A dev container variant of the site, such as one on an internal base image, see
+# .devcontainer/README.md.
 /.devcontainer/vector/

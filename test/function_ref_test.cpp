@@ -40,12 +40,14 @@ struct Overloaded {
 
 // Callable, but only with an int.
 struct TakesInt {
-  void operator()(int /*value*/) const {}
+  // Never called: only its signature is asked for.
+  [[maybe_unused]] void operator()(int /*value*/) const {}
 };
 
 // A result that converts to an R only explicitly.
 struct Explicit {
-  explicit Explicit(int /*value*/) {}
+  // Never called: only whether an int converts is asked for.
+  [[maybe_unused]] explicit Explicit(int /*value*/) {}
 };
 
 struct NotCallable {};
@@ -302,8 +304,8 @@ TEST(FunctionRefTest, CallsAMemberFunctionOfOtherTypes) {
 }
 
 // A virtual member function, which a pointer to a member calls through the
-// vtable.
-class Shape {
+// vtable. No move of its own: a move is its copy.
+class Shape {  // NOLINT(cppcoreguidelines-special-member-functions)
  public:
   Shape() = default;
   Shape(Shape const&) = default;

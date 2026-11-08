@@ -120,11 +120,11 @@ TEST_F(InplaceVectorTest, AddsAtTheEndUntilFull) {
   EXPECT_TRUE(bytes.push_back(1).IsOk());
   uint8_t const two{2};
   EXPECT_TRUE(bytes.push_back(two).IsOk());
-  EXPECT_TRUE(bytes.emplace_back(3).IsOk());
+  EXPECT_TRUE(bytes.emplace_back(uint8_t{3}).IsOk());
   EXPECT_TRUE(bytes.emplace_back().IsOk());  // T(), 0
   EXPECT_EQ(bytes, (Bytes{1, 2, 3, 0}));
   EXPECT_EQ(bytes.push_back(5), IndexError::kFull);
-  EXPECT_EQ(bytes.emplace_back(5), IndexError::kFull);
+  EXPECT_EQ(bytes.emplace_back(uint8_t{5}), IndexError::kFull);
   EXPECT_EQ(bytes.size(), 4U);  // as it was
 }
 
@@ -175,7 +175,7 @@ TEST_F(InplaceVectorTest, InsertsBeforeAPosition) {
   EXPECT_EQ(bytes, (Bytes{1, 2, 3, 4}));
   EXPECT_EQ(bytes.insert(bytes.begin(), 0), IndexError::kFull);
   bytes.pop_back();
-  EXPECT_TRUE(bytes.emplace(bytes.end(), 5).IsOk());  // at the end
+  EXPECT_TRUE(bytes.emplace(bytes.end(), uint8_t{5}).IsOk());  // at the end
   EXPECT_EQ(bytes, (Bytes{1, 2, 3, 5}));
 }
 

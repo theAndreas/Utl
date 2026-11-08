@@ -64,6 +64,7 @@ constexpr T constant_wrapper<T, Value>::value;
  * name the value's type and the value at once without `template <auto>`;
  * its arguments may hold commas, as `&Panel<8, 8>::Clear`.
  */
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage): only a macro, as said above.
 #define UTL_CW(...)                                                         \
   ::utl::constant_wrapper<                                                  \
       ::utl::internal::TemplateArgument<decltype(__VA_ARGS__)>, __VA_ARGS__>{}

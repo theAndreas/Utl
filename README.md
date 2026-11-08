@@ -645,12 +645,12 @@ core.
 
 ## Build and check
 
-Needs `arduino-cli` with `arduino:avr`, a host `g++` for the plugin, `simavr`, `uv` and `jq`; for
-the tests on the host CMake, Ninja and GoogleTest (`libgtest-dev`); for the reference Doxygen. The
-dev container below has them all.
+Needs `arduino-cli`, a host `g++` for the plugin, `simavr`, `uv` and `jq`; for the tests on the
+host CMake, Ninja and GoogleTest (`libgtest-dev`); for the reference Doxygen. The dev container
+below has them all.
 
 ```bash
-tools/build_plugin.sh             # build/avr-flash-vtbl.so
+tools/setup.sh                    # arduino:avr 1.8.8, and the plugin: build/avr-flash-vtbl.so
 tools/self_check.sh               # examples/SelfCheck in simavr, in each variant
 tools/keypad_check.sh             # examples/Keypad in simavr with keys pressed, ~40 s a variant
 tools/compile_examples.sh         # every example in each variant, fails on a warning; the table
@@ -661,6 +661,13 @@ tools/lint.sh [--fix]             # clang-format, cpplint, shellcheck, actionlin
 tools/tidy.sh                     # clang-tidy: library and examples as for the Uno, and the tests
 tools/docs.sh                     # the reference from the Doxygen blocks, in build/docs/html
 ```
+
+The checks, CI and the dev container come from the template
+[embedded-cpp-template](https://github.com/theAndreas/embedded-cpp-template), and `uvx copier
+update` brings its newest version. What is Utl's own for them lies in `tools/project.sh`: the
+board, the pinned core, the three variants and their flags, the plugin, and the check that the
+flash variant leaves no vtable in RAM. cppcheck, which the template runs beside clang-tidy, is
+off there with its reason: it cannot parse `src/utl/array.h`.
 
 The dev container in `.devcontainer/` carries all of it, with clangd for IntelliSense, which
 `.clangd` points at the compilation databases of CMake and of `tools/tidy.sh`; see
@@ -680,8 +687,7 @@ compiler on the file and passes only if that message comes; a `static_assert` th
 fails it. A new case is a new file there, nothing else.
 
 CI (`.github/workflows/ci.yml`) runs the same scripts on every pull request, but `keypad_check.sh`,
-and `arduino-lint` on top; the table of flash and RAM lands in the summary of the job "Examples on
-arduino:avr:uno". `keypad_check.sh` runs apart, in `.github/workflows/keypad.yml`, for a pull
+and `arduino-lint` on top; the table of flash and RAM lands in the summary of the job "Examples". `keypad_check.sh` runs apart, in `.github/workflows/keypad.yml`, for a pull
 request that changes the sketch or what of the library it uses, and by hand ("Run workflow"), as
 simavr takes about 40 s a variant for its 0.3 s of keys.
 

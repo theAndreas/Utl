@@ -34,12 +34,12 @@ size_t PrintCode(Print& out, uint8_t code) {
   }
   size_t printed{0};
   if (hundreds != 0) {
-    printed += out.write(static_cast<char>('0' + hundreds));
+    printed += out.write(static_cast<uint8_t>('0' + hundreds));
   }
   if (hundreds != 0 || tens != 0) {
-    printed += out.write(static_cast<char>('0' + tens));
+    printed += out.write(static_cast<uint8_t>('0' + tens));
   }
-  printed += out.write(static_cast<char>('0' + code));
+  printed += out.write(static_cast<uint8_t>('0' + code));
   return printed;
 }
 

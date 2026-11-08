@@ -16,8 +16,9 @@ enable_testing()
 # For clangd, which reads it through .clangd.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-option(UTL_COVERAGE "Build with --coverage, for gcovr" OFF)
-option(UTL_SANITIZE "Build with AddressSanitizer and UBSan" OFF)
+# The warnings, the instrumentation of the presets sanitize and coverage, and the tests of
+# what must not compile come from the template.
+include(cmake/checks.cmake)
 
 find_package(GTest REQUIRED)
 include(GoogleTest)
@@ -64,16 +65,17 @@ function(add_variant name)
   add_library(utl_${name} STATIC ${library_sources} test/mock/Arduino.cpp)
   target_include_directories(utl_${name} PUBLIC src test/mock)
   target_compile_definitions(utl_${name} PUBLIC ${defines})
-  target_compile_options(utl_${name} PRIVATE -std=gnu++11 ${warnings}
-                                              ${instrument})
-  target_link_options(utl_${name} PUBLIC ${instrument})
+  target_compile_options(utl_${name} PRIVATE -std=gnu++11 ${CHECK_WARNINGS}
+                                              ${CHECK_INSTRUMENT})
+  target_link_options(utl_${name} PUBLIC ${CHECK_INSTRUMENT})
 
   add_executable(utl_test_${name} ${test_sources})
   target_compile_features(utl_test_${name} PRIVATE cxx_std_17)
   # The root, so that a test includes its helpers as "test/...", as Google
   # wants an include to name the directory.
   target_include_directories(utl_test_${name} PRIVATE ${CMAKE_SOURCE_DIR})
-  target_compile_options(utl_test_${name} PRIVATE ${warnings} ${instrument})
+  target_compile_options(utl_test_${name} PRIVATE ${CHECK_WARNINGS}
+                                                   ${CHECK_INSTRUMENT})
   target_link_libraries(utl_test_${name} PRIVATE utl_${name} GTest::gtest_main)
   gtest_discover_tests(utl_test_${name} TEST_PREFIX ${name}/)
 endfunction()
@@ -81,27 +83,8 @@ endfunction()
 add_variant(default)
 add_variant(checked UTL_CHECK_ACCESS=1)
 
-# What must not compile: each file in test/compile_fail/ uses utl wrongly, and
-# its test passes only if the compiler stops it with the message of the
-# static_assert that its line "// Expected: ..." names. A static_assert that
-# went missing, or another error, fails it. The compiler is called directly,
-# with -fsyntax-only and as gnu++11, as avr-gcc builds a sketch: no target,
-# so that tests run in parallel never build in the same tree at once.
-file(GLOB compile_fail_cases CONFIGURE_DEPENDS test/compile_fail/*.cpp)
-foreach(case IN LISTS compile_fail_cases)
-  get_filename_component(name ${case} NAME_WE)
-  file(STRINGS ${case} expected REGEX "^// Expected: " LIMIT_COUNT 1)
-  string(REGEX REPLACE "^// Expected: " "" expected "${expected}")
-  if(expected STREQUAL "")
-    message(FATAL_ERROR "${case} names no message: a line \"// Expected: \".")
-  endif()
-  add_test(NAME compile_fail/${name}
-           COMMAND ${CMAKE_CXX_COMPILER} -std=gnu++11 -fsyntax-only
-                   -I${CMAKE_SOURCE_DIR}/src -I${CMAKE_SOURCE_DIR}/test/mock
-                   ${case})
-  # GCC says "static assertion failed: <message>", Clang "static assertion
-  # failed due to requirement '...': <message>"; both on one line.
-  set_tests_properties(
-    compile_fail/${name}
-    PROPERTIES PASS_REGULAR_EXPRESSION "static assertion failed[^\n]*${expected}")
-endforeach()
+# What must not compile: each file in test/compile_fail/ uses utl wrongly, and its test passes
+# only if the compiler stops it with the message of the static_assert that its line
+# "// Expected: ..." names; as gnu++11, as avr-gcc builds a sketch.
+add_compile_fail_tests(DIRECTORY ${CMAKE_SOURCE_DIR}/test/compile_fail STANDARD gnu++11
+                       INCLUDES ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/test/mock)

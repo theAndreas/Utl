@@ -8,6 +8,8 @@
 #include <utl/optional.h>
 #include <utl/optional_error.h>
 
+#include <cstddef>
+
 #include "test/alpha_error.h"
 
 namespace utl_test {
@@ -19,9 +21,9 @@ using utl::optional;
 // Returns the index of `value` in {0, 1, 7}, or none.
 optional<int> Find(int value) {
   utl::array<int, 3> const values{{0, 1, 7}};
-  for (int index{0}; index < 3; ++index) {
+  for (size_t index{0}; index < values.size(); ++index) {
     if (values[index] == value) {
-      return index;
+      return static_cast<int>(index);
     }
   }
   return nullopt;
@@ -45,9 +47,6 @@ TEST(OptionalTest, ArrowReachesTheValue) {
   struct Pair {
     int first;
     int second;
-    bool operator==(Pair const& other) const {
-      return first == other.first && second == other.second;
-    }
   };
   optional<Pair> pair{Pair{1, 2}};
   EXPECT_EQ(pair->second, 2);

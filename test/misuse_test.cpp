@@ -144,14 +144,15 @@ TEST(MisuseTest, ReportsEachMisuseOnSerial) {
             "utl: remove_prefix() or remove_suffix() beyond the end\r\n");
   // Made, never called: a call would jump to address 0.
   EXPECT_EQ(Reported([] {
-              void (*const volatile none)() = nullptr;
-              utl::function_ref<void()> const f{none};
+              void (*const volatile null_function)() = nullptr;
+              utl::function_ref<void()> const f{null_function};
               static_cast<void>(f);
             }),
             "utl: function_ref of a null pointer\r\n");
   EXPECT_EQ(Reported([] {
-              Switch* const volatile none{nullptr};
-              utl::function_ref<void()> const f{UTL_CW(&Switch::Flip), none};
+              Switch* const volatile null_object{nullptr};
+              utl::function_ref<void()> const f{UTL_CW(&Switch::Flip),
+                                                null_object};
               static_cast<void>(f);
             }),
             "utl: function_ref of a null pointer\r\n");
