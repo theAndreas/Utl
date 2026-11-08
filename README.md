@@ -645,29 +645,33 @@ core.
 
 ## Build and check
 
-Needs `arduino-cli`, a host `g++` for the plugin, `simavr`, `uv` and `jq`; for the tests on the
+Needs `arduino-cli`, a host `g++` and `clang`, `simavr`, `uv` and `jq`; for the tests on the
 host CMake, Ninja and GoogleTest (`libgtest-dev`); for the reference Doxygen. The dev container
-below has them all.
+below has them all. `make` lists every build and check:
 
 ```bash
-tools/setup.sh                    # arduino:avr 1.8.8, and the plugin: build/avr-flash-vtbl.so
-tools/self_check.sh               # examples/SelfCheck in simavr, in each variant
-tools/keypad_check.sh             # examples/Keypad in simavr with keys pressed, ~40 s a variant
-tools/compile_examples.sh         # every example in each variant, fails on a warning; the table
-cmake --workflow --preset default   # the tests on the host, in three variants
-cmake --workflow --preset sanitize  # the same under AddressSanitizer and UBSan
-tools/coverage.sh                 # the same with --coverage: what of src/ they reach
-tools/lint.sh [--fix]             # clang-format, cpplint, shellcheck, actionlint; --fix formats C++
-tools/tidy.sh                     # clang-tidy: library and examples as for the Uno, and the tests
-tools/docs.sh                     # the reference from the Doxygen blocks, in build/docs/html
+make setup          # arduino:avr 1.8.8, and the plugin: build/avr-flash-vtbl.so
+make lint           # clang-format, cpplint, shellcheck, actionlint, ruff; make fmt formats
+make tests          # the tests on the host, by GCC, in both variants
+make clang          # the same by clang
+make sanitize       # the same under AddressSanitizer and UBSan
+make coverage       # the same with --coverage: what of src/ they reach
+make tidy           # clang-tidy: library and examples as for the Uno, and the tests
+make headers        # every header compiled on its own, for the host and for the Uno
+make self-check     # examples/SelfCheck in simavr, in each variant
+make examples       # every example in each variant, fails on a warning; the table
+make docs           # the reference from the Doxygen blocks, in build/docs/html
+make keypad         # examples/Keypad in simavr with keys pressed, ~40 s a variant
+make check          # all of it but keypad, warnings as errors, as CI
 ```
 
 The checks, CI and the dev container come from the template
-[embedded-cpp-template](https://github.com/theAndreas/embedded-cpp-template), and `uvx copier
-update` brings its newest version. What is Utl's own for them lies in `tools/project.sh`: the
-board, the pinned core, the three variants and their flags, the plugin, and the check that the
-flash variant leaves no vtable in RAM. cppcheck, which the template runs beside clang-tidy, is
-off there with its reason: it cannot parse `src/utl/array.h`.
+[embedded-cpp-template](https://github.com/theAndreas/embedded-cpp-template), and `uv run
+copier update` brings its newest version. What is Utl's own for them lies in `tools/project.sh`:
+the board, the pinned core, the three variants and their flags, the plugin, and the check that
+the flash variant leaves no vtable in RAM; and in `tools/project.mk`, the target `keypad`.
+cppcheck, which the template runs beside clang-tidy, is off there with its reason: it cannot
+parse `src/utl/array.h`.
 
 The dev container in `.devcontainer/` carries all of it, with clangd for IntelliSense, which
 `.clangd` points at the compilation databases of CMake and of `tools/tidy.sh`; see
@@ -686,10 +690,11 @@ message of the `static_assert` that has to stop it. CMake makes a test of each, 
 compiler on the file and passes only if that message comes; a `static_assert` that went missing
 fails it. A new case is a new file there, nothing else.
 
-CI (`.github/workflows/ci.yml`) runs the same scripts on every pull request, but `keypad_check.sh`,
-and `arduino-lint` on top; the table of flash and RAM lands in the summary of the job "Examples". `keypad_check.sh` runs apart, in `.github/workflows/keypad.yml`, for a pull
-request that changes the sketch or what of the library it uses, and by hand ("Run workflow"), as
-simavr takes about 40 s a variant for its 0.3 s of keys.
+CI runs the same targets on every pull request: the builds and tests in
+`.github/workflows/ci.yml`, the analysers in `.github/workflows/static-analysis.yml`; the table
+of flash and RAM lands in the summary of the job "Examples". `make keypad` runs apart, in
+`.github/workflows/keypad.yml`, for a pull request that changes the sketch or what of the library
+it uses, and by hand ("Run workflow"), as simavr takes about 40 s a variant for its 0.3 s of keys.
 
 The reference, built from the Doxygen blocks of `src/`, is published at
 <https://theandreas.github.io/Utl/>; how a block is written, and how it is checked, is in

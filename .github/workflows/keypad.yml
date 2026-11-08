@@ -12,6 +12,7 @@ on:
       - examples/Keypad/**
       - tools/keypad_check.sh
       - tools/common.sh
+      - tools/project.mk
       - src/utl/constant_wrapper.h
       - src/utl/flash_span.h
       - src/utl/function_ref.h
@@ -19,6 +20,10 @@ on:
       - src/utl/spsc_queue.h
       - src/utl/internal/**
       - .github/workflows/keypad.yml
+
+# Read the repository and nothing else.
+permissions:
+  contents: read
 
 # A second push to the same branch makes the first answer worthless.
 concurrency:
@@ -37,18 +42,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: arduino/setup-arduino-cli@v2
+      - name: Install simavr
+        uses: ./.github/actions/apt-install
         with:
-          version: 1.5.1
+          packages: simavr
 
-      - name: Install the AVR core and simavr
-        run: |
-          arduino-cli core update-index
-          arduino-cli core install arduino:avr@1.8.8
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends simavr
+      # arduino-cli and the pinned core, as in CI.
+      - uses: ./.github/actions/arduino-setup
 
-      # Without "flash", which needs the plugin built first, and adds nothing
-      # here: the vtables of the core are not what the keys test.
       - name: Keys pressed in simavr
-        run: tools/keypad_check.sh ram checked
+        run: make keypad

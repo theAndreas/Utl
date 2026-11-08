@@ -1,4 +1,6 @@
 build/
+# The Python tools' environment, which uv makes from uv.lock.
+.venv/
 # A dev container variant of the site, such as one on an internal base image, see
 # .devcontainer/README.md.
 /.devcontainer/vector/

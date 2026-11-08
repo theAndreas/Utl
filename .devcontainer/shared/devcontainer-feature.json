@@ -37,12 +37,15 @@
             }
         }
     },
+    // uv's cache is a volume of its own, another file system than the workspace's .venv, so it
+    // copies rather than failing to link and saying so on every sync.
     "containerEnv": {
-        "GH_HOST": "github.com"
+        "GH_HOST": "github.com",
+        "UV_LINK_MODE": "copy"
     },
-    // The core of tools/project.sh, pinned as in CI, and what prepare() there builds; then
-    // the compilation databases clangd reads, see .clangd.
-    "postCreateCommand": "tools/setup.sh && cmake --preset default && tools/tidy.sh --database-only && arduino-cli version && arduino-lint --version && gh --version && uv --version && clangd --version && command -v simavr && doxygen --version && cppcheck --version",
+    // The Python tools of uv.lock, the core of tools/project.sh, pinned as in CI, and what
+    // prepare() there builds; then the compilation databases clangd reads, see .clangd.
+    "postCreateCommand": "uv sync --frozen && make setup && cmake --preset default && tools/tidy.sh --database-only && arduino-cli version && arduino-lint --version && gh --version && uv --version && clangd --version && command -v simavr && doxygen --version && cppcheck --version && clang++ --version",
     "mounts": [
         {
             "source": "utl-arduino15",

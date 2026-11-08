@@ -89,7 +89,11 @@ Result<char*> to_chars(char* first, char const* last, T value,
  * \param[in] base The base, 2 to 36.
  * \return The text, or an error as above.
  */
-template <typename T>
+template <typename T,
+          // Not for to_chars(buffer, buffer + 8, value) of a char array, which
+          // the overload above takes: else T would be char*, and the array a
+          // span, and clang finds the two overloads equally good.
+          typename = internal::EnableIf<!internal::IsPointer<T>::kValue>>
 Result<string_view> to_chars(span<char> buffer, T value,
                              uint8_t base = internal::kDecimal) {
   char* const first{buffer.data()};

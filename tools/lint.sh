@@ -6,19 +6,17 @@
 # Checks the style of the C++ sources (clang-format, cpplint, and the indent
 # of the lines that continue a Doxygen command, tools/doc_indent.pl), of the
 # scripts (shellcheck) and of the CI workflow (actionlint). With --fix, formats
-# the C++ sources instead of only checking them. The tools come from PyPI
-# through uvx, at fixed versions, so that nothing has to be installed and
-# every machine checks the same; doc_indent.pl needs only Perl.
+# the C++ sources instead of only checking them. The Python scripts are read
+# by ruff. The tools run from the environment uv.lock pins, through
+# `uv run --frozen`, so that every machine checks the same; doc_indent.pl
+# needs only Perl.
 
 set -euo pipefail
 
 # shellcheck source=tools/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-readonly CLANG_FORMAT="clang-format==23.1.3"
-readonly CPPLINT="cpplint==2.0.2"
-readonly SHELLCHECK="shellcheck-py==0.11.0.1"
-readonly ACTIONLINT="actionlint-py==1.7.12.25"
+readonly UV_RUN=(uv run --frozen)
 
 main() {
   local fix=0
@@ -44,16 +42,17 @@ main() {
   # docs/Documentation.md. clang-format keeps them so, but a line it breaks
   # starts at the margin again, so the indent comes after it.
   if ((fix)); then
-    uvx --from "${CLANG_FORMAT}" clang-format -i "${sources[@]}"
+    "${UV_RUN[@]}" clang-format -i "${sources[@]}"
     tools/doc_indent.pl --fix "${sources[@]}"
   else
-    uvx --from "${CLANG_FORMAT}" clang-format --dry-run --Werror \
+    "${UV_RUN[@]}" clang-format --dry-run --Werror \
       "${sources[@]}" || failed=1
     tools/doc_indent.pl --check "${sources[@]}" || failed=1
   fi
-  uvx "${CPPLINT}" --quiet "${sources[@]}" || failed=1
-  uvx --from "${SHELLCHECK}" shellcheck -x "${scripts[@]}" || failed=1
-  uvx --from "${ACTIONLINT}" actionlint || failed=1
+  "${UV_RUN[@]}" cpplint --quiet "${sources[@]}" || failed=1
+  "${UV_RUN[@]}" shellcheck -x "${scripts[@]}" || failed=1
+  "${UV_RUN[@]}" actionlint || failed=1
+  "${UV_RUN[@]}" ruff check --quiet || failed=1
   exit "${failed}"
 }
 

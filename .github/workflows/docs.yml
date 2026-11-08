@@ -7,13 +7,13 @@ name: docs
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, master]
 
 # A second push to the same branch makes the first answer worthless. On main, a deployment that
 # runs is left to finish, rather than cut off halfway, and the next one waits for it.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 
 defaults:
   run:
@@ -24,17 +24,20 @@ jobs:
     name: Doxygen
     runs-on: ubuntu-26.04
     timeout-minutes: 10
+    # Read the repository; the deploy job below asks for what publishing needs.
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v7
 
       # From apt, as in the Dockerfile, so that CI and the container warn alike.
       - name: Install Doxygen
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends doxygen
+        uses: ./.github/actions/apt-install
+        with:
+          packages: doxygen
 
       - name: Build and check
-        run: tools/docs.sh
+        run: make docs
 
       - name: Hand the pages over
         if: github.event_name == 'push'

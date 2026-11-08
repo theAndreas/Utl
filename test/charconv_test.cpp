@@ -7,6 +7,7 @@
 #include <utl/array.h>
 #include <utl/charconv.h>
 #include <utl/charconv_error.h>
+#include <utl/result.h>
 #include <utl/status.h>
 #include <utl/string_view.h>
 
@@ -88,6 +89,15 @@ TEST(ToCharsTest, InvalidBase) {
             CharconvError::kInvalidArgument);
   EXPECT_EQ(utl::to_chars(buffer.data(), buffer.data() + 4, 1, 37).status(),
             CharconvError::kInvalidArgument);
+}
+
+// The call of a sketch with a char array, which the span overload would take
+// as well, T being char*; clang found the two equally good.
+TEST(ToCharsTest, IntoACharArrayTakesTheFirstOverload) {
+  char buffer[4]{};  // NOLINT(modernize-avoid-c-arrays)
+  utl::Result<char*> const end{utl::to_chars(buffer, buffer + 4, 42)};
+  ASSERT_TRUE(end.IsOk());
+  EXPECT_EQ(std::string(buffer, end.value()), "42");
 }
 
 TEST(ToCharsTest, IntoASpanGivesTheText) {
