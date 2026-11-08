@@ -6,15 +6,14 @@
 # Runs the tests on the host with --coverage and reports which lines of src/
 # they reach: the lines no test reaches on the terminal, and all of it as HTML
 # in build/coverage/html/. The variants of CMakeLists.txt count together, as
-# each takes other branches of #if. gcovr comes from PyPI through uvx, at a
-# fixed version, like the tools of lint.sh.
+# each takes other branches of #if. gcovr runs from the environment uv.lock
+# pins, like the tools of lint.sh.
 
 set -euo pipefail
 
 # shellcheck source=tools/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-readonly GCOVR="gcovr==8.8"
 readonly COVERAGE_DIR="${BUILD_DIR}/coverage"
 
 # Removes the notes (.gcno) of a source that no longer exists, renamed or
@@ -50,7 +49,7 @@ main() {
   # --exclude-throw-branches: on the host a call that may throw has a branch
   # to its exception, which no test takes; a sketch is built without
   # exceptions, so on the AVR there is no such branch to reach.
-  uvx "${GCOVR}" --root "${ROOT_DIR}" --filter 'src/' \
+  uv run --frozen gcovr --root "${ROOT_DIR}" --filter 'src/' \
     --merge-mode-functions=separate \
     --merge-lines \
     --exclude-throw-branches \

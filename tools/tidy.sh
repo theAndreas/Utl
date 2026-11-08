@@ -7,7 +7,7 @@
 # for the board, once for each of TIDY_VARIANTS in tools/project.sh, and on the tests on the
 # host; the checks are in .clang-tidy. With --database-only it writes the compilation database
 # of the first variant and stops: clangd reads it for the examples, see .clangd. clang-tidy
-# comes from PyPI through uvx, at a fixed version, like the tools of lint.sh.
+# runs from the environment uv.lock pins, like the tools of lint.sh.
 #
 # arduino-cli compiles copies of a sketch's files in its build folder, and a finding there would
 # point to the copy. So the flags are taken from its compilation database, and a database of our
@@ -23,7 +23,7 @@ set -euo pipefail
 # shellcheck source=tools/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-readonly CLANG_TIDY="clang-tidy==23.1.4"
+readonly CLANG_TIDY=(uv run --frozen clang-tidy)
 readonly TIDY_DIR="${BUILD_DIR}/tidy"
 
 # Prints, as a JSON array, the arguments arduino-cli compiles a file of the sketch
@@ -106,7 +106,7 @@ main() {
       exit 0
     fi
     echo "clang-tidy, ${variant}:"
-    uvx --from "${CLANG_TIDY}" clang-tidy -p "${TIDY_DIR}/${variant}" --quiet \
+    "${CLANG_TIDY[@]}" -p "${TIDY_DIR}/${variant}" --quiet \
       "${sources[@]}" || failed=1
   done
 
@@ -120,7 +120,7 @@ main() {
     'test/*' ':!test/mock/*' ':!test/compile_fail/*' | grep -E '\.cpp$')
   cmake --preset default >/dev/null
   echo "clang-tidy, the tests on the host:"
-  uvx --from "${CLANG_TIDY}" clang-tidy -p "${BUILD_DIR}/host" --quiet \
+  "${CLANG_TIDY[@]}" -p "${BUILD_DIR}/host" --quiet \
     --header-filter='(^|/)test/' \
     "${tests[@]}" || failed=1
   exit "${failed}"

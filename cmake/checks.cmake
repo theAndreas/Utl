@@ -6,7 +6,8 @@
 # compile. This file comes from the template and is brought up to date with `copier update`;
 # what the project builds is in CMakeLists.txt.
 #
-#   CHECK_WARNINGS     the warnings, as errors, for target_compile_options()
+#   CHECK_WARNINGS     the warnings, for target_compile_options(); errors only where
+#                      CMAKE_COMPILE_WARNING_AS_ERROR is on, as the ci- presets set it
 #   CHECK_INSTRUMENT   --coverage, or the sanitizers, for the compile and the link options
 #   add_compile_fail_tests(DIRECTORY dir STANDARD std INCLUDES dir...)
 
@@ -16,8 +17,9 @@ option(UTL_SANITIZE "Build with AddressSanitizer and UBSan" OFF)
 # -Wconversion and -Wsign-conversion above all: an int has 16 bits on the AVR, and a
 # conversion that is harmless on the host can lose a value there. Braced initialization finds
 # a narrowing only where a variable is initialized, not in the arithmetic after it. -Wshadow,
-# as a name that hides another is read as the other.
-set(CHECK_WARNINGS -Wall -Wextra -Wconversion -Wsign-conversion -Wshadow -Werror)
+# as a name that hides another is read as the other. No -Werror: CMAKE_COMPILE_WARNING_AS_ERROR
+# decides, on in CI and under `make check`, off while somebody is in the middle of debugging.
+set(CHECK_WARNINGS -Wall -Wextra -Wconversion -Wsign-conversion -Wshadow)
 
 set(CHECK_INSTRUMENT)
 if(UTL_COVERAGE)

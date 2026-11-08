@@ -9,15 +9,16 @@
 ARG BASE_IMAGE=mcr.microsoft.com/devcontainers/cpp:ubuntu26.04
 FROM ${BASE_IMAGE}
 
-# CMake, Ninja and GoogleTest build and run the tests on the host; simavr runs
-# examples/SelfCheck as the board would (tools/self_check.sh); jq writes the compilation
-# database of tools/tidy.sh; Doxygen builds the reference (tools/docs.sh), and cppcheck reads
-# the library beside clang-tidy (tools/cppcheck.sh); neither of the two is on PyPI. From apt
+# CMake, Ninja and GoogleTest build and run the tests on the host, clang a second time beside
+# the base image's g++ (make clang); simavr runs examples/SelfCheck as the board would
+# (tools/self_check.sh); jq writes the compilation database of tools/tidy.sh; Doxygen builds
+# the reference (tools/docs.sh), and cppcheck reads the library beside clang-tidy
+# (tools/cppcheck.sh); neither of the two is on PyPI. From apt
 # rather than pinned like the tools below: the distribution's versions are what CI installs
 # as well, and none of them has a bug that forces a newer release.
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        cmake ninja-build libgtest-dev simavr jq doxygen cppcheck && \
+        cmake ninja-build libgtest-dev clang simavr jq doxygen cppcheck && \
     rm -rf /var/lib/apt/lists/*
 
 # arduino-cli compiles the library and its examples with the real Arduino AVR core, which
@@ -82,10 +83,12 @@ RUN ARCH="$(dpkg --print-architecture)" && \
     dpkg -i /tmp/gh.deb && \
     rm /tmp/gh.deb
 
-# uv runs the checkers of tools/lint.sh, tools/tidy.sh and tools/coverage.sh through uvx,
-# each at the version pinned there: clang-format, cpplint, shellcheck, actionlint,
-# clang-tidy and gcovr come from PyPI on first use, and nothing else is installed for them.
-# Pinned with its published checksum, as the tools above.
+# uv makes the environment of the Python tools from pyproject.toml and uv.lock, in the
+# workspace's .venv, on the first `uv run` or with `uv sync --frozen` when the container is
+# created: clang-format, clang-tidy, cpplint, gcovr, shellcheck, actionlint, ruff and copier,
+# at the versions CI checks with. This ARG is the one place uv's version is written:
+# .github/actions/uv-sync reads it for CI. Pinned with its published checksum, as the tools
+# above.
 ARG UV_VERSION=0.12.0
 ARG UV_SHA256_AMD64=eaf842262aa1c418d8ecc5605f02ee1ebfd369124fa48548e85f9481a47831a9
 ARG UV_SHA256_ARM64=2c5d6e3092cc5223b10ff403880cc75121bf64e84644e7a0c69f643b0d89ac95

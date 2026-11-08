@@ -17,7 +17,8 @@ another container is lost with that container.
 | `simavr` | `examples/SelfCheck` as the board runs it: `tools/self_check.sh` |
 | `g++`, `gdb` (from the base image) | the tests on the host, and what `tools/project.sh` prepares |
 | `cmake`, `ninja`, GoogleTest | the tests on the host: `cmake --workflow --preset default` |
-| `uv` | the checkers of `tools/lint.sh`, `tools/tidy.sh` and `tools/coverage.sh`, fetched from PyPI at fixed versions |
+| `uv` | the Python tools that `uv.lock` pins, in `.venv`: clang-format, clang-tidy, cpplint, gcovr, shellcheck, actionlint, ruff, copier |
+| `clang` | the tests a second time, by another compiler: `make clang` |
 | `clangd` | IntelliSense, see below |
 | `jq` | the compilation database of `tools/tidy.sh` |
 | `cppcheck` | a second analyser beside clang-tidy: `tools/cppcheck.sh` |
