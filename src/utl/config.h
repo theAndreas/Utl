@@ -49,6 +49,8 @@
  * \see Misuse, ReportMisuse()
  */
 #ifndef UTL_CHECK_ACCESS
+// A switch, read by #if and set with -D.
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define UTL_CHECK_ACCESS 0
 #endif
 

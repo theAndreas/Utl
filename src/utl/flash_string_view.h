@@ -116,8 +116,11 @@ class basic_flash_string_view {
    */
   basic_flash_string_view(
       __FlashStringHelper const* text)  // NOLINT(runtime/explicit)
-      : data_(reinterpret_cast<CharT const*>(text)),
-        size_(strlen_P(reinterpret_cast<PGM_P>(text))) {}
+      // The chars in flash that F() made, as the core's Print reads them.
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+      : data_{reinterpret_cast<CharT const*>(text)},
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        size_{strlen_P(reinterpret_cast<PGM_P>(text))} {}
 
   /*!
    * \brief Makes a view of `size` chars of a text in flash.
@@ -130,6 +133,8 @@ class basic_flash_string_view {
    * \param[in] size The number of chars.
    */
   basic_flash_string_view(__FlashStringHelper const* data, size_type size)
+      // Chars in flash, as F() makes them.
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       : data_{reinterpret_cast<CharT const*>(data)}, size_{size} {}
 
   /*!
@@ -138,6 +143,8 @@ class basic_flash_string_view {
    * \warning `Serial.print()` prints up to the `'\0'`, not size() chars.
    */
   __FlashStringHelper const* data() const {
+    // Chars in flash, as F() makes them.
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     return reinterpret_cast<__FlashStringHelper const*>(data_);
   }
 

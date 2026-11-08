@@ -175,7 +175,8 @@ Result<char*> WriteDigits(char* first, char const* last, U magnitude,
                           uint8_t base) {
   U const radix{base};
   char* out{first};
-  do {
+  // At least one digit: 0 is written as "0".
+  do {  // NOLINT(cppcoreguidelines-avoid-do-while)
     if (out == last) {
       return CharconvError::kValueTooLarge;
     }

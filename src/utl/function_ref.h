@@ -103,9 +103,8 @@ class function_ref<R(Args...)> {
             typename = internal::EnableIf<internal::IsFunction<F>::kValue>,
             typename = internal::CallableAs<R, F, Args...>>
   function_ref(F* f)  // NOLINT(runtime/explicit)
-      : bound_(reinterpret_cast<void (*)()>(f)), call_(&CallFunction<F>) {
-    // reinterpret_cast, not constexpr: the one way to keep a pointer to a
-    // function of any type, and CallFunction<F> casts it back to an F*.
+      : bound_{ToFunction(f)}, call_{&CallFunction<F>} {
+    // Not constexpr, as ToFunction() is not.
     static_cast<void>(internal::Check(f != nullptr, Misuse::kNullFunction));
   }
 
@@ -127,13 +126,10 @@ class function_ref<R(Args...)> {
             typename = internal::CallableAs<R, T, Args...>>
   // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
   constexpr function_ref(F&& f)  // NOLINT(runtime/explicit)
-      : bound_(const_cast<void*>(
-            static_cast<void const*>(__builtin_addressof(f)))),
-        call_(&CallObject<T>) {
+      : bound_{Unconst(__builtin_addressof(f))}, call_{&CallObject<T>} {
     // The EnableIf leaves a function_ref to the copy constructor; clang-tidy
     // sees only std::enable_if, which avr-gcc lacks.
-    // __builtin_addressof, as an object may overload unary &. The const goes
-    // in the pointer, and CallObject<T> puts it back, T being const then.
+    // __builtin_addressof, as an object may overload unary &.
   }
 
   /*!
@@ -174,8 +170,7 @@ class function_ref<R(Args...)> {
   template <typename F, F Function, typename T,
             typename = internal::InvocableAs<R, F, T&, Args...>>
   constexpr function_ref(constant_wrapper<F, Function> /*f*/, T& object)
-      : bound_{const_cast<void*>(
-            static_cast<void const*>(__builtin_addressof(object)))},
+      : bound_{Unconst(__builtin_addressof(object))},
         call_{&CallConstantOn<F, Function, T>} {
     static_assert(Function != nullptr, "function_ref: the function is null");
   }
@@ -200,8 +195,7 @@ class function_ref<R(Args...)> {
   template <typename F, F Function, typename T,
             typename = internal::InvocableAs<R, F, T*, Args...>>
   function_ref(constant_wrapper<F, Function> /*f*/, T* object)
-      : bound_{const_cast<void*>(static_cast<void const*>(object))},
-        call_{&CallConstantWith<F, Function, T>} {
+      : bound_{Unconst(object)}, call_{&CallConstantWith<F, Function, T>} {
     static_assert(Function != nullptr, "function_ref: the function is null");
     static_cast<void>(internal::Check(
         !internal::IsMemberPointer<F>::kValue || object != nullptr,
@@ -241,9 +235,28 @@ class function_ref<R(Args...)> {
     void (*function)();
   };
 
+  // The address of an object of any type, const or not, as one type. The
+  // const goes in the pointer, and the Call function puts it back, T being
+  // const then.
+  static constexpr void* Unconst(void const* object) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    return const_cast<void*>(object);
+  }
+
+  // A pointer to a function of any type, as one type: the one way to keep it,
+  // and so not constexpr. CallFunction<F> casts it back to an F*.
+  using AnyFunction = void (*)();
+  template <typename F>
+  static AnyFunction ToFunction(F* f) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    return reinterpret_cast<AnyFunction>(f);
+  }
+
   template <typename F>
   static R CallFunction(Bound bound, Args... args) {
     return internal::CallReturning<R>::Call(
+        // Back to the F* the constructor kept.
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         *reinterpret_cast<F*>(bound.function), static_cast<Args&&>(args)...);
   }
 

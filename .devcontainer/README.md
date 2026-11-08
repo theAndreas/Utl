@@ -13,18 +13,19 @@ another container is lost with that container.
 
 | Tool | What for |
 |---|---|
-| `arduino-cli` with `arduino:avr` 1.8.8 | the library and its examples with the real AVR toolchain, pinned as in CI |
-| `simavr` | `examples/SelfCheck` as an Uno runs it: `tools/self_check.sh` |
-| `g++`, `gdb` (from the base image) | the tests on the host, and the GCC plugin `avr-flash-vtbl` |
+| `arduino-cli` with the core of `tools/project.sh` | the library and its examples with the real toolchain, pinned as in CI |
+| `simavr` | `examples/SelfCheck` as the board runs it: `tools/self_check.sh` |
+| `g++`, `gdb` (from the base image) | the tests on the host, and what `tools/project.sh` prepares |
 | `cmake`, `ninja`, GoogleTest | the tests on the host: `cmake --workflow --preset default` |
 | `uv` | the checkers of `tools/lint.sh`, `tools/tidy.sh` and `tools/coverage.sh`, fetched from PyPI at fixed versions |
 | `clangd` | IntelliSense, see below |
 | `jq` | the compilation database of `tools/tidy.sh` |
+| `cppcheck` | a second analyser beside clang-tidy: `tools/cppcheck.sh` |
 | `arduino-lint` | the rules of the Arduino Library Manager |
 | `gh` | branches and pull requests from the container |
 
-The `postCreateCommand` installs the AVR core, builds the plugin, configures CMake and writes the
-compilation databases, so that a new container can build, check and complete code at once.
+The `postCreateCommand` runs `tools/setup.sh`, which installs the core and builds what
+`tools/project.sh` prepares, configures CMake and writes the compilation databases, so that a new container can build, check and complete code at once.
 
 **Flashing is not covered.** The container builds; getting a USB serial adapter into it is another
 matter, and under WSL2 it needs `usbipd-win` on the Windows side first. Build here, flash from the
@@ -40,13 +41,13 @@ clangd reads the compilation database that `.clangd` names for a path, as no sin
 everything:
 
 - `src/` and `test/` from CMake, against the mock of the core, in `build/host/`.
-- `examples/` from `tools/tidy.sh --database-only`, in `build/tidy/default/`, with the flags the Uno
-  is compiled with: only that one has the sketches, an `.ino` as C++ with `Arduino.h` included
+- `examples/` from `tools/tidy.sh --database-only`, in `build/tidy/default/`, with the flags the
+  board is compiled with: only that one has the sketches, an `.ino` as C++ with `Arduino.h` included
   first.
 
 Both are written when the container is created. After adding a file, run `cmake --preset default`
-or `tools/tidy.sh --database-only` again. clangd inserts no includes: a sketch includes `<Utl.h>`
-first, which an include put in by the editor would not know.
+or `tools/tidy.sh --database-only` again. clangd inserts no includes: a sketch includes
+`<Utl.h>` first, which an include put in by the editor would not know.
 
 clangd comes from PyPI at 22.1.1, the newest there, one behind the clang-tidy 23 of CI, which stays
 the measure. The package wraps the binary in a Python script whose interpreter would lie in root's
@@ -54,10 +55,10 @@ home; `/usr/local/bin/clangd` links to the binary itself.
 
 ## Volumes
 
-The AVR core and its toolchain, and the checkers uv fetches, are not part of the image. They live
+The Arduino core and its toolchain, and the checkers uv fetches, are not part of the image. They live
 in the named volumes `utl-arduino15` and `utl-uv-cache`, so that a rebuild does not download them
-again. Two more carry a login across a rebuild: `utl-codex` at `/home/vscode/.codex` and `utl-gh`
-at `/home/vscode/.config/gh`, both at mode 0700, as `gh` refuses a config directory others can
+again. Two more carry a login across a rebuild: `utl-codex` at `/home/vscode/.codex` and
+`utl-gh` at `/home/vscode/.config/gh`, both at mode 0700, as `gh` refuses a config directory others can
 enter. Those two hold credentials: do not share, export or remove one unless the login should go.
 
 The `Dockerfile` creates each path as the remote user first: an empty named volume takes its

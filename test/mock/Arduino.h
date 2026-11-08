@@ -18,12 +18,15 @@
 // The core's name, reserved as it is: the library takes this very type.
 class __FlashStringHelper;  // NOLINT(bugprone-reserved-identifier)
 
+// The core's macros, as it defines them.
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define PSTR(text) (text)
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define F(text) (reinterpret_cast<__FlashStringHelper const*>(PSTR(text)))
 
 // As the core's Print: write() is what a derived class provides, print()
-// what the library calls.
-class Print {
+// what the library calls. Copied and moved as the core's is, by the compiler.
+class Print {  // NOLINT(cppcoreguidelines-special-member-functions)
  public:
   virtual ~Print() = default;
 
@@ -47,7 +50,7 @@ class MockSerial : public Print {
   std::string output;
 };
 
-// The core's name for it.
+// The core's name for it; a global, as test/.clang-tidy allows.
 extern MockSerial Serial;  // NOLINT(readability-identifier-naming)
 
 #endif  // UTL_TEST_MOCK_ARDUINO_H_

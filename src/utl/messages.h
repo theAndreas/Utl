@@ -69,6 +69,9 @@ class Messages {
   /*! \brief Not assignable: UseMessages() keeps its address. */
   Messages& operator=(Messages const&) = delete;
 
+  /*! \brief Trivial, so that a static Messages registers no destructor. */
+  ~Messages() = default;
+
   /*!
    * \brief Returns the text of `code` of `group`, from flash.
    *

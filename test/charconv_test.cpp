@@ -36,8 +36,8 @@ std::string Written(T value, uint8_t base = 10, size_t size = 24) {
 template <typename T>
 struct Read {
   utl::Status status;
-  T value;
-  size_t taken;
+  T value{};
+  size_t taken{0};
 };
 template <typename T>
 Read<T> ReadFrom(char const* text, uint8_t base = 10, T initial = T{7}) {

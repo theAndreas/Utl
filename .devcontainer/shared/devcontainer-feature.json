@@ -2,7 +2,7 @@
     "id": "shared",
     "version": "1.0.0",
     "name": "Utl shared editor configuration",
-    "description": "Extensions, the Arduino AVR core, the GCC plugin, the CMake build of the tests and the volumes for the Arduino data directory, uv's cache and logins shared by every devcontainer.json variant.",
+    "description": "Extensions, the Arduino core, the CMake build of the tests and the volumes for the Arduino data directory, uv's cache and logins shared by every devcontainer.json variant.",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -15,8 +15,8 @@
             // clangd for IntelliSense, with the databases .clangd names; cpptools only
             // for debugging, its IntelliSense off so that the two do not answer twice.
             // doxdocgen writes the skeleton of a Doxygen block, see the settings below.
-            // No header insertion: a sketch includes <Utl.h> first, and an include
-            // put in by the editor would not know that. An .ino is C++.
+            // No header insertion: a sketch includes <Utl.h> first, and an
+            // include put in by the editor would not know that. An .ino is C++.
             "settings": {
                 "C_Cpp.intelliSenseEngine": "disabled",
                 "clangd.path": "/usr/local/bin/clangd",
@@ -40,9 +40,9 @@
     "containerEnv": {
         "GH_HOST": "github.com"
     },
-    // arduino:avr at 1.8.8, as CI pins it: the plugin loads only into the cc1plus it was
-    // built for, and the sizes in the README were measured with it.
-    "postCreateCommand": "arduino-cli core update-index && arduino-cli core install arduino:avr@1.8.8 && tools/build_plugin.sh && cmake --preset default && tools/tidy.sh --database-only && arduino-cli version && arduino-lint --version && gh --version && uv --version && clangd --version && command -v simavr && doxygen --version",
+    // The core of tools/project.sh, pinned as in CI, and what prepare() there builds; then
+    // the compilation databases clangd reads, see .clangd.
+    "postCreateCommand": "tools/setup.sh && cmake --preset default && tools/tidy.sh --database-only && arduino-cli version && arduino-lint --version && gh --version && uv --version && clangd --version && command -v simavr && doxygen --version && cppcheck --version",
     "mounts": [
         {
             "source": "utl-arduino15",

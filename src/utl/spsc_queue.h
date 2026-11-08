@@ -84,6 +84,9 @@ class spsc_queue {
   /*! \brief Deleted: the two sides refer to one queue. */
   spsc_queue& operator=(spsc_queue const&) = delete;
 
+  /*! \brief Trivial, so that a static queue registers no destructor. */
+  ~spsc_queue() = default;
+
   /*!
    * \brief Adds `value` at the end, or returns IndexError::kFull; for the
    *        producer.

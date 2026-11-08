@@ -61,6 +61,10 @@ union VectorStorage<T, N, false> {
   constexpr VectorStorage() : none{} {}
   // NOLINTNEXTLINE(modernize-use-equals-default): = default would be deleted.
   ~VectorStorage() {}
+  // Deleted already by the elements, which are not trivially copyable; said
+  // here, as the vector copies and moves them one by one.
+  VectorStorage(VectorStorage const&) = delete;
+  VectorStorage& operator=(VectorStorage const&) = delete;
 
   uint8_t none;
   T elements[N];  // NOLINT(modernize-avoid-c-arrays)

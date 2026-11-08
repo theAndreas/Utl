@@ -95,8 +95,8 @@ void CheckSpan() {
 utl::inplace_vector<uint8_t, 4> pressed;
 
 // An element with a destructor: counts how many live, so that each made is
-// destroyed once.
-struct Tracked {
+// destroyed once. No move of its own: a move is its copy, counted as well.
+struct Tracked {  // NOLINT(cppcoreguidelines-special-member-functions)
   static uint8_t alive;
   explicit Tracked(uint8_t code_in) : code{code_in} { ++alive; }
   Tracked(Tracked const& other) : code{other.code} { ++alive; }

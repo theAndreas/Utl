@@ -11,7 +11,9 @@
 namespace utl {
 namespace {
 
-// The groups whose texts are on, the last one turned on first.
+// The groups whose texts are on, the last one turned on first. A sketch turns
+// them on at run time, so the head of the list cannot be const.
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 Messages* first_messages{nullptr};
 
 }  // namespace
