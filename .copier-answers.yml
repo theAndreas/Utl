@@ -1,6 +1,6 @@
 # The answers this project was made from, which `copier update` reads. Change one with
 # `copier update --data name=value`, not here.
-_commit: 29fa254
+_commit: 22640de
 _src_path: gh:theAndreas/embedded-cpp-template
 arduino_core: arduino:avr@1.8.8
 author: Andreas Burnickl
