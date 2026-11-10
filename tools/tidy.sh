@@ -17,6 +17,9 @@
 # The library is read with the board's flags, not only through the host's database: an int has
 # 16 bits on the AVR and 32 on the host, and a check that only saw the host would never meet the
 # code as the board does.
+#
+# The checks of our own, house-*, are a module of clang-tidy's that tools/tidy_module.sh builds
+# from tools/tidy_module/ and clang-tidy loads; the database alone does not need it.
 
 set -euo pipefail
 
@@ -94,6 +97,12 @@ main() {
     'src/*' 'examples/*' | grep -E '\.(cpp|ino)$')
   local flags
   flags="$(arduino_flags)"
+  local clang_tidy=("${CLANG_TIDY[@]}")
+  if ((!database_only)); then
+    local module
+    module="$(tools/tidy_module.sh)"
+    clang_tidy+=("--load=${module}")
+  fi
 
   # Each variant takes other branches of #if. The first is the one clangd reads, see .clangd.
   local failed=0
@@ -106,7 +115,7 @@ main() {
       exit 0
     fi
     echo "clang-tidy, ${variant}:"
-    "${CLANG_TIDY[@]}" -p "${TIDY_DIR}/${variant}" --quiet \
+    "${clang_tidy[@]}" -p "${TIDY_DIR}/${variant}" --quiet \
       "${sources[@]}" || failed=1
   done
 
@@ -120,7 +129,7 @@ main() {
     'test/*' ':!test/mock/*' ':!test/compile_fail/*' | grep -E '\.cpp$')
   cmake --preset default >/dev/null
   echo "clang-tidy, the tests on the host:"
-  "${CLANG_TIDY[@]}" -p "${BUILD_DIR}/host" --quiet \
+  "${clang_tidy[@]}" -p "${BUILD_DIR}/host" --quiet \
     --header-filter='(^|/)test/' \
     "${tests[@]}" || failed=1
   exit "${failed}"

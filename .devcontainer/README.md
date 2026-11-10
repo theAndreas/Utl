@@ -20,6 +20,7 @@ another container is lost with that container.
 | `uv` | the Python tools that `uv.lock` pins, in `.venv`: clang-format, clang-tidy, cpplint, gcovr, shellcheck, actionlint, ruff, copier |
 | `clang` | the tests a second time, by another compiler: `make clang` |
 | `clangd` | IntelliSense, see below |
+| LLVM's headers, in `/opt/llvm-23/include` | the checks of our own, `house-*`, a module that `tools/tidy_module.sh` builds and `tools/tidy.sh` loads |
 | `jq` | the compilation database of `tools/tidy.sh` |
 | `cppcheck` | a second analyser beside clang-tidy: `tools/cppcheck.sh` |
 | `arduino-lint` | the rules of the Arduino Library Manager |
@@ -50,6 +51,10 @@ Both are written when the container is created. After adding a file, run `cmake 
 or `tools/tidy.sh --database-only` again. clangd inserts no includes: a sketch includes
 `<Utl.h>` first, which an include put in by the editor would not know.
 
+clangd does not load the module of the checks of our own, `house-*`: those findings come from
+`make tidy` alone. The module's own sources in `tools/tidy_module/` are read against LLVM's
+headers, without the checks of `.clang-tidy`, which are the library's rules and not LLVM's.
+
 clangd comes from PyPI at 22.1.1, the newest there, one behind the clang-tidy 23 of CI, which stays
 the measure. The package wraps the binary in a Python script whose interpreter would lie in root's
 home; `/usr/local/bin/clangd` links to the binary itself.
@@ -58,9 +63,13 @@ home; `/usr/local/bin/clangd` links to the binary itself.
 
 The Arduino core and its toolchain, and the checkers uv fetches, are not part of the image. They live
 in the named volumes `utl-arduino15` and `utl-uv-cache`, so that a rebuild does not download them
-again. Two more carry a login across a rebuild: `utl-codex` at `/home/vscode/.codex` and
-`utl-gh` at `/home/vscode/.config/gh`, both at mode 0700, as `gh` refuses a config directory others can
-enter. Those two hold credentials: do not share, export or remove one unless the login should go.
+again. Three more carry a login across a rebuild: `utl-codex` at `/home/vscode/.codex`,
+`utl-claude` at `/home/vscode/.claude` (with `CLAUDE_CONFIG_DIR` pointing there, so that
+Claude Code's `.claude.json` lands in it too) and `utl-gh` at `/home/vscode/.config/gh`, all at
+mode 0700, as `gh` refuses a config directory others can enter. Those three hold credentials: do not share, export or remove one unless the login should go.
+The shell history lives in `utl-history` at `/home/vscode/.commandhistory`, written after every
+command (`HISTFILE` and `PROMPT_COMMAND` in `shared/devcontainer-feature.json`); remove the volume to
+forget it.
 
 The `Dockerfile` creates each path as the remote user first: an empty named volume takes its
 ownership from the path it covers, and one that does not exist in the image gives a volume owned by
@@ -83,8 +92,16 @@ by GitHub, so the first SSH operation does not fail with `Host key verification 
 
 `arduino-cli`, `arduino-lint`, `gh` and `uv` are pinned release downloads, each verified against its
 published SHA-256 in the `Dockerfile`; `clangd` is pinned on PyPI. Bumping a version means bumping
-its checksums as well. `gh auth login` has to run in a terminal, and `gh auth setup-git` afterwards
-lets `git push` over HTTPS use the same token.
+its checksums as well. `gh auth login` has to run in a terminal, once, as its login stays in its
+volume. The shared feature's `postAttachCommand` then runs `gh auth setup-git` on every attach, so
+that `git push` over HTTPS uses the same token instead of VS Code's helper, which opens a window
+on the host; on every attach, as VS Code copies the host's `.gitconfig` into a new container.
+
+LLVM's headers are not pinned closer than their major version, `ARG LLVM_MAJOR`: `llvm-headers.sh`
+takes them from apt.llvm.org, which keeps only the newest build of a release branch, and checks the
+archive's signature against the fingerprint in the script. Within a major version LLVM keeps its
+ABI. When `uv.lock` moves clang-tidy to the next major version, `make tidy` says so, and
+`LLVM_MAJOR` follows it, as does the path in `.clangd`.
 
 `gh` is pointed at `github.com` by the shared feature's `containerEnv`. A base image that sets
 `GH_HOST` to a company GitHub needs `"remoteEnv": {"GH_HOST": "github.com"}` in its
@@ -93,9 +110,9 @@ applied last.
 
 ## Shared configuration
 
-Extensions, settings, volumes and the `postCreateCommand` live in the local feature in `shared/`,
-which every configuration references with `"features": { "./../shared": {} }`. A variant can add
-extensions of its own on top. Feature metadata is baked into the image, so a change to
+Extensions, settings, volumes, the `postCreateCommand` and the `postAttachCommand` live in the
+local feature in `shared/`, which every configuration references with
+`"features": { "./../shared": {} }`. A variant can add extensions of its own on top. Feature metadata is baked into the image, so a change to
 `shared/devcontainer-feature.json` needs **Dev Containers: Rebuild Container**.
 
 ## Site-specific variants

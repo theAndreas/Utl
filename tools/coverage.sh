@@ -33,8 +33,23 @@ remove_stale_notes() {
   done < <(find "${COVERAGE_DIR}" -name '*.gcno' -print0 2>/dev/null)
 }
 
+# Fails on a line of src/ excluded from coverage without its reason (Testing.md TS-4): a marker
+# that starts an exclusion is followed by a colon and the reason, as
+# `// GCOVR_EXCL_LINE: the bus may hang, no test can make it`. The end of a block needs none.
+check_exclusions() {
+  local bare
+  bare="$(grep -rnE 'GCOVR_EXCL_(BR_)?(LINE|START)' src/ \
+    | grep -vE 'GCOVR_EXCL_(BR_)?(LINE|START): [^ ]' || true)"
+  if [[ -n "${bare}" ]]; then
+    err "An exclusion from coverage without its reason (Testing.md TS-4):"
+    err "${bare}"
+    exit 1
+  fi
+}
+
 main() {
   cd "${ROOT_DIR}"
+  check_exclusions
   # Counts from an earlier run would add to this one.
   find "${COVERAGE_DIR}" -name '*.gcda' -delete 2>/dev/null || true
   cmake --workflow --preset coverage

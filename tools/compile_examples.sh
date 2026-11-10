@@ -5,7 +5,9 @@
 #
 # Compiles every example in each variant and prints flash and RAM of each, as a Markdown table.
 # Fails on a warning outside the Arduino core, and where check_elf() of tools/project.sh fails
-# on what was built.
+# on what was built. When every example compiles, the table goes to build/sizes.md as well, which
+# tools/documented_sizes.py compares with the README's (`make sizes`); else that file is removed,
+# so that no table of an older build is taken for this one's.
 
 set -euo pipefail
 
@@ -34,6 +36,8 @@ main() {
   local -A ram_size
   local examples
   mapfile -t examples < <(list_examples)
+  local -r sizes="${BUILD_DIR}/sizes.md"
+  rm -f "${sizes}"
 
   for example in "${examples[@]}"; do
     for variant in "${VARIANTS[@]}"; do
@@ -66,8 +70,7 @@ main() {
     header+=" RAM, ${variant} |"
     rule+="---|"
   done
-  echo "${header}"
-  echo "${rule}"
+  local table="${header}"$'\n'"${rule}"
   local row
   for example in "${examples[@]}"; do
     row="| ${example} |"
@@ -77,8 +80,13 @@ main() {
     for variant in "${VARIANTS[@]}"; do
       row+=" ${ram_size["${example}/${variant}"]:-} |"
     done
-    echo "${row}"
+    table+=$'\n'"${row}"
   done
+  echo "${table}"
+  if ((failed == 0)); then
+    mkdir -p "${BUILD_DIR}"
+    echo "${table}" > "${sizes}"
+  fi
   exit "${failed}"
 }
 

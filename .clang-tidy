@@ -8,6 +8,7 @@ Checks: >
   clang-analyzer-*,
   cppcoreguidelines-*,
   google-*,
+  house-*,
   misc-*,
   modernize-*,
   performance-*,
@@ -43,6 +44,8 @@ Checks: >
   -readability-named-parameter,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-type-union-access
+# house-*: the checks of our own, in tools/tidy_module/; tools/tidy.sh loads them. Without
+#   the module, as in clangd, the name matches nothing.
 # bugprone-dynamic-static-initializers: it reports the extern declaration of a constant whose
 #   constexpr definition lies in a .cpp it cannot see, as an object identified by its address
 #   has to be.
@@ -126,6 +129,14 @@ ExtraArgs:
 # header beside an example is found as examples/.../font_error.h.
 HeaderFilterRegex: '(^|/)(src|examples)/'
 CheckOptions:
+  # The size of a function, docs/CodingStyle.md FN-2 to FN-5: 40 lines of body,
+  # 4 parameters, 3 levels within the body (the body itself is level 1 to the
+  # check), a cognitive complexity of 15. Without a threshold the check
+  # reports nothing.
+  readability-function-size.LineThreshold: 40
+  readability-function-size.ParameterThreshold: 4
+  readability-function-size.NestingThreshold: 4
+  readability-function-cognitive-complexity.Threshold: 15
   # A text in PROGMEM is a char array, as F() and a table of texts need one.
   modernize-avoid-c-arrays.AllowStringArrays: true
   # A list over several lines ends in a comma, unless it is one value whose

@@ -4,7 +4,7 @@
 #
 #   clang-tidy   the library and the examples with the board's flags, once per variant whose
 #                defines differ, and the tests on the host; which checks, and why the rest are
-#                off, is in .clang-tidy
+#                off, is in .clang-tidy; with the checks of our own, built against LLVM's headers
 #   cppcheck     the library, parsed by cppcheck itself, which reaches what clang does not
 #   headers      every header of src/ compiled on its own, for the host and for the board
 #
@@ -47,6 +47,9 @@ jobs:
           packages: cmake ninja-build libgtest-dev jq
 
       - uses: ./.github/actions/uv-sync
+
+      # The headers the module of the checks of our own is compiled against.
+      - uses: ./.github/actions/llvm-headers
 
       # The board's flags come from arduino-cli's compilation database.
       - uses: ./.github/actions/arduino-setup
