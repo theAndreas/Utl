@@ -62,10 +62,10 @@ it:
 | Id | Rule | Checked by |
 |---|---|---|
 | FN-1 | A function does one thing, and its name says which. If the name needs an "and", it is two. | Review |
-| FN-2 | At most 40 lines in its body. A test has no limit of lines, as many cases make it long but flat; the other limits hold for it. | `readability-function-size` |
+| FN-2 | At most 40 lines in its body. A test has no limit of lines, as many cases make it long but flat, and SelfCheck is a test; the other limits hold for it. | `readability-function-size` |
 | FN-3 | At most 4 parameters; more are a struct. | `readability-function-size` |
 | FN-4 | At most 3 levels of nesting within the body; an early return over an `else`. | `readability-function-size`, `readability-else-after-return` |
-| FN-5 | A cognitive complexity of at most 15. | `readability-function-cognitive-complexity` |
+| FN-5 | A cognitive complexity of at most 15. In a test, what GoogleTest's macros expand to does not count, its own branches do. | `readability-function-cognitive-complexity` |
 | FN-6 | No recursion: the depth of the stack cannot be known when compiling, and on a small target the stack is what is left of the RAM. | `misc-no-recursion` |
 | FN-7 | A parameter that is cheap to copy (up to two pointers in size) is passed by value, any other by `T const&`; one the function writes by pointer or by `T&` only where a return value cannot carry it (F.16, F.20). | `performance-unnecessary-value-param`, Review |
 | FN-8 | A result is returned, not written into a parameter (F.20). Several results are a struct. | Review |
