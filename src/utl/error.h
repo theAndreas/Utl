@@ -58,7 +58,7 @@ class [[nodiscard]] Error {
    */
   template <typename Code, typename = decltype(GetErrorGroup(Code{}))>
   constexpr Error(Code code)  // NOLINT(runtime/explicit)
-      : group_(GetErrorGroup(code)), code_(static_cast<uint8_t>(code)) {
+      : group_{GetErrorGroup(code)}, code_{static_cast<uint8_t>(code)} {
     /*
      * Implicit, unlike the Google default, because a code of a group is an
      * error and nothing else. The default template argument takes it out of

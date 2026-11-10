@@ -29,7 +29,7 @@ struct Counted {
   // Implicit, so that a braced list of ints makes elements.
   // NOLINTNEXTLINE(google-explicit-constructor)
   Counted(int value_in)  // NOLINT(runtime/explicit)
-      : value(value_in) {
+      : value{value_in} {
     ++alive;
   }
   Counted(Counted const& other) : value{other.value} { ++alive; }

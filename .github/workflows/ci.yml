@@ -116,6 +116,9 @@ jobs:
       - name: Compile
         run: make examples
 
+      - name: The sizes in the README
+        run: make sizes
+
   arduino-lint:
     name: arduino-lint
     runs-on: ubuntu-26.04

@@ -619,11 +619,13 @@ under its own licence, the GPL v2; it is a tool of the build and links nothing i
 utl needed it while its groups were virtual; it now saves only the core's 18 bytes, and the
 examples are built with it to show that utl does not depend on it.
 
+<!-- sizes -->
 | Example | Flash, ram | Flash, flash | Flash, checked | RAM, ram | RAM, flash | RAM, checked |
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
 | Keypad | 2484 | 2484 | 2802 | 212 | 194 | 212 |
-| SelfCheck | 20582 | 20582 | 23552 | 354 | 336 | 368 |
+| SelfCheck | 20528 | 20528 | 23550 | 354 | 336 | 364 |
+<!-- /sizes -->
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the
 plugin; `checked` is `ram` with `UTL_CHECK_ACCESS` at 1. `SelfCheck` checks more in `checked`,

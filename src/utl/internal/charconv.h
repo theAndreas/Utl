@@ -223,6 +223,12 @@ class DigitAppender {
  * none, kOutOfRange if they pass the limit.
  */
 template <typename U>
+// Five parameters, one over FN-3. Base and limit handed in as the
+// DigitAppender they make, the struct FN-3 asks for, cost SelfCheck 64 bytes
+// of flash: the appender then lies in memory rather than in registers.
+// Internal, with one caller, from_chars(), whose tests read every value of
+// the 8- and 16-bit types in the bases 2, 10, 16 and 36.
+// NOLINTNEXTLINE(readability-function-size)
 Result<char const*> ReadDigits(char const* first, char const* last,
                                uint8_t base, U limit, U& magnitude) {
   DigitAppender<U> const appender{base, limit};

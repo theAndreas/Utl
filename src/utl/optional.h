@@ -106,7 +106,7 @@ class optional {
 
   /*! \brief Makes an empty optional, from nullopt. */
   constexpr optional(nullopt_t)  // NOLINT(runtime/explicit)
-      : value_(), has_value_(false) {}
+      : value_{}, has_value_{false} {}
 
   /*!
    * \brief Makes an optional of `value`.
@@ -117,7 +117,7 @@ class optional {
    * \param[in] value The value.
    */
   constexpr optional(T const& value)  // NOLINT(runtime/explicit)
-      : value_(value), has_value_(true) {}
+      : value_{value}, has_value_{true} {}
 
   /*! \brief Returns whether there is a value. */
   constexpr bool HasValue() const { return has_value_; }
@@ -383,7 +383,7 @@ class optional<T&> {
 
   /*! \brief Makes an empty optional, from nullopt. */
   constexpr optional(nullopt_t)  // NOLINT(runtime/explicit)
-      : pointer_(nullptr) {}
+      : pointer_{nullptr} {}
 
   /*!
    * \brief Makes an optional that refers to `object`.
@@ -395,7 +395,7 @@ class optional<T&> {
    *                   `&`.
    */
   constexpr optional(T& object)  // NOLINT(runtime/explicit)
-      : pointer_(__builtin_addressof(object)) {
+      : pointer_{__builtin_addressof(object)} {
     // __builtin_addressof, what std::addressof is built on, takes the address
     // even of a T that overloads unary &.
   }
@@ -422,7 +422,7 @@ class optional<T&> {
   template <typename U, typename = decltype(internal::ConvertTo<T*>(
                             internal::DeclVal<U*>()))>
   constexpr optional(optional<U&> const& other)  // NOLINT(runtime/explicit)
-      : pointer_(other.HasValue() ? __builtin_addressof(*other) : nullptr) {}
+      : pointer_{other.HasValue() ? __builtin_addressof(*other) : nullptr} {}
 
   /*! \brief Returns whether it refers to an object. */
   constexpr bool HasValue() const { return pointer_ != nullptr; }

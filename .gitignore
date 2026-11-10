@@ -4,3 +4,6 @@ build/
 # A dev container variant of the site, such as one on an internal base image, see
 # .devcontainer/README.md.
 /.devcontainer/vector/
+# The lock file VS Code writes beside a devcontainer.json; the shared feature is local and
+# has no version to pin.
+/.devcontainer/*/devcontainer-lock.json
