@@ -36,8 +36,13 @@ void CheckStringView() {
   Check(line.at(0).ValueOr(0) == 't' &&
             line.at(7).status() == IndexError::kOutOfRange,
         F("string_view::at"));
+}
 
+void CheckFlashStringView() {
+  char buffer[] = "text=Hi";
+  utl::string_view const line{buffer};
   utl::flash_string_view const keyword{F("text=")};
+
   Check(keyword.size() == 5 && keyword[4] == '=' && keyword.front() == 't' &&
             keyword.back() == '=',
         F("flash_string_view reads flash"));
@@ -62,6 +67,12 @@ void CheckStringView() {
     }
   }
   Check(ts == 2, F("flash_string_view in a range-based for"));
+}
+
+void CheckTrimAndCompare() {
+  char buffer[] = "text=Hi";
+  utl::string_view const line{buffer};
+  utl::flash_string_view const keyword{F("text=")};
 
   utl::string_view trimmed{line};
   trimmed.remove_prefix(5);
@@ -111,6 +122,8 @@ void CheckCharconv() {
 
 void CheckText() {
   CheckStringView();
+  CheckFlashStringView();
+  CheckTrimAndCompare();
   CheckCharconv();
 }
 
