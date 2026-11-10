@@ -13,6 +13,10 @@
 # style tools say. --inline-suppr, so that a finding is answered next to the code, with the
 # reason there: // cppcheck-suppress <id> above the line.
 #
+# -D__has_include(x)=1: cppcheck knows __has_include from C++17 only and reports a syntax error
+# on it before, where GCC and Clang offer it in every standard. 1, as cppcheck does not read the
+# system headers anyway (missingIncludeSystem), so the branch that includes them is the one read.
+#
 # A project whose code cppcheck cannot parse sets CPPCHECK=0 in tools/project.sh, with the
 # reason: a syntax error ends the analysis of the whole translation unit, so suppressing it
 # would leave nothing checked and still pass.
@@ -65,6 +69,7 @@ main() {
     --quiet \
     --cppcheck-build-dir="${BUILD_DIR}/cppcheck" \
     -Isrc -Itest/mock \
+    '-D__has_include(x)=1' \
     "${defines[@]}" \
     "${files[@]}"
 }

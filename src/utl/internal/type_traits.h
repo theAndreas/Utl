@@ -32,6 +32,13 @@ struct VoidImpl {
 template <typename... Ts>
 using Void = typename VoidImpl<Ts...>::Type;
 
+// void, if a T is initialized from each of Ts in braces, which refuse
+// narrowing. An alias of its own, as cppcheck (2.19 to 2.22) reads the pack
+// expansion `internal::Void<decltype(...)...>>` in a default template argument
+// as a syntax error.
+template <typename T, typename... Ts>
+using BracedFrom = Void<decltype(T{DeclVal<Ts>()})...>;
+
 // std::remove_cv_t.
 template <typename T>
 struct RemoveCvImpl {

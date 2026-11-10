@@ -315,6 +315,9 @@ class Result<void> : public Status {
   constexpr Result() = default;
 
   /*! \brief Returns an ok Result. */
+  // It hides Status::Ok() on purpose: code generic in T calls Result<T>::Ok()
+  // and gets a Result, not a Status.
+  // cppcheck-suppress duplInheritedMember
   static constexpr Result Ok() { return Result{}; }
 
   /*!

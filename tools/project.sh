@@ -38,10 +38,6 @@ SIMAVR_MCU="atmega328p"
 SIMAVR_FREQUENCY="16000000"
 # Status and Result give a sketch the functions of their base in internal/fluent.h.
 DOCS_INTERNAL_API='^src/utl/internal/fluent\.h:'
-# cppcheck 2.19 stops at a syntax error in src/utl/array.h:181, the pack expansion in
-# `internal::Void<decltype(T{internal::DeclVal<Ts>()})...>`, which GCC and Clang compile; and a
-# syntax error ends the analysis of every translation unit that includes it, which is all.
-CPPCHECK=0
 
 readonly PLUGIN="${BUILD_DIR}/avr-flash-vtbl.so"
 

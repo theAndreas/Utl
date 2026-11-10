@@ -670,8 +670,6 @@ The checks, CI and the dev container come from the template
 copier update` brings its newest version. What is Utl's own for them lies in `tools/project.sh`:
 the board, the pinned core, the three variants and their flags, the plugin, and the check that
 the flash variant leaves no vtable in RAM; and in `tools/project.mk`, the target `keypad`.
-cppcheck, which the template runs beside clang-tidy, is off there with its reason: it cannot
-parse `src/utl/array.h`.
 
 The dev container in `.devcontainer/` carries all of it, with clangd for IntelliSense, which
 `.clangd` points at the compilation databases of CMake and of `tools/tidy.sh`; see
