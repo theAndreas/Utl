@@ -177,8 +177,7 @@ struct array {
  * \param[in] first The first element, which gives the type.
  * \param[in] rest The other elements.
  */
-template <typename T, typename... Ts,
-          typename = internal::Void<decltype(T{internal::DeclVal<Ts>()})...>>
+template <typename T, typename... Ts, typename = internal::BracedFrom<T, Ts...>>
 constexpr array<T, 1 + sizeof...(Ts)> make_array(T first, Ts... rest) {
   /*
    * Arduino compiles with -fpermissive -Wno-error=narrowing, so
