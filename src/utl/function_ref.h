@@ -149,7 +149,7 @@ class function_ref<R(Args...)> {
             typename = internal::InvocableAs<R, F, Args...>>
   constexpr function_ref(
       constant_wrapper<F, Function> /*f*/)  // NOLINT(runtime/explicit)
-      : bound_(static_cast<void*>(nullptr)), call_(&CallConstant<F, Function>) {
+      : bound_{static_cast<void*>(nullptr)}, call_{&CallConstant<F, Function>} {
     static_assert(Function != nullptr, "function_ref: the function is null");
   }
 

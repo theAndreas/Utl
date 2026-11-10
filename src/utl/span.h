@@ -90,7 +90,7 @@ class span {
   template <typename U, size_t N, typename = internal::ArrayConvertible<U, T>>
   // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   constexpr span(U (&elements)[N])  // NOLINT(runtime/explicit)
-      : data_(elements), size_(N) {}
+      : data_{elements}, size_{N} {}
 
   /*!
    * \brief Makes a span of a whole utl::array.
@@ -99,7 +99,7 @@ class span {
    */
   template <typename U, size_t N, typename = internal::ArrayConvertible<U, T>>
   constexpr span(array<U, N>& elements)  // NOLINT(runtime/explicit)
-      : data_(elements.data()), size_(N) {}
+      : data_{elements.data()}, size_{N} {}
 
   /*!
    * \brief Makes a span of `const` of a whole utl::array that is `const`.
@@ -109,7 +109,7 @@ class span {
   template <typename U, size_t N,
             typename = internal::ArrayConvertible<U const, T>>
   constexpr span(array<U, N> const& elements)  // NOLINT(runtime/explicit)
-      : data_(elements.data()), size_(N) {}
+      : data_{elements.data()}, size_{N} {}
 
   /*!
    * \brief Makes a span of the elements a utl::inplace_vector holds now.
@@ -120,7 +120,7 @@ class span {
    */
   template <typename U, size_t N, typename = internal::ArrayConvertible<U, T>>
   constexpr span(inplace_vector<U, N>& vector)  // NOLINT(runtime/explicit)
-      : data_(vector.data()), size_(vector.size()) {}
+      : data_{vector.data()}, size_{vector.size()} {}
 
   /*!
    * \brief Makes a span of `const` of the elements a utl::inplace_vector that
@@ -132,7 +132,7 @@ class span {
             typename = internal::ArrayConvertible<U const, T>>
   constexpr span(
       inplace_vector<U, N> const& vector)  // NOLINT(runtime/explicit)
-      : data_(vector.data()), size_(vector.size()) {}
+      : data_{vector.data()}, size_{vector.size()} {}
 
   /*!
    * \brief Makes a span of another, as a `span<uint8_t>` into a
@@ -142,7 +142,7 @@ class span {
    */
   template <typename U, typename = internal::ArrayConvertible<U, T>>
   constexpr span(span<U> const& other)  // NOLINT(runtime/explicit)
-      : data_(other.data()), size_(other.size()) {}
+      : data_{other.data()}, size_{other.size()} {}
 
   /*! \brief Returns the first element's address, or null if made empty. */
   constexpr pointer data() const { return data_; }

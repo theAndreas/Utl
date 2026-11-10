@@ -58,7 +58,7 @@ class [[nodiscard]] Result : public internal::ValueFluent<Result<T>, T const&> {
    * \param[in] value The value.
    */
   constexpr Result(T const& value)  // NOLINT(runtime/explicit)
-      : value_(value) {}
+      : value_{value} {}
 
   /*!
    * \brief Makes a Result of `error`, with `T()` as the value.
@@ -66,7 +66,7 @@ class [[nodiscard]] Result : public internal::ValueFluent<Result<T>, T const&> {
    * \param[in] error The error.
    */
   constexpr Result(Error const& error)  // NOLINT(runtime/explicit)
-      : value_(), status_(error) {}
+      : value_{}, status_{error} {}
 
   /*!
    * \brief Makes a Result of a code of a group, as `FontError::kUnknownChar`.
@@ -75,7 +75,7 @@ class [[nodiscard]] Result : public internal::ValueFluent<Result<T>, T const&> {
    */
   template <typename Code, typename = decltype(GetErrorGroup(Code{}))>
   constexpr Result(Code code)  // NOLINT(runtime/explicit)
-      : value_(), status_(code) {}
+      : value_{}, status_{code} {}
 
   /*! \brief Returns whether there is a value, no error. */
   bool IsOk() const { return status_.IsOk(); }
@@ -172,7 +172,7 @@ class [[nodiscard]] Result<T&> : public internal::ValueFluent<Result<T&>, T&> {
    *                   `&`.
    */
   constexpr Result(T& object)  // NOLINT(runtime/explicit)
-      : pointer_(__builtin_addressof(object)) {
+      : pointer_{__builtin_addressof(object)} {
     // __builtin_addressof, what std::addressof is built on, takes the address
     // even of a T that overloads unary &.
   }
@@ -192,7 +192,7 @@ class [[nodiscard]] Result<T&> : public internal::ValueFluent<Result<T&>, T&> {
    * \param[in] error The error.
    */
   constexpr Result(Error const& error)  // NOLINT(runtime/explicit)
-      : pointer_(nullptr), status_(error) {}
+      : pointer_{nullptr}, status_{error} {}
 
   /*!
    * \brief Makes a Result of a code of a group, as `FontError::kUnknownChar`.
@@ -201,7 +201,7 @@ class [[nodiscard]] Result<T&> : public internal::ValueFluent<Result<T&>, T&> {
    */
   template <typename Code, typename = decltype(GetErrorGroup(Code{}))>
   constexpr Result(Code code)  // NOLINT(runtime/explicit)
-      : pointer_(nullptr), status_(code) {}
+      : pointer_{nullptr}, status_{code} {}
 
   /*!
    * \brief Makes a Result of what `other` holds, as a `Result<int&>` into a
@@ -216,8 +216,8 @@ class [[nodiscard]] Result<T&> : public internal::ValueFluent<Result<T&>, T&> {
   template <typename U, typename = decltype(internal::ConvertTo<T*>(
                             internal::DeclVal<U*>()))>
   Result(Result<U&> const& other)  // NOLINT(runtime/explicit)
-      : pointer_(other.IsOk() ? __builtin_addressof(other.value()) : nullptr),
-        status_(other.status()) {}
+      : pointer_{other.IsOk() ? __builtin_addressof(other.value()) : nullptr},
+        status_{other.status()} {}
 
   /*! \brief Returns whether there is a reference, no error. */
   bool IsOk() const { return status_.IsOk(); }

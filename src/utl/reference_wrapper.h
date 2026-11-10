@@ -63,7 +63,7 @@ class reference_wrapper {
    * \param[in] object The object, an lvalue.
    */
   constexpr reference_wrapper(T& object)  // NOLINT(runtime/explicit)
-      : pointer_(__builtin_addressof(object)) {
+      : pointer_{__builtin_addressof(object)} {
     // __builtin_addressof, what std::addressof is built on, takes the address
     // even of a T that overloads unary &.
   }

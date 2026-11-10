@@ -65,7 +65,7 @@ class Status : public internal::ErrorFluent<Status> {
    * \param[in] error The error.
    */
   constexpr Status(Error const& error)  // NOLINT(runtime/explicit)
-      : error_(error) {}
+      : error_{error} {}
 
   /*!
    * \brief Makes a Status of a code of a group, as `FontError::kUnknownChar`.
@@ -74,7 +74,7 @@ class Status : public internal::ErrorFluent<Status> {
    */
   template <typename Code, typename = decltype(GetErrorGroup(Code{}))>
   constexpr Status(Code code)  // NOLINT(runtime/explicit)
-      : error_(code) {
+      : error_{code} {
     // Without it, `return FontError::kUnknownChar;` would need two conversions
     // in a row, which C++ does not make implicitly.
   }
