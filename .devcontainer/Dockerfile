@@ -119,9 +119,9 @@ RUN UV_TOOL_DIR=/opt/uv/tools UV_PYTHON_INSTALL_DIR=/opt/uv/python \
         /usr/local/bin/clangd && \
     clangd --version
 
-# The headers of LLVM, clang and clang-tidy that tools/tidy_module.sh compiles the checks of
+# The headers of LLVM, clang and clang-tidy that tools/lib/tidy_module.sh compiles the checks of
 # our own against, as a module that the clang-tidy of uv.lock loads. LLVM_MAJOR is that
-# clang-tidy's major version: tools/tidy_module.sh fails, saying so, when uv.lock moves on and
+# clang-tidy's major version: tools/lib/tidy_module.sh fails, saying so, when uv.lock moves on and
 # this does not. CI's action llvm-headers reads it from here, so there is one place that says
 # which LLVM. llvm-headers.sh says where they come from, and why not pinned closer.
 ARG LLVM_MAJOR=23
@@ -171,6 +171,18 @@ RUN printf '# SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU\n%s %s\n%s %s\n
         '[ssh.github.com]:443' "${GITHUB_HOST_KEY}" \
         >> /etc/ssh/ssh_known_hosts && \
     chmod 0644 /etc/ssh/ssh_known_hosts
+
+# The project's own packages, from apt-packages.txt beside this file, which the project's
+# workflows install as well. Last, so that a change to the list builds this layer alone and none
+# of the downloads above. Nothing to do for an empty list.
+COPY apt-packages.txt /tmp/apt-packages.txt
+RUN packages="$(sed -e 's/#.*//' /tmp/apt-packages.txt | xargs)" && \
+    if [ -n "${packages}" ]; then \
+        apt-get update && \
+        DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ${packages} && \
+        rm -rf /var/lib/apt/lists/*; \
+    fi && \
+    rm /tmp/apt-packages.txt
 
 ENV TZ=Europe/Berlin
 

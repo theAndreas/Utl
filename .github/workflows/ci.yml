@@ -68,6 +68,8 @@ jobs:
         uses: ./.github/actions/apt-install
         with:
           packages: cmake ninja-build libgtest-dev
+          # And the project's own, as its dev container has them.
+          file: .devcontainer/apt-packages.txt
 
       # gcovr, for the coverage.
       - uses: ./.github/actions/uv-sync
@@ -92,6 +94,8 @@ jobs:
         uses: ./.github/actions/apt-install
         with:
           packages: cmake ninja-build libgtest-dev clang
+          # And the project's own, as its dev container has them.
+          file: .devcontainer/apt-packages.txt
 
       - name: Tests
         run: make clang
