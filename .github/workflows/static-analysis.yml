@@ -45,6 +45,8 @@ jobs:
         uses: ./.github/actions/apt-install
         with:
           packages: cmake ninja-build libgtest-dev jq
+          # And the project's own, as its dev container has them.
+          file: .devcontainer/apt-packages.txt
 
       - uses: ./.github/actions/uv-sync
 
@@ -83,6 +85,8 @@ jobs:
         uses: ./.github/actions/apt-install
         with:
           packages: cmake ninja-build libgtest-dev jq
+          # And the project's own, as its dev container has them.
+          file: .devcontainer/apt-packages.txt
 
       # avr-g++ and the core, which the board's database names.
       - uses: ./.github/actions/arduino-setup

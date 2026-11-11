@@ -41,3 +41,7 @@ WARN_IF_UNDOCUMENTED   = YES
 WARN_IF_INCOMPLETE_DOC = YES
 WARN_NO_PARAMDOC       = YES
 WARN_LOGFILE           = build/docs/warnings.log
+
+# The project's own settings, last, so that += adds to the lists above and a plain = replaces
+# one: Doxyfile.project, which the template writes once and `copier update` leaves alone.
+@INCLUDE               = Doxyfile.project
