@@ -20,17 +20,25 @@ readonly COVERAGE_DIR="${BUILD_DIR}/coverage"
 # deleted: the build writes notes only for what it compiles and never
 # removes old ones, and gcovr reads every one it finds, so the lines of a
 # header that only such a file reached stood as missed. A note lies at
-# CMakeFiles/<target>.dir/<source>.gcno, which gives its source.
+# <dir>/CMakeFiles/<target>.dir/<source>.gcno, which gives its source: <dir>
+# is the build directory of the CMakeLists.txt that adds the target, empty for
+# the root's and <subdir>/ for one of add_subdirectory(<subdir>), and <source>
+# is relative to that CMakeLists.txt.
 remove_stale_notes() {
+  local notes
+  notes="$(find "${COVERAGE_DIR}" -name '*.gcno')"
   local note
+  local subdir
   local source
-  while IFS= read -r -d '' note; do
+  while IFS= read -r note; do
+    subdir="${note#"${COVERAGE_DIR}"/}"
+    subdir="${subdir%%CMakeFiles/*}"
     source="${note#*.dir/}"
-    source="${ROOT_DIR}/${source%.gcno}"
-    if [[ ! -f "${source}" ]]; then
+    source="${ROOT_DIR}/${subdir}${source%.gcno}"
+    if [[ -n "${note}" && ! -f "${source}" ]]; then
       rm -f "${note}"
     fi
-  done < <(find "${COVERAGE_DIR}" -name '*.gcno' -print0 2>/dev/null)
+  done <<< "${notes}"
 }
 
 # Fails on a line of src/ excluded from coverage without its reason (Testing.md TS-4): a marker

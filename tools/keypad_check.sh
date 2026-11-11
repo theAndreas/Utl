@@ -78,6 +78,7 @@ main() {
   local variant
   local output
   local actual
+  local elf
   local status
 
   mkdir -p "${BUILD_DIR}"
@@ -89,11 +90,12 @@ main() {
       failed=1
       continue
     fi
+    elf="$(elf_of "${variant}" "${EXAMPLE}")"
     status=0
     # simavr writes the UART to stderr, a line in color with CR LF shown as
     # "..", and its own messages to stdout.
     actual="$(timeout "${TIMEOUT_SECONDS}" simavr -m atmega328p -f 16000000 \
-      -i "${presses}" "$(elf_of "${variant}" "${EXAMPLE}")" 2>&1 >/dev/null \
+      -i "${presses}" "${elf}" 2>&1 >/dev/null \
       | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/\.\.$//' | grep -v '^$')" \
       || status=$?
     if ((status != 0)); then
