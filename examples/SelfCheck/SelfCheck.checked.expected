@@ -155,6 +155,9 @@ pass flash_span::at
 pass flash_span::subspan, first
 pass spsc_queue from an interrupt, every tick in order
 pass spsc_queue full under an interrupt, no tick lost
+pass Bit<uint16_t> reads, clears and shifts down its top bit
+pass Bit<uint32_t> makes the mask of its top bit
+pass SetBits, ClearBits and WriteBitGroup on a register
 pass value() of a Result with an error is reported
 pass * of an empty optional is reported
 pass [] beyond the end is reported

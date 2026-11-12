@@ -30,6 +30,7 @@ void setup() {
   self_check::CheckText();
   self_check::CheckFlashSpan();
   self_check::CheckSpscQueue();
+  self_check::CheckBit();
   self_check::CheckMisuse();
 
   Serial.print(F("failed: "));

@@ -26,6 +26,8 @@ standard where it has an answer, and checked where the standard leaves a call un
   other.
 - **Numbers**: `to_chars` and `from_chars`, integers to text and back, as in the standard, with a
   `Result` in place of `std::errc`, and each in the width of its type.
+- **`Bit`**, single bits and groups of bits of an unsigned integer: a value kept and indexed as
+  `bits[3] = true`, or a register or a byte read off a bus changed through static functions.
 
 ## Installing
 
@@ -564,6 +566,31 @@ error gives no pointer, as a `Result` holds a value or an error, where the stand
 the digits of a number out of range; and there is no floating point, as a correct `to_chars()` of
 a `double` would not fit on an Uno, and avr-libc has `dtostrf()`.
 
+## Bit
+
+```cpp
+utl::Bit<uint8_t> row;  // a row of eight LEDs
+row[3] = true;          // row.value() is 0x08
+row[0] = row[3];        // copies the bit
+
+// Bits 4 and 5 of a byte read from a sensor, as 0 to 3.
+uint8_t const mode{utl::Bit<uint8_t>::ReadBitGroup(reading, 0x03, 4)};
+
+utl::Bit<uint8_t>::SetBits(DDRB, _BV(DDB5));  // pin 13 an output
+```
+
+`Bit<Integer>` (`bit.h`) is an unsigned integer read and written bit by bit, as large as the
+integer, one byte for a `Bit<uint8_t>`. A value that is kept is a `Bit` and indexed like an array:
+`bits[i]` reads as a `bool`, and assigning a `bool` or another bit writes through, as
+`std::bitset`'s reference does. A value that is only passed through goes through the static
+functions, `constexpr` all but the three for a register: `ToMask()`, `SetBit()`, `ClearBit()`,
+`ToggleBit()`, `WriteBit()` and `ReadBit()` for one bit, `ReadBitGroup()` for a group in place or,
+with its position, shifted down to bit 0. A register is changed in place by `SetBits()`,
+`ClearBits()` and `WriteBitGroup()`, each a read-modify-write as `|=` is, and so not for a register
+of flags that a 1 written clears, as `TIFR1`, nor for `PINB` and its like, where a 1 written
+toggles the pin; nor atomic. A mask is as wide as the integer, or an `unsigned int` where that is
+narrower, never 64 bits. A signed integer or `bool` does not compile.
+
 ## Checked access
 
 What the standard leaves undefined, or what gives a placeholder here, can be reported before it
@@ -624,7 +651,7 @@ examples are built with it to show that utl does not depend on it.
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
 | Keypad | 2484 | 2484 | 2802 | 212 | 194 | 212 |
-| SelfCheck | 20528 | 20528 | 23550 | 354 | 336 | 364 |
+| SelfCheck | 20812 | 20812 | 23784 | 354 | 336 | 364 |
 <!-- /sizes -->
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the
