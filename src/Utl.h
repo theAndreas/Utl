@@ -43,6 +43,7 @@
 #define UTL_SRC_UTL_H_
 
 #include "utl/array.h"              // IWYU pragma: export
+#include "utl/bit.h"                // IWYU pragma: export
 #include "utl/charconv.h"           // IWYU pragma: export
 #include "utl/charconv_error.h"     // IWYU pragma: export
 #include "utl/config.h"             // IWYU pragma: export

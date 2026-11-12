@@ -44,6 +44,7 @@ void CheckInplaceFunction();   // check_inplace_function.cpp
 void CheckText();              // check_text.cpp
 void CheckFlashSpan();         // check_flash_span.cpp
 void CheckSpscQueue();         // check_spsc_queue.cpp
+void CheckBit();               // check_bit.cpp
 void PushTick();               // check_spsc_queue.cpp, from its interrupt
 void CheckMisuse();            // check_misuse.cpp
 

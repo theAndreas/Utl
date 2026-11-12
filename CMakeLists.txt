@@ -36,6 +36,7 @@ endif()
 file(GLOB library_sources CONFIGURE_DEPENDS src/utl/*.cpp)
 set(test_sources
     test/array_test.cpp
+    test/bit_test.cpp
     test/charconv_test.cpp
     test/constant_wrapper_test.cpp
     test/error_test.cpp
