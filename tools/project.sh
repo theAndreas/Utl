@@ -22,6 +22,9 @@
 #   DOCS_INTERNAL_API    a regex of the files in NAMESPACE::internal that are API after all,
 #                        such as a base a public class takes members from
 #   CPPCHECK             0 if cppcheck cannot parse the library, with the reason; else 1
+#   HOST_CODE            folders of code that runs on the host beside the library, as a
+#                        simulator, built by CMakeLists.txt: tools/lint.sh formats and checks
+#                        them as src/, tools/tidy.sh reads them with the tests
 #
 #   variant_flags VARIANT   prints the compiler flags of a variant, one per line
 #   prepare                 builds what compiling needs beyond the core, such as a plugin

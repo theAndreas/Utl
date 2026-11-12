@@ -77,6 +77,7 @@ main() {
   local failed=0
   local variant
   local output
+  local elf
   local actual
   local elf
   local status
