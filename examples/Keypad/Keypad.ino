@@ -109,12 +109,12 @@ void Enter(char key) {
 // A change on pins 8 to 11: a key that went down is pushed, unless it is the
 // bounce of the last.
 ISR(PCINT0_vect) {
-  auto const pins = static_cast<uint8_t>(PINB & kKeyMask);
+  auto const pins{static_cast<uint8_t>(PINB & kKeyMask)};
   // A key is down when its pin is low: up before and down now went down.
-  auto const down = static_cast<uint8_t>(pins ^ kKeyMask);
-  auto const went_down = static_cast<uint8_t>(last_pins & down);
+  auto const down{static_cast<uint8_t>(pins ^ kKeyMask)};
+  auto const went_down{static_cast<uint8_t>(last_pins & down)};
   last_pins = pins;
-  auto const now = static_cast<uint16_t>(millis());
+  auto const now{static_cast<uint16_t>(millis())};
   if (went_down == 0 || now - last_press < kBounceMs) {
     return;
   }

@@ -47,7 +47,7 @@ void CheckOptional() {
   Check(!changed.HasValue(), F("optional = {} is empty"));
 
   uint8_t calls{0};
-  auto const find_again = [](uint8_t index) { return FindCode(index); };
+  auto const find_again{[](uint8_t index) { return FindCode(index); }};
   Check(FindCode(1).AndThen(find_again) == uint8_t{1} &&
             found.AndThen(find_again) == utl::nullopt,
         F("optional::AndThen"));
@@ -58,10 +58,10 @@ void CheckOptional() {
             }) == utl::nullopt &&
             calls == 0,
         F("optional::Map"));
-  auto const three = [&calls] {
+  auto const three{[&calls] {
     ++calls;
     return utl::optional<uint8_t>{3};
-  };
+  }};
   Check(none.OrElse(three) == uint8_t{3} && calls == 1 &&
             found.OrElse(three) == uint8_t{2} && calls == 1,
         F("optional::OrElse"));
@@ -97,10 +97,10 @@ void CheckOptionalReference() {
   Check(&found.value().value() == &rows[2] &&
             none.value().status() == utl::OptionalError::kEmpty,
         F("optional<T&>::value returns a Result<T&>"));
-  utl::optional<bool> const mapped = found.Map([](uint8_t& row) {
+  utl::optional<bool> const mapped{found.Map([](uint8_t& row) {
     row = 7;
     return true;
-  });
+  })};
   Check(mapped == true && rows[2] == 7, F("optional<T&>::Map gets the T&"));
 }
 

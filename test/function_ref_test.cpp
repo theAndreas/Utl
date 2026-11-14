@@ -94,7 +94,7 @@ static_assert(std::is_assignable_v<function_ref<void()>&, void (&)()>);
 static_assert(!std::is_assignable_v<function_ref<void()>&, std::nullptr_t>);
 
 TEST(FunctionRefTest, BindsALambdaButIsNeverAssignedOne) {
-  auto const nothing = [] {};
+  auto const nothing{[] {}};
   using Lambda = std::remove_const_t<decltype(nothing)>;
   static_assert(std::is_convertible_v<Lambda, function_ref<void()>>);
   static_assert(!std::is_assignable_v<function_ref<void()>&, Lambda>);
@@ -120,7 +120,7 @@ TEST(FunctionRefTest, CallsAFunctionOfOtherTypes) {
 
 TEST(FunctionRefTest, CallsALambdaWithItsCaptures) {
   int offset{10};
-  auto const add = [&offset](int value) { return value + offset; };
+  auto const add{[&offset](int value) { return value + offset; }};
   function_ref<int(int)> const f{add};
   EXPECT_EQ(f(1), 11);
   offset = 20;  // seen, as the lambda is referred to, not copied
@@ -130,7 +130,7 @@ TEST(FunctionRefTest, CallsALambdaWithItsCaptures) {
 
 TEST(FunctionRefTest, RefersToTheObjectNotACopy) {
   int count{0};
-  auto counter = [count]() mutable { return ++count; };
+  auto counter{[count]() mutable { return ++count; }};
   function_ref<int()> const f{counter};
   EXPECT_EQ(f(), 1);
   EXPECT_EQ(f(), 2);
@@ -153,21 +153,21 @@ TEST(FunctionRefTest, TakesTheAddressPastAnOverloadedAmpersand) {
 }
 
 TEST(FunctionRefTest, PassesArgumentsAsTaken) {
-  auto const increment = [](int& value) { ++value; };
+  auto const increment{[](int& value) { ++value; }};
   function_ref<void(int&)> const f{increment};
   int value{1};
   f(value);
   EXPECT_EQ(value, 2);
 
   // Moved through to the callable, never copied.
-  auto const take = [](std::unique_ptr<int> owned) { return *owned; };
+  auto const take{[](std::unique_ptr<int> owned) { return *owned; }};
   function_ref<int(std::unique_ptr<int>)> const g{take};
   EXPECT_EQ(g(std::make_unique<int>(7)), 7);
 }
 
 TEST(FunctionRefTest, ReturnsAReference) {
   int target{1};
-  auto const get = [&target]() -> int& { return target; };
+  auto const get{[&target]() -> int& { return target; }};
   function_ref<int&()> const f{get};
   f() = 5;
   EXPECT_EQ(target, 5);
@@ -182,10 +182,10 @@ TEST(FunctionRefTest, CopiesAndRebinds) {
   f();
   copy();  // still Nothing
   EXPECT_EQ(calls, 1);
-  auto const twice = [] {
+  auto const twice{[] {
     CountCall();
     CountCall();
-  };
+  }};
   f = function_ref<void()>(twice);
   f();
   EXPECT_EQ(calls, 3);
@@ -356,7 +356,7 @@ TEST(FunctionRefTest, CallsAFunctionGivenAsAConstant) {
   EXPECT_EQ(twice(5), 10);
   EXPECT_EQ(Sum(UTL_CW(Twice)), 12);
   // An object, not the declaration of a function, as UTL_CW() gives braces.
-  function_ref<int(int)> const in_parentheses(UTL_CW(Twice));
+  function_ref<int(int)> const in_parentheses{UTL_CW(Twice)};
   EXPECT_EQ(in_parentheses(1), 2);
 }
 

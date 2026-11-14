@@ -97,26 +97,26 @@ TEST(StatusTest, AndThenStopsAtAnError) {
 }
 
 TEST(StatusTest, OrElseGetsTheErrorAndRecovers) {
-  Status const recovered =
+  Status const recovered{
       Status(AlphaError::kFirst).OrElse([](Error const& error) {
         return error == AlphaError::kFirst ? Status::Ok()
                                            : Status{BetaError::kFirst};
-      });
+      })};
   EXPECT_TRUE(recovered.IsOk());
   int calls{0};
-  Status const untouched = Status::Ok().OrElse([&calls](Error const&) {
+  Status const untouched{Status::Ok().OrElse([&calls](Error const&) {
     ++calls;
     return Status{AlphaError::kFirst};
-  });
+  })};
   EXPECT_TRUE(untouched.IsOk());
   EXPECT_EQ(calls, 0);
 }
 
 TEST(StatusTest, InspectErrorLooksAndPassesOn) {
   int seen{0};
-  auto const count = [&seen](Error const& error) {
+  auto const count{[&seen](Error const& error) {
     seen = error == AlphaError::kFirst ? 1 : 2;
-  };
+  }};
   Status const failed{AlphaError::kFirst};
   EXPECT_EQ(failed.InspectError(count), AlphaError::kFirst);
   EXPECT_EQ(seen, 1);
@@ -126,7 +126,7 @@ TEST(StatusTest, InspectErrorLooksAndPassesOn) {
 }
 
 TEST(StatusTest, MapErrorSaysItInAnotherGroup) {
-  auto const to_beta = [](Error const&) { return BetaError::kFirst; };
+  auto const to_beta{[](Error const&) { return BetaError::kFirst; }};
   Status const failed{AlphaError::kFirst};
   EXPECT_EQ(failed.MapError(to_beta), BetaError::kFirst);
   EXPECT_TRUE(Status::Ok().MapError(to_beta).IsOk());
@@ -138,14 +138,14 @@ TEST(StatusTest, MapErrorSaysItInAnotherGroup) {
 
 TEST(StatusTest, ConsumeErrorEndsAChain) {
   int seen{0};
-  auto const count = [&seen](Error const&) { ++seen; };
+  auto const count{[&seen](Error const&) { ++seen; }};
   Status const failed{AlphaError::kFirst};
   failed.ConsumeError(count);
   Status::Ok().ConsumeError(count);
   EXPECT_EQ(seen, 1);
   // A Result<void> is a Status: Map() of a function that returns nothing,
   // then ConsumeError(), deals with both ends, and nothing is left to drop.
-  Result<int> const value = 7;
+  Result<int> const value{7};
   value.Map([&seen](int v) { seen += v; }).ConsumeError(count);
   EXPECT_EQ(seen, 8);
 }

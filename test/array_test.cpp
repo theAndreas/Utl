@@ -60,7 +60,7 @@ TEST(ArrayTest, CopiesComparesAndFills) {
 }
 
 TEST(ArrayTest, MakeArrayTakesTypeAndSize) {
-  constexpr auto kMade = utl::make_array(uint8_t{1}, uint8_t{2});
+  constexpr auto kMade{utl::make_array(uint8_t{1}, uint8_t{2})};
   static_assert(sizeof(kMade) == 2, "two uint8_t");
   EXPECT_EQ(kMade.size(), 2U);
   EXPECT_EQ(kMade[1], 2);

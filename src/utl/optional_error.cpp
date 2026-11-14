@@ -19,7 +19,7 @@ namespace {
 char const kEmptyText[] PROGMEM = "empty";
 
 // In the order of OptionalError.
-constexpr auto kMessages PROGMEM = make_array(kEmptyText);
+constexpr auto kMessages PROGMEM{make_array(kEmptyText)};
 
 }  // namespace
 

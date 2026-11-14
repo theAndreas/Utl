@@ -71,6 +71,7 @@ TEST(OptionalTest, OkOrGivesYourError) {
 
 TEST(OptionalTest, ResetEmplaceAndAssign) {
   // = rather than braces: what is checked is that a value converts implicitly.
+  // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   optional<int> changed = 2;
   changed.reset();
   EXPECT_FALSE(changed.HasValue());
@@ -84,7 +85,7 @@ TEST(OptionalTest, ResetEmplaceAndAssign) {
 }
 
 TEST(OptionalTest, AndThen) {
-  auto const find_again = [](int index) { return Find(index); };
+  auto const find_again{[](int index) { return Find(index); }};
   EXPECT_EQ(Find(1).AndThen(find_again), 1);
   EXPECT_EQ(Find(7).AndThen(find_again), nullopt);
   EXPECT_EQ(Find(42).AndThen(find_again), nullopt);
@@ -103,10 +104,10 @@ TEST(OptionalTest, Map) {
 
 TEST(OptionalTest, OrElse) {
   int calls{0};
-  auto const three = [&calls] {
+  auto const three{[&calls] {
     ++calls;
     return optional<int>{3};
-  };
+  }};
   EXPECT_EQ(Find(42).OrElse(three), 3);
   EXPECT_EQ(Find(7).OrElse(three), 2);
   EXPECT_EQ(calls, 1);
@@ -114,10 +115,10 @@ TEST(OptionalTest, OrElse) {
 
 TEST(OptionalTest, ValueOrElseCallsOnlyWhenEmpty) {
   int calls{0};
-  auto const fallback = [&calls] {
+  auto const fallback{[&calls] {
     ++calls;
     return 9;
-  };
+  }};
   EXPECT_EQ(Find(7).ValueOrElse(fallback), 2);
   EXPECT_EQ(calls, 0);
   EXPECT_EQ(Find(42).ValueOrElse(fallback), 9);
@@ -126,7 +127,7 @@ TEST(OptionalTest, ValueOrElseCallsOnlyWhenEmpty) {
 
 TEST(OptionalTest, InspectLooksAtTheValue) {
   int seen{-1};
-  auto const look = [&seen](int const& index) { seen = index; };
+  auto const look{[&seen](int const& index) { seen = index; }};
   EXPECT_EQ(Find(7).Inspect(look), 2);
   EXPECT_EQ(seen, 2);
   seen = -1;
@@ -135,16 +136,15 @@ TEST(OptionalTest, InspectLooksAtTheValue) {
 }
 
 TEST(OptionalTest, FilterKeepsWhatHolds) {
-  auto const even = [](int const& index) { return index % 2 == 0; };
+  auto const even{[](int const& index) { return index % 2 == 0; }};
   EXPECT_EQ(Find(7).Filter(even), 2);
   EXPECT_EQ(Find(1).Filter(even), nullopt);
   EXPECT_EQ(Find(42).Filter(even), nullopt);
 }
 
 TEST(OptionalTest, AndThenMayChangeTheType) {
-  auto const letter = [](int index) {
-    return optional<char>{static_cast<char>('a' + index)};
-  };
+  auto const letter{
+      [](int index) { return optional<char>{static_cast<char>('a' + index)}; }};
   EXPECT_EQ(Find(7).AndThen(letter), 'c');
 }
 

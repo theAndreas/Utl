@@ -59,6 +59,7 @@ void CheckError() {
 
   Error const braced{BetaError::kFirst};
   // = rather than braces: what is checked is that a code converts implicitly.
+  // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   Error const converted = BetaError::kFirst;
   Check(braced == beta_first && converted == beta_first,
         F("made from its enum"));
@@ -111,10 +112,10 @@ void CheckStatusFluent() {
   }) == BetaError::kFirst,
         F("Status::OrElse gets the Error"));
   calls = 0;
-  Status const untouched = Status::Ok().OrElse([&calls](Error const&) {
+  Status const untouched{Status::Ok().OrElse([&calls](Error const&) {
     ++calls;
     return Status{AlphaError::kFirst};
-  });
+  })};
   Check(untouched.IsOk() && calls == 0, F("Status::OrElse leaves ok alone"));
 }
 

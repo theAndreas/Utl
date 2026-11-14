@@ -16,7 +16,7 @@ namespace {
 char const kFirstText[] PROGMEM = "beta first";
 
 // In the order of BetaError.
-constexpr auto kMessages PROGMEM = utl::make_array(kFirstText);
+constexpr auto kMessages PROGMEM{utl::make_array(kFirstText)};
 
 }  // namespace
 

@@ -110,24 +110,24 @@ TEST(ResultReferenceTest, ValueOrGivesAReference) {
 
 TEST(ResultReferenceTest, AndThenChainsAndStops) {
   utl::array<int, 3> values{{0, 1, 7}};
-  auto const next = [&values](int& value) {
+  auto const next{[&values](int& value) {
     return Get(values, static_cast<size_t>(value) + 1);
-  };
+  }};
   EXPECT_EQ(&Get(values, 0).AndThen(next).AndThen(next).value(), &values[2]);
   EXPECT_EQ(Get(values, 2).AndThen(next).status(), BetaError::kFirst);
-  Status const checked = Get(values, 2).AndThen([](int& value) {
+  Status const checked{Get(values, 2).AndThen([](int& value) {
     return value == 7 ? Status::Ok() : AlphaError::kFirst;
-  });
+  })};
   EXPECT_TRUE(checked.IsOk());
 }
 
 TEST(ResultReferenceTest, AndThenCallsNothingOnAnError) {
   utl::array<int, 3> values{{0, 1, 7}};
   int calls{0};
-  Result<int> const chained = Get(values, 4).AndThen([&calls](int&) {
+  Result<int> const chained{Get(values, 4).AndThen([&calls](int&) {
     ++calls;
     return Result<int>{0};
-  });
+  })};
   EXPECT_EQ(chained.status(), BetaError::kFirst);
   EXPECT_EQ(calls, 0);
 }
@@ -135,7 +135,7 @@ TEST(ResultReferenceTest, AndThenCallsNothingOnAnError) {
 TEST(ResultReferenceTest, MapGetsTheReference) {
   utl::array<int, 3> values{{0, 1, 7}};
   // One that returns nothing writes through it, and gives a Result<void>.
-  Result<void> const set = Get(values, 1).Map([](int& value) { value = 5; });
+  Result<void> const set{Get(values, 1).Map([](int& value) { value = 5; })};
   EXPECT_TRUE(set.IsOk());
   EXPECT_EQ(values[1], 5);
   EXPECT_EQ(Get(values, 1).Map([](int& value) { return value * 2; }).value(),
@@ -148,10 +148,10 @@ TEST(ResultReferenceTest, MapGetsTheReference) {
 TEST(ResultReferenceTest, MapCallsNothingOnAnError) {
   utl::array<int, 3> values{{0, 1, 7}};
   int calls{0};
-  Result<int> const mapped = Get(values, 4).Map([&calls](int&) {
+  Result<int> const mapped{Get(values, 4).Map([&calls](int&) {
     ++calls;
     return 1;
-  });
+  })};
   EXPECT_EQ(mapped.status(), BetaError::kFirst);
   EXPECT_EQ(calls, 0);
 }
@@ -159,7 +159,7 @@ TEST(ResultReferenceTest, MapCallsNothingOnAnError) {
 TEST(ResultReferenceTest, OrElseRecoversOrKeeps) {
   utl::array<int, 3> values{{0, 1, 7}};
   int other{9};
-  auto const fallback = [&other](Error const&) -> int& { return other; };
+  auto const fallback{[&other](Error const&) -> int& { return other; }};
   EXPECT_EQ(&Get(values, 4).OrElse(fallback).value(), &other);
   EXPECT_EQ(&Get(values, 0).OrElse(fallback).value(), values.data());
 }
@@ -167,7 +167,7 @@ TEST(ResultReferenceTest, OrElseRecoversOrKeeps) {
 TEST(ResultReferenceTest, MapOfAValueGivesAReference) {
   // Result<T>::Map() with a function that returns a reference gives a
   // Result<T&>.
-  utl::array<int, 3> values = {{0, 1, 7}};
+  utl::array<int, 3> values{{0, 1, 7}};
   Result<size_t> const index{size_t{2}};
   Result<int&> const element{
       index.Map([&values](size_t at) -> int& { return values[at]; })};
@@ -177,7 +177,7 @@ TEST(ResultReferenceTest, MapOfAValueGivesAReference) {
 TEST(ResultReferenceTest, ValueOrElseGivesAReference) {
   utl::array<int, 3> values{{0, 1, 7}};
   int other{9};
-  auto const fallback = [&other](Error const&) -> int& { return other; };
+  auto const fallback{[&other](Error const&) -> int& { return other; }};
   EXPECT_EQ(&Get(values, 1).ValueOrElse(fallback), &values[1]);
   EXPECT_EQ(&Get(values, 4).ValueOrElse(fallback), &other);
 }
@@ -185,7 +185,7 @@ TEST(ResultReferenceTest, ValueOrElseGivesAReference) {
 TEST(ResultReferenceTest, InspectPassesTheReferenceOn) {
   utl::array<int, 3> values{{0, 1, 7}};
   int seen{0};
-  auto const look = [&seen](int const& value) { seen = value; };
+  auto const look{[&seen](int const& value) { seen = value; }};
   EXPECT_EQ(&Get(values, 2).Inspect(look).value(), &values[2]);
   EXPECT_EQ(seen, 7);
   seen = 0;
@@ -196,11 +196,11 @@ TEST(ResultReferenceTest, InspectPassesTheReferenceOn) {
 TEST(ResultReferenceTest, InspectErrorAndMapErrorPassItOn) {
   utl::array<int, 3> values{{0, 1, 7}};
   int seen{0};
-  auto const count = [&seen](Error const&) { ++seen; };
+  auto const count{[&seen](Error const&) { ++seen; }};
   EXPECT_EQ(Get(values, 4).InspectError(count).status(), BetaError::kFirst);
   EXPECT_EQ(&Get(values, 0).InspectError(count).value(), values.data());
   EXPECT_EQ(seen, 1);
-  auto const to_alpha = [](Error const&) { return AlphaError::kFirst; };
+  auto const to_alpha{[](Error const&) { return AlphaError::kFirst; }};
   EXPECT_EQ(Get(values, 4).MapError(to_alpha).status(), AlphaError::kFirst);
   EXPECT_EQ(&Get(values, 2).MapError(to_alpha).value(), &values[2]);
 }

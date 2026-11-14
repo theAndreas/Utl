@@ -57,6 +57,7 @@ TEST(ErrorTest, EqualAcrossTranslationUnits) {
 
 TEST(ErrorTest, IsAssignable) {
   // = rather than braces: what is checked is that a code converts implicitly.
+  // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   Error error = AlphaError::kFirst;
   error = BetaError::kFirst;
   EXPECT_EQ(error, BetaError::kFirst);

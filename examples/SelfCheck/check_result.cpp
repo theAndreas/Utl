@@ -30,44 +30,44 @@ void CheckResult() {
   Check(GetCode(2).ValueOr(42) == 7 && GetCode(9).ValueOr(42) == 42,
         F("Result::ValueOr"));
 
-  Result<bool> const mapped =
-      GetCode(2).Map([](uint8_t code) { return code == 7; });
+  Result<bool> const mapped{
+      GetCode(2).Map([](uint8_t code) { return code == 7; })};
   Check(mapped.IsOk() && mapped.value(), F("Result::Map"));
-  Result<bool> const not_mapped = GetCode(9).Map([&calls](uint8_t) {
+  Result<bool> const not_mapped{GetCode(9).Map([&calls](uint8_t) {
     ++calls;
     return true;
-  });
+  })};
   Check(not_mapped.status() == BetaError::kFirst && calls == 0,
         F("Result::Map keeps the error"));
 
-  Result<uint8_t> const chained =
+  Result<uint8_t> const chained{
       GetCode(0)
           .AndThen([](uint8_t code) { return GetCode(code + 1); })
-          .AndThen([](uint8_t code) { return GetCode(code + 1); });
+          .AndThen([](uint8_t code) { return GetCode(code + 1); })};
   Check(chained.ValueOr(0) == 7, F("Result::AndThen chains"));
   calls = 0;
-  Result<uint8_t> const broken =
+  Result<uint8_t> const broken{
       GetCode(1)
           .AndThen([](uint8_t code) { return GetCode(code + 8); })
           .AndThen([&calls](uint8_t code) {
             ++calls;
             return GetCode(code);
-          });
+          })};
   Check(broken.status() == BetaError::kFirst && calls == 0,
         F("Result::AndThen stops at an error"));
-  Status const checked = GetCode(2).AndThen([](uint8_t code) {
+  Status const checked{GetCode(2).AndThen([](uint8_t code) {
     return code == 7 ? Status::Ok() : Status{AlphaError::kFirst};
-  });
+  })};
   Check(checked.IsOk(), F("Result::AndThen into a Status"));
 
   Result<uint8_t> const recovered{
       GetCode(9).OrElse([](Error const&) -> uint8_t { return 3; })};
   Check(recovered.IsOk() && recovered.value() == 3, F("Result::OrElse"));
   calls = 0;
-  Result<uint8_t> const kept = GetCode(2).OrElse([&calls](Error const&) {
+  Result<uint8_t> const kept{GetCode(2).OrElse([&calls](Error const&) {
     ++calls;
     return Result<uint8_t>{0};
-  });
+  })};
   Check(kept.value() == 7 && calls == 0, F("Result::OrElse keeps a value"));
 }
 
@@ -131,15 +131,14 @@ void CheckResultReference() {
         F("Result<T&> holds a reference"));
   Check(GetRow(rows, 3).status() == BetaError::kFirst,
         F("Result<T&> holds an error"));
-  Result<void> const set = GetRow(rows, 1).Map([](uint8_t& row) { row = 5; });
+  Result<void> const set{GetRow(rows, 1).Map([](uint8_t& row) { row = 5; })};
   Check(set.IsOk() && rows[1] == 5, F("Result<T&>::Map writes through"));
   Check(&GetRow(rows, 3).ValueOr(spare) == &spare &&
             &found.ValueOr(spare) == &rows[2],
         F("Result<T&>::ValueOr gives a reference"));
-  Result<uint8_t&> const chained =
-      GetRow(rows, 0).AndThen([&rows](uint8_t& row) {
-        return GetRow(rows, static_cast<uint8_t>(row + 2));
-      });
+  Result<uint8_t&> const chained{GetRow(rows, 0).AndThen([&rows](uint8_t& row) {
+    return GetRow(rows, static_cast<uint8_t>(row + 2));
+  })};
   Check(&chained.value() == &rows[2], F("Result<T&>::AndThen chains"));
 }
 

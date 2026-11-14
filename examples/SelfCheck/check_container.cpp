@@ -104,7 +104,7 @@ struct Tracked {  // NOLINT(cppcoreguidelines-special-member-functions)
   ~Tracked() { --alive; }
   uint8_t code;
 };
-uint8_t Tracked::alive = 0;
+uint8_t Tracked::alive{0};
 
 void CheckInplaceVector() {
   using Codes = utl::inplace_vector<uint8_t, 4>;

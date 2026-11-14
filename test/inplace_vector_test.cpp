@@ -49,7 +49,7 @@ struct Counted {
 
   int value;
 };
-int Counted::alive = 0;
+int Counted::alive{0};
 
 // No default constructor, which an element needs not have.
 struct Pin {
@@ -108,6 +108,7 @@ TEST_F(InplaceVectorTest, IsMadeOfABracedList) {
   EXPECT_EQ(bytes[2], 4);
   // = rather than braces: what is checked is that the constructor of a braced
   // list is implicit.
+  // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   Bytes assigned = {9};
   assigned = {5, 6};
   EXPECT_EQ(assigned, (Bytes{5, 6}));

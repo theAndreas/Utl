@@ -76,7 +76,7 @@ TEST(MisuseTest, PrintsEachKind) {
             "utl: call of an empty inplace_function");
   // A value beyond the enum, which PrintMisuse() has to leave without a text.
   // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
-  auto const beyond = static_cast<Misuse>(200);
+  auto const beyond{static_cast<Misuse>(200)};
   EXPECT_EQ(Printed(beyond), "utl: ");
 }
 

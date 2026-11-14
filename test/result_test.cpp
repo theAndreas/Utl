@@ -52,10 +52,10 @@ TEST(ResultTest, ValueOr) {
 TEST(ResultTest, MapChangesTheValue) {
   EXPECT_EQ(Get(2).Map([](int value) { return value + 1; }).ValueOr(0), 21);
   int calls{0};
-  Result<bool> const mapped = Get(5).Map([&calls](int) {
+  Result<bool> const mapped{Get(5).Map([&calls](int) {
     ++calls;
     return true;
-  });
+  })};
   EXPECT_EQ(mapped.status(), BetaError::kFirst);
   EXPECT_EQ(calls, 0);
 }
@@ -63,26 +63,26 @@ TEST(ResultTest, MapChangesTheValue) {
 TEST(ResultTest, AndThenChainsAndStops) {
   EXPECT_EQ(Get(0).AndThen([](int) { return Get(2); }).ValueOr(0), 20);
   int calls{0};
-  Result<int> const broken =
+  Result<int> const broken{
       Get(1).AndThen([](int) { return Get(9); }).AndThen([&calls](int value) {
         ++calls;
         return Get(value);
-      });
+      })};
   EXPECT_EQ(broken.status(), BetaError::kFirst);
   EXPECT_EQ(calls, 0);
-  Status const checked = Get(2).AndThen([](int value) {
+  Status const checked{Get(2).AndThen([](int value) {
     return value == 20 ? Status::Ok() : Status{AlphaError::kFirst};
-  });
+  })};
   EXPECT_TRUE(checked.IsOk());
 }
 
 TEST(ResultTest, OrElseRecoversOrKeeps) {
   EXPECT_EQ(Get(9).OrElse([](Error const&) { return 7; }).ValueOr(0), 7);
   int calls{0};
-  Result<int> const kept = Get(1).OrElse([&calls](Error const&) {
+  Result<int> const kept{Get(1).OrElse([&calls](Error const&) {
     ++calls;
     return Result<int>{0};
-  });
+  })};
   EXPECT_EQ(kept.value(), 10);
   EXPECT_EQ(calls, 0);
 }
@@ -101,13 +101,12 @@ TEST(ResultVoidTest, IsAStatus) {
 
 TEST(ResultVoidTest, MapOfAFunctionThatReturnsNothing) {
   int stored{0};
-  Result<void> const done =
-      Get(2).Map([&stored](int value) { stored = value; });
+  Result<void> const done{Get(2).Map([&stored](int value) { stored = value; })};
   EXPECT_TRUE(done.IsOk());
   EXPECT_EQ(stored, 20);
   stored = 0;
-  Result<void> const not_done =
-      Get(9).Map([&stored](int value) { stored = value; });
+  Result<void> const not_done{
+      Get(9).Map([&stored](int value) { stored = value; })};
   EXPECT_EQ(not_done, BetaError::kFirst);
   EXPECT_EQ(stored, 0);
 }
@@ -129,10 +128,10 @@ TEST(ResultVoidTest, MapMakesAValue) {
 
 TEST(ResultTest, ValueOrElseMakesTheFallbackFromTheError) {
   int calls{0};
-  auto const fallback = [&calls](Error const& error) {
+  auto const fallback{[&calls](Error const& error) {
     ++calls;
     return error == BetaError::kFirst ? -1 : -2;
-  };
+  }};
   EXPECT_EQ(Get(1).ValueOrElse(fallback), 10);
   EXPECT_EQ(calls, 0);
   EXPECT_EQ(Get(5).ValueOrElse(fallback), -1);
@@ -141,7 +140,7 @@ TEST(ResultTest, ValueOrElseMakesTheFallbackFromTheError) {
 
 TEST(ResultTest, InspectLooksAtTheValue) {
   int seen{0};
-  auto const look = [&seen](int const& value) { seen = value; };
+  auto const look{[&seen](int const& value) { seen = value; }};
   EXPECT_EQ(Get(2).Inspect(look).value(), 20);
   EXPECT_EQ(seen, 20);
   seen = 0;
@@ -151,14 +150,14 @@ TEST(ResultTest, InspectLooksAtTheValue) {
 
 TEST(ResultTest, InspectErrorLooksAtTheError) {
   int seen{0};
-  auto const look = [&seen](Error const&) { ++seen; };
+  auto const look{[&seen](Error const&) { ++seen; }};
   EXPECT_EQ(Get(5).InspectError(look).status(), BetaError::kFirst);
   EXPECT_EQ(Get(2).InspectError(look).value(), 20);
   EXPECT_EQ(seen, 1);
 }
 
 TEST(ResultTest, MapErrorKeepsTheValue) {
-  auto const to_alpha = [](Error const&) { return AlphaError::kSecond; };
+  auto const to_alpha{[](Error const&) { return AlphaError::kSecond; }};
   EXPECT_EQ(Get(5).MapError(to_alpha).status(), AlphaError::kSecond);
   EXPECT_EQ(Get(1).MapError(to_alpha).value(), 10);
 }

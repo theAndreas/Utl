@@ -257,8 +257,8 @@ class basic_string_view {
   int8_t compare(basic_string_view other) const {
     size_type const common{size_ < other.size_ ? size_ : other.size_};
     for (size_type index{0}; index < common; ++index) {
-      auto const a = static_cast<uint8_t>(data_[index]);
-      auto const b = static_cast<uint8_t>(other.data_[index]);
+      auto const a{static_cast<uint8_t>(data_[index])};
+      auto const b{static_cast<uint8_t>(other.data_[index])};
       if (a != b) {
         return a < b ? -1 : 1;
       }

@@ -81,7 +81,7 @@ static_assert(!std::is_convertible_v<optional<long&>,  // NOLINT
 
 // One of an object with static storage is a constant.
 int constant_target{0};
-constexpr optional<int&> kConstant(constant_target);
+constexpr optional<int&> kConstant{constant_target};
 static_assert(kConstant.HasValue() && &*kConstant == &constant_target);
 static_assert(!optional<int&>{}.HasValue());
 
@@ -174,7 +174,7 @@ TEST(OptionalReferenceTest, AndThen) {
   int target{3};
   optional<int&> const some{target};
   optional<int&> const none;
-  auto const twice = [](int& value) { return optional<int>{value * 2}; };
+  auto const twice{[](int& value) { return optional<int>{value * 2}; }};
   EXPECT_EQ(some.AndThen(twice), 6);
   EXPECT_EQ(none.AndThen(twice), nullopt);
 }
@@ -192,10 +192,10 @@ TEST(OptionalReferenceTest, MapGetsTheReference) {
 TEST(OptionalReferenceTest, MapCallsNothingWhenEmpty) {
   optional<int&> const none;
   int calls{0};
-  optional<int> const mapped = none.Map([&calls](int&) {
+  optional<int> const mapped{none.Map([&calls](int&) {
     ++calls;
     return 1;
-  });
+  })};
   EXPECT_EQ(mapped, nullopt);
   EXPECT_EQ(calls, 0);
 }
@@ -205,7 +205,7 @@ TEST(OptionalReferenceTest, OrElse) {
   int other{9};
   optional<int&> const some{target};
   optional<int&> const none;
-  auto const fallback = [&other] { return optional<int&>{other}; };
+  auto const fallback{[&other] { return optional<int&>{other}; }};
   EXPECT_EQ(&*none.OrElse(fallback), &other);
   EXPECT_EQ(&*some.OrElse(fallback), &target);
 }
@@ -230,7 +230,7 @@ TEST(OptionalReferenceTest, ValueOrElseGivesAReference) {
   int other{9};
   optional<int&> const some{target};
   optional<int&> const none;
-  auto const fallback = [&other]() -> int& { return other; };
+  auto const fallback{[&other]() -> int& { return other; }};
   EXPECT_EQ(&some.ValueOrElse(fallback), &target);
   EXPECT_EQ(&none.ValueOrElse(fallback), &other);
 }
@@ -240,11 +240,11 @@ TEST(OptionalReferenceTest, InspectAndFilterPassTheReferenceOn) {
   optional<int&> const some{target};
   optional<int&> const none;
   int seen{0};
-  auto const look = [&seen](int const& value) { seen = value; };
+  auto const look{[&seen](int const& value) { seen = value; }};
   EXPECT_EQ(&*some.Inspect(look), &target);
   EXPECT_EQ(seen, 4);
   EXPECT_FALSE(none.Inspect(look).HasValue());
-  auto const even = [](int const& value) { return value % 2 == 0; };
+  auto const even{[](int const& value) { return value % 2 == 0; }};
   EXPECT_EQ(&*some.Filter(even), &target);
   EXPECT_FALSE(some.Filter([](int const&) { return false; }).HasValue());
   EXPECT_FALSE(none.Filter(even).HasValue());

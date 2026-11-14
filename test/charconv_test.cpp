@@ -25,8 +25,8 @@ using utl::CharconvError;
 template <typename T>
 std::string Written(T value, uint8_t base = 10, size_t size = 24) {
   utl::array<char, 24> buffer{};
-  auto const end =
-      utl::to_chars(buffer.data(), buffer.data() + size, value, base);
+  auto const end{
+      utl::to_chars(buffer.data(), buffer.data() + size, value, base)};
   if (!end.IsOk()) {
     return "error";
   }
@@ -44,7 +44,7 @@ template <typename T>
 Read<T> ReadFrom(char const* text, uint8_t base = 10, T initial = T{7}) {
   T value{initial};
   size_t const size{std::strlen(text)};
-  auto const end = utl::from_chars(text, text + size, value, base);
+  auto const end{utl::from_chars(text, text + size, value, base)};
   size_t const taken{end.IsOk() ? static_cast<size_t>(end.value() - text)
                                 : size_t{0}};
   return Read<T>{end.status(), value, taken};
