@@ -42,19 +42,19 @@ struct IsCharconvInteger<bool> {
 template <size_t Size>
 struct UnsignedOfSizeImpl;
 template <>
-struct UnsignedOfSizeImpl<1> {
+struct UnsignedOfSizeImpl<sizeof(uint8_t)> {
   using Type = uint8_t;
 };
 template <>
-struct UnsignedOfSizeImpl<2> {
+struct UnsignedOfSizeImpl<sizeof(uint16_t)> {
   using Type = uint16_t;
 };
 template <>
-struct UnsignedOfSizeImpl<4> {
+struct UnsignedOfSizeImpl<sizeof(uint32_t)> {
   using Type = uint32_t;
 };
 template <>
-struct UnsignedOfSizeImpl<8> {
+struct UnsignedOfSizeImpl<sizeof(uint64_t)> {
   using Type = uint64_t;
 };
 template <typename T>
@@ -102,7 +102,14 @@ using SignOf = Sign<IsSigned<T>::kValue>;
 // standard.
 constexpr uint8_t kDecimal{10};
 
-constexpr bool IsBase(uint8_t base) { return base >= 2 && base <= 36; }
+// The bases to_chars() and from_chars() take, as in the standard: from binary
+// to the ten digits and the 26 letters.
+constexpr uint8_t kLowestBase{2};
+constexpr uint8_t kHighestBase{36};
+
+constexpr bool IsBase(uint8_t base) {
+  return base >= kLowestBase && base <= kHighestBase;
+}
 
 // The magnitude of `value`, modulo 2^n, so that the lowest value of a
 // signed T, whose magnitude no T holds, is right as well.
