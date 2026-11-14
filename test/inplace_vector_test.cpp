@@ -45,7 +45,9 @@ struct Counted {
   }
   ~Counted() { --alive; }
 
-  bool operator==(Counted const& other) const { return value == other.value; }
+  friend bool operator==(Counted const& a, Counted const& b) {
+    return a.value == b.value;
+  }
 
   int value;
 };

@@ -154,6 +154,29 @@ struct array {
       element = value;
     }
   }
+
+  /*!
+   * \brief Returns whether `a` and `b` hold equal elements, one by one.
+   *
+   * \param[in] a An array.
+   * \param[in] b Another array of the same type and size.
+   */
+  friend bool operator==(array const& a, array const& b) {
+    for (size_t index{0}; index < N; ++index) {
+      if (!(a[index] == b[index])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /*!
+   * \brief Returns whether `a` and `b` differ in an element.
+   *
+   * \param[in] a An array.
+   * \param[in] b Another array of the same type and size.
+   */
+  friend bool operator!=(array const& a, array const& b) { return !(a == b); }
 };
 
 /*!
@@ -266,33 +289,6 @@ struct ArrayElement<Element, Value, BracedFrom<Element, Value>> {
 template <typename Element, typename... Values>
 constexpr array<Element, sizeof...(Values)> make_array(Values... values) {
   return {{internal::ArrayElement<Element, Values>::Of(values)...}};
-}
-
-/*!
- * \brief Returns whether `a` and `b` hold equal elements, one by one.
- *
- * \param[in] a An array.
- * \param[in] b Another array of the same type and size.
- */
-template <typename T, size_t N>
-bool operator==(array<T, N> const& a, array<T, N> const& b) {
-  for (size_t index{0}; index < N; ++index) {
-    if (!(a[index] == b[index])) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/*!
- * \brief Returns whether `a` and `b` differ in an element.
- *
- * \param[in] a An array.
- * \param[in] b Another array of the same type and size.
- */
-template <typename T, size_t N>
-bool operator!=(array<T, N> const& a, array<T, N> const& b) {
-  return !(a == b);
 }
 
 }  // namespace utl
