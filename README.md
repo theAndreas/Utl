@@ -656,7 +656,7 @@ examples are built with it to show that utl does not depend on it.
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
 | Keypad | 2484 | 2484 | 2802 | 212 | 194 | 212 |
-| SelfCheck | 20812 | 20812 | 23784 | 354 | 336 | 364 |
+| SelfCheck | 20820 | 20820 | 23792 | 354 | 336 | 364 |
 <!-- /sizes -->
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the
