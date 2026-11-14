@@ -83,9 +83,14 @@ class Messages {
    */
   static __FlashStringHelper const* Find(ErrorGroup group, uint8_t code);
 
- private:
-  friend void UseMessages(Messages& messages);
+  /*!
+   * \brief Turns on the texts of its group, as UseMessages() does with it.
+   *
+   * Once is enough; a second call does nothing.
+   */
+  void Use();
 
+ private:
   /*
    * A Messages per group, linked only into a sketch that calls the group's
    * function: a switch for the whole build, UTL_ERROR_TEXTS before, could not
@@ -95,7 +100,7 @@ class Messages {
   char const* const* texts_;
   uint8_t count_;
   // The next group whose texts are on, a list through the objects that
-  // UseMessages() was given, so that it takes no memory of its own.
+  // Use() was called on, so that it takes no memory of its own.
   Messages* next_{nullptr};
 };
 
@@ -108,7 +113,7 @@ class Messages {
  * \param[in,out] messages The texts. They have to live as long as the program,
  *                         as a `static` does.
  */
-void UseMessages(Messages& messages);
+inline void UseMessages(Messages& messages) { messages.Use(); }
 
 }  // namespace utl
 

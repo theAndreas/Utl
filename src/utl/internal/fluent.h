@@ -30,6 +30,13 @@ class Result;
 namespace internal {
 
 /*
+ * The key to the unchecked value of a Result, which ValueFluent takes: a
+ * public function, as CodingStyle C-12 allows no friend, but one that only
+ * code naming internal:: can call.
+ */
+struct UncheckedKey {};
+
+/*
  * Calls `f(args...)` and makes a Result<U> of what it returns, for Map(). The
  * specialization for void calls `f` and returns ok, as `return f(args...);`
  * cannot make a Result of nothing. The arguments are passed on as they are, so
@@ -158,10 +165,17 @@ class ErrorFluent {
   }
 
  private:
-  // Only Self makes one, and ValueFluent on its way to Self, so that no class
-  // derives from ErrorFluent<Other> by mistake.
+  /*
+   * Only Self makes one, and ValueFluent on its way to Self, so that no class
+   * derives from ErrorFluent<Other> by mistake: the guard of a CRTP base that
+   * bugprone-crtp-constructor-accessibility asks for, a private constructor
+   * and the derived class its friend. C-12 allows no friend, and a protected
+   * constructor, which it would take, is what that check reports.
+   */
+  // NOLINTNEXTLINE(house-no-friend): C-12, the guard of the CRTP, see above
   friend Self;
   template <typename, typename>
+  // NOLINTNEXTLINE(house-no-friend): C-12, the guard of the CRTP, see above
   friend class ValueFluent;
   constexpr ErrorFluent() = default;
 
@@ -199,7 +213,7 @@ class ValueFluent : public ErrorFluent<Self> {
     if (!AsSelf().IsOk()) {
       return *AsSelf().error();
     }
-    return f(AsSelf().UncheckedValue());
+    return f(AsSelf().UncheckedValue(UncheckedKey{}));
   }
 
   /*!
@@ -216,7 +230,7 @@ class ValueFluent : public ErrorFluent<Self> {
     if (!AsSelf().IsOk()) {
       return *AsSelf().error();
     }
-    return MapCall<U>::Call(f, AsSelf().UncheckedValue());
+    return MapCall<U>::Call(f, AsSelf().UncheckedValue(UncheckedKey{}));
   }
 
   /*!
@@ -235,7 +249,7 @@ class ValueFluent : public ErrorFluent<Self> {
                   "Inspect: f returns nothing; it only looks, and what it "
                   "returned would be dropped unseen");
     if (AsSelf().IsOk()) {
-      f(static_cast<Looked>(AsSelf().UncheckedValue()));
+      f(static_cast<Looked>(AsSelf().UncheckedValue(UncheckedKey{})));
     }
     return AsSelf();
   }
@@ -243,6 +257,7 @@ class ValueFluent : public ErrorFluent<Self> {
  private:
   // Only Self makes one, as for ErrorFluent. It derives from ErrorFluent,
   // rather than Self from both, so that a Result has one base, not two.
+  // NOLINTNEXTLINE(house-no-friend): C-12, the guard of the CRTP, as above
   friend Self;
   constexpr ValueFluent() = default;
 
@@ -250,7 +265,7 @@ class ValueFluent : public ErrorFluent<Self> {
 
   /*
    * Self as what it is. The value is taken through UncheckedValue(), which
-   * Self keeps private and opens to this as a friend, and only when there is
+   * Self opens to this with internal::UncheckedKey, and only when there is
    * one: value() would check again what IsOk() has just said, which with
    * UTL_CHECK_ACCESS at 1 cost SelfCheck 360 bytes.
    */

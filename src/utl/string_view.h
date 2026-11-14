@@ -374,7 +374,7 @@ class basic_string_view {
    */
   friend bool operator==(basic_string_view a,
                          basic_flash_string_view<CharT> b) {
-    return EqualsFlash(a, b);
+    return b.Equals(a);
   }
 
   /*!
@@ -385,7 +385,7 @@ class basic_string_view {
    */
   friend bool operator==(basic_flash_string_view<CharT> a,
                          basic_string_view b) {
-    return EqualsFlash(b, a);
+    return a.Equals(b);
   }
 
   /*!
@@ -396,7 +396,7 @@ class basic_string_view {
    */
   friend bool operator!=(basic_string_view a,
                          basic_flash_string_view<CharT> b) {
-    return !EqualsFlash(a, b);
+    return !b.Equals(a);
   }
 
   /*!
@@ -407,17 +407,10 @@ class basic_string_view {
    */
   friend bool operator!=(basic_flash_string_view<CharT> a,
                          basic_string_view b) {
-    return !EqualsFlash(b, a);
+    return !a.Equals(b);
   }
 
  private:
-  // A member, unlike the operators above, so that the friendship of
-  // basic_flash_string_view reaches it.
-  static bool EqualsFlash(basic_string_view a,
-                          basic_flash_string_view<CharT> b) {
-    return b.Equals(a);
-  }
-
   static bool Equal(CharT const* a, CharT const* b, size_type count) {
     for (size_type index{0}; index < count; ++index) {
       if (a[index] != b[index]) {

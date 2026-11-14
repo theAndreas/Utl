@@ -121,12 +121,14 @@ class [[nodiscard]] Result : public internal::ValueFluent<Result<T>, T const&> {
     return f(*error());
   }
 
- private:
-  friend class internal::ValueFluent<Result, T const&>;
-
+  /*! \cond */
   // The value, unchecked, for ValueFluent, which asks IsOk() first.
-  T const& UncheckedValue() const { return value_; }
+  T const& UncheckedValue(internal::UncheckedKey /*key*/) const {
+    return value_;
+  }
+  /*! \endcond */
 
+ private:
   /*
    * The value and the Status lie side by side, not in a union: in return the
    * class needs no tag, no placement new and no deviation under a safety
@@ -277,13 +279,13 @@ class [[nodiscard]] Result<T&> : public internal::ValueFluent<Result<T&>, T&> {
     return f(*error());
   }
 
- private:
-  friend class internal::ValueFluent<Result, T&>;
-
+  /*! \cond */
   // The object referred to, unchecked, for ValueFluent, which asks IsOk()
   // first.
-  T& UncheckedValue() const { return *pointer_; }
+  T& UncheckedValue(internal::UncheckedKey /*key*/) const { return *pointer_; }
+  /*! \endcond */
 
+ private:
   T* pointer_;
   Status status_;
 };

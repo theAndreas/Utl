@@ -17,8 +17,6 @@
 
 namespace utl {
 
-class Status;
-
 /*!
  * \brief An error, always: a group and a code within it.
  *
@@ -114,19 +112,6 @@ class [[nodiscard]] Error {
   friend bool operator!=(Error const& a, Error const& b) { return !(a == b); }
 
  private:
-  friend class Status;
-
-  /*
-   * Status keeps an Error with no group for "ok", so that it needs no flag
-   * beside it and stays 3 bytes. Private: only Status makes one, and it never
-   * hands it out.
-   */
-  constexpr explicit Error(decltype(nullptr))
-      : group_{ErrorGroup{nullptr}}, code_{0} {}
-
-  // Whether this is the Error of an ok Status.
-  constexpr bool IsNone() const { return group_ == ErrorGroup{nullptr}; }
-
   ErrorGroup group_;
   uint8_t code_;
 };
