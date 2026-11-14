@@ -28,7 +28,7 @@ namespace utl {
  * \code{.cpp}
  * // font_error.cpp
  * char const kUnknownCharText[] PROGMEM = "unknown char";
- * constexpr auto kMessages PROGMEM = utl::make_array(kUnknownCharText);
+ * constexpr auto kMessages PROGMEM{utl::make_array(kUnknownCharText)};
  *
  * void UseFontMessages() {
  *   static utl::Messages messages{utl::ErrorGroup{kFontErrorGroup},

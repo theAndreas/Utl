@@ -189,8 +189,8 @@ struct array {
  * narrowing, checked when compiled.
  *
  * \code{.cpp}
- * constexpr auto kPins = utl::make_array(uint8_t{2}, uint8_t{3});
- * constexpr auto kMessages PROGMEM = utl::make_array(kNackText, kTimeoutText);
+ * constexpr auto kPins{utl::make_array(uint8_t{2}, uint8_t{3})};
+ * constexpr auto kMessages PROGMEM{utl::make_array(kNackText, kTimeoutText)};
  * \endcode
  *
  * \note A table in `PROGMEM` has to be `constexpr`, so that it is complete when
@@ -262,8 +262,8 @@ struct ArrayElement<Element, Value, BracedFrom<Element, Value>> {
  * the type, or refuse after a first `uint8_t` as narrowing.
  *
  * \code{.cpp}
- * constexpr auto kHeart PROGMEM =
- *     utl::make_array<uint8_t>(0x0C, 0x1E, 0x3C, 0x1E, 0x0C);
+ * constexpr auto kHeart PROGMEM{
+ *     utl::make_array<uint8_t>(0x0C, 0x1E, 0x3C, 0x1E, 0x0C)};
  * \endcode
  *
  * A value that does not fit `Element`, as 256 or -1 for a `uint8_t`, stops
