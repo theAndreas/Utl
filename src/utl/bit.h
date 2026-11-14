@@ -266,6 +266,21 @@ class Bit {
   }
 
   /*!
+   * \brief Returns `value` with every bit turned: a set one cleared, a cleared
+   *        one set.
+   *
+   * `Invert(0)` is the Integer of every bit set, and
+   * `ReadBitGroup(Invert(pins), kKeyMask)` the keys of `kKeyMask` whose pin is
+   * low.
+   *
+   * \param[in] value The integer to invert.
+   */
+  static constexpr Integer Invert(Integer value) {
+    // ~ of an Integer narrower than int is a negative int, so cast back.
+    return static_cast<Integer>(~value);
+  }
+
+  /*!
    * \brief Sets the bits of `mask` in `target`, the other bits left as they
    *        were.
    *
@@ -322,11 +337,6 @@ class Bit {
    * as it is would promote it to int, which on the AVR has 16 bits and a sign.
    */
   using ShiftType = decltype(Integer{} | 0u);
-
-  // ~ of an Integer narrower than int is a negative int, so cast back.
-  static constexpr Integer Invert(Integer mask) {
-    return static_cast<Integer>(~mask);
-  }
 
   static constexpr Integer ShiftDown(Integer value, uint8_t position) {
     return static_cast<Integer>(static_cast<ShiftType>(value) >> position);

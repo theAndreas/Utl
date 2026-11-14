@@ -109,10 +109,11 @@ void Enter(char key) {
 // A change on pins 8 to 11: a key that went down is pushed, unless it is the
 // bounce of the last.
 ISR(PCINT0_vect) {
-  auto const pins{static_cast<uint8_t>(PINB & kKeyMask)};
+  using Bits = utl::Bit<uint8_t>;
+  uint8_t const pins{Bits::ReadBitGroup(PINB, kKeyMask)};
   // A key is down when its pin is low: up before and down now went down.
-  auto const down{static_cast<uint8_t>(pins ^ kKeyMask)};
-  auto const went_down{static_cast<uint8_t>(last_pins & down)};
+  uint8_t const down{Bits::ReadBitGroup(Bits::Invert(pins), kKeyMask)};
+  uint8_t const went_down{Bits::ReadBitGroup(last_pins, down)};
   last_pins = pins;
   auto const now{static_cast<uint16_t>(millis())};
   if (went_down == 0 || now - last_press < kBounceMs) {
@@ -120,7 +121,7 @@ ISR(PCINT0_vect) {
   }
   last_press = now;
   for (uint8_t key{0}; key < kKeyCount; ++key) {
-    if ((went_down & (1u << key)) != 0 && !presses.push(key).IsOk()) {
+    if (Bits::ReadBit(went_down, key) && !presses.push(key).IsOk()) {
       dropped = static_cast<uint8_t>(dropped + 1);
     }
   }
@@ -132,8 +133,8 @@ void setup() {
   for (uint8_t key{0}; key < kKeyCount; ++key) {
     pinMode(kFirstPin + key, INPUT_PULLUP);
   }
-  PCMSK0 |= kKeyMask;   // pins 8 to 11 raise PCINT0
-  PCICR |= _BV(PCIE0);  // and PCINT0 is on
+  utl::Bit<uint8_t>::SetBits(PCMSK0, kKeyMask);   // pins 8 to 11 raise PCINT0
+  utl::Bit<uint8_t>::SetBits(PCICR, _BV(PCIE0));  // and PCINT0 is on
   lock.Close();
 }
 

@@ -172,6 +172,12 @@ TEST(BitTest, ClearsABitAndLeavesTheOthers) {
   EXPECT_EQ(Bit<uint16_t>::ClearBit(0xFFFF, 15), 0x7FFF);
 }
 
+TEST(BitTest, InvertsEveryBit) {
+  static_assert(Bit<uint8_t>::Invert(0x0fu) == 0xf0u, "every bit turned");
+  EXPECT_EQ(Bit<uint8_t>::Invert(0u), 0xffu);
+  EXPECT_EQ(Bit<uint32_t>::Invert(0x80000001u), 0x7ffffffeu);
+}
+
 TEST(BitTest, TogglesABit) {
   EXPECT_EQ(Bit<uint8_t>::ToggleBit(0x00, 7), 0x80);
   EXPECT_EQ(Bit<uint8_t>::ToggleBit(0x80, 7), 0x00);
