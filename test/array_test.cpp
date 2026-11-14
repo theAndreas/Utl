@@ -1,7 +1,7 @@
 // Copyright 2026 Andreas Burnickl
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
-// array and make_array.
+// array, make_array() and make_array<T>().
 
 #include <gtest/gtest.h>
 #include <utl/array.h>
@@ -63,6 +63,41 @@ TEST(ArrayTest, MakeArrayTakesTypeAndSize) {
   constexpr auto kMade = utl::make_array(uint8_t{1}, uint8_t{2});
   static_assert(sizeof(kMade) == 2, "two uint8_t");
   EXPECT_EQ(kMade.size(), 2U);
+  EXPECT_EQ(kMade[1], 2);
+}
+
+TEST(ArrayTest, MakeArrayOfATypeTakesTheSizeFromTheValues) {
+  constexpr auto kFont{utl::make_array<uint8_t>('F', 0, 32, 255)};
+  static_assert(sizeof(kFont) == 4, "four uint8_t");
+  static_assert(kFont[3] == 255, "made when compiling");
+  EXPECT_EQ(kFont.size(), 4U);
+  EXPECT_EQ(kFont[0], 'F');
+  EXPECT_EQ(kFont[1], 0);
+  EXPECT_EQ(kFont[2], 32);
+  EXPECT_EQ(kFont[3], 255);
+}
+
+TEST(ArrayTest, MakeArrayOfATypeTakesNegativeValuesThatFit) {
+  constexpr auto kOffsets{utl::make_array<int8_t>(-128, 0, 127)};
+  static_assert(sizeof(kOffsets) == 3, "three int8_t");
+  EXPECT_EQ(kOffsets[0], -128);
+  EXPECT_EQ(kOffsets[1], 0);
+  EXPECT_EQ(kOffsets[2], 127);
+}
+
+TEST(ArrayTest, MakeArrayOfATypeTakesElementsOfTheTypeAsTheyAre) {
+  static constexpr char kFirst[] = "first";
+  static constexpr char kSecond[] = "second";
+  constexpr auto kTexts{utl::make_array<char const*>(kFirst, kSecond)};
+  EXPECT_EQ(kTexts.size(), 2U);
+  EXPECT_EQ(kTexts[0], kFirst);
+  EXPECT_EQ(kTexts[1], kSecond);
+}
+
+TEST(ArrayTest, MakeArrayOfATypeTakesValuesOfTheType) {
+  constexpr auto kMade{utl::make_array<uint8_t>(uint8_t{1}, uint8_t{2})};
+  static_assert(sizeof(kMade) == 2, "two uint8_t");
+  EXPECT_EQ(kMade[0], 1);
   EXPECT_EQ(kMade[1], 2);
 }
 
