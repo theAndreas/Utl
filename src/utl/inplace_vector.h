@@ -29,9 +29,10 @@ namespace utl {
 // What a sketch does not see: how the elements are kept.
 namespace internal {
 
-// The smallest unsigned type that counts from 0 to N. 0xFF, not UINT8_MAX,
-// which avr-libc defines for C++ only with __STDC_LIMIT_MACROS.
-template <size_t N, bool = (N <= 0xFF)>
+// The smallest unsigned type that counts from 0 to N. Whether N fits a uint8_t
+// as messages.h asks it, not against UINT8_MAX, which avr-libc defines for C++
+// only with __STDC_LIMIT_MACROS.
+template <size_t N, bool = (static_cast<uint8_t>(N) == N)>
 struct CountForImpl {
   using Type = size_t;
 };
