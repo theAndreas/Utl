@@ -204,10 +204,10 @@ constexpr bool IsNegative(Value value) {
   return value != Value{0} && !(value > Value{0});
 }
 
-// An element of make_array<Element>() made of a value of another type, which
-// has to come back from the element as it was, sign included: -1 is 255 as a
-// uint8_t, and 255 back is no -1.
-template <typename Element, typename Value>
+// An element of make_array<Element>() made of a value that would narrow, a
+// number, which has to come back from the element as it was, sign included: -1
+// is 255 as a uint8_t, and 255 back is no -1.
+template <typename Element, typename Value, typename = void>
 struct ArrayElement {
   static constexpr bool Fits(Value value) {
     return static_cast<Value>(static_cast<Element>(value)) == value &&
@@ -220,11 +220,12 @@ struct ArrayElement {
   }
 };
 
-// A value that is an Element already, as a pointer to a text, is taken as it
-// is.
-template <typename Element>
-struct ArrayElement<Element, Element> {
-  static constexpr Element Of(Element const& value) { return value; }
+// A value that becomes an Element without narrowing is taken as it is: an
+// Element already, a smaller number, or a char* for a char const*, which the
+// check above could not cast back.
+template <typename Element, typename Value>
+struct ArrayElement<Element, Value, BracedFrom<Element, Value>> {
+  static constexpr Element Of(Value const& value) { return value; }
 };
 
 }  // namespace internal
@@ -254,7 +255,9 @@ struct ArrayElement<Element, Element> {
  *       fails without a word.
  *
  * \tparam Element The type of the elements, which cannot be left out.
- * \param[in] values The elements, each an `Element` or a number that fits one.
+ * \param[in] values The elements, each what becomes an `Element` without
+ *                   narrowing, as a `char*` for a `char const*`, or a number
+ *                   that fits one.
  *
  * \stddiff `std::experimental::make_array<D>()` refuses a number of another
  *          type even where it fits, so that every value of a font would have to

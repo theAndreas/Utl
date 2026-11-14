@@ -101,5 +101,25 @@ TEST(ArrayTest, MakeArrayOfATypeTakesValuesOfTheType) {
   EXPECT_EQ(kMade[1], 2);
 }
 
+// Texts that may be written, into an array that only reads them: the range
+// check cast each pointer back to char*, which does not compile.
+TEST(ArrayTest, MakeArrayOfATypeTakesWhatConvertsWithoutNarrowing) {
+  char first[] = "first";
+  char second[] = "second";
+  auto const texts{utl::make_array<char const*>(first, second)};
+  EXPECT_EQ(texts[0], first);
+  EXPECT_EQ(texts[1], second);
+}
+
+// An aggregate of the type, which the range check cannot compare.
+TEST(ArrayTest, MakeArrayOfATypeTakesAnAggregateOfTheType) {
+  struct Point {
+    int8_t x;
+    int8_t y;
+  };
+  constexpr auto kCorners{utl::make_array<Point>(Point{1, 2}, Point{3, 4})};
+  EXPECT_EQ(kCorners[0].x + kCorners[1].y, 5);
+}
+
 }  // namespace
 }  // namespace utl_test
