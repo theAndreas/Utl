@@ -14,7 +14,6 @@ Checks: >
   performance-*,
   portability-*,
   readability-*,
-  -bugprone-dynamic-static-initializers,
   -cert-dcl37-c,
   -cert-dcl51-cpp,
   -cert-dcl58-cpp,
@@ -43,12 +42,10 @@ Checks: >
   -readability-identifier-length,
   -readability-named-parameter,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
-  -cppcoreguidelines-pro-type-union-access
+  -cppcoreguidelines-pro-type-union-access,
+  -bugprone-dynamic-static-initializers
 # house-*: the checks of our own, in tools/lib/tidy_module/; tools/tidy.sh loads them. Without
 #   the module, as in clangd, the name matches nothing.
-# bugprone-dynamic-static-initializers: it reports the extern declaration of a constant whose
-#   constexpr definition lies in a .cpp it cannot see, as an object identified by its address
-#   has to be.
 # cert-dcl37-c, cert-dcl51-cpp, cert-dcl58-cpp: aliases of bugprone-reserved-identifier and
 #   bugprone-std-namespace-modification, which are on; two names would want two NOLINTs.
 # cppcoreguidelines-avoid-c-arrays, -avoid-magic-numbers, -c-copy-assignment-signature,
@@ -84,6 +81,10 @@ Checks: >
 #   the rest are built on pointers, and optional, inplace_vector and function_ref keep a value
 #   they may not hold in a union, as the standard library's own do; each union is private to
 #   its class.
+# Utl's own as well: bugprone-dynamic-static-initializers. It reports the extern declaration
+#   in a header of an object whose definition lies in a .cpp it cannot see: the name of each
+#   error group, which identifies the group by its address and so has to be one object, and
+#   the volatile codes of SelfCheck. Eight places, none initialized at run time.
 WarningsAsErrors: '*'
 # clang's warnings beyond -Wall -Wextra, which tools/tidy.sh passes: what an IDE such as CLion
 # finds with its own analysis of the code, reported here by clang-tidy as clang-diagnostic-*
