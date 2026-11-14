@@ -188,6 +188,86 @@ constexpr array<T, 1 + sizeof...(Ts)> make_array(T first, Ts... rest) {
   return {{first, rest...}};
 }
 
+namespace internal {
+
+// Declared only: make_array<Element>() calls it for a value that does not fit,
+// and a call of a function that is not constexpr ends the evaluation when
+// compiling with an error that names it.
+template <typename Element>
+Element ValueOutOfRange();
+
+// Whether `value` is below 0, without comparing a type that has no sign with 0,
+// which -Wtype-limits reports. Not SignOf of internal/charconv.h, which would
+// bring that header's error group and its own findings into every array.
+template <typename Value>
+constexpr bool IsNegative(Value value) {
+  return value != Value{0} && !(value > Value{0});
+}
+
+// An element of make_array<Element>() made of a value that would narrow, a
+// number, which has to come back from the element as it was, sign included: -1
+// is 255 as a uint8_t, and 255 back is no -1.
+template <typename Element, typename Value, typename = void>
+struct ArrayElement {
+  static constexpr bool Fits(Value value) {
+    return static_cast<Value>(static_cast<Element>(value)) == value &&
+           IsNegative(value) == IsNegative(static_cast<Element>(value));
+  }
+
+  static constexpr Element Of(Value value) {
+    return Fits(value) ? static_cast<Element>(value)
+                       : ValueOutOfRange<Element>();
+  }
+};
+
+// A value that becomes an Element without narrowing is taken as it is: an
+// Element already, a smaller number, or a char* for a char const*, which the
+// check above could not cast back.
+template <typename Element, typename Value>
+struct ArrayElement<Element, Value, BracedFrom<Element, Value>> {
+  static constexpr Element Of(Value const& value) { return value; }
+};
+
+}  // namespace internal
+
+/*!
+ * \brief Returns an array of `Element` of its arguments, with the size taken
+ *        from them.
+ *
+ * For a table whose values are written as numbers, as a font or a bitmap: a
+ * literal such as `0x3C` is an `int`, which make_array() above would take as
+ * the type, or refuse after a first `uint8_t` as narrowing.
+ *
+ * \code{.cpp}
+ * constexpr auto kHeart PROGMEM =
+ *     utl::make_array<uint8_t>(0x0C, 0x1E, 0x3C, 0x1E, 0x0C);
+ * \endcode
+ *
+ * A value that does not fit `Element`, as 256 or -1 for a `uint8_t`, stops
+ * the build with an error that names `ValueOutOfRange`, also in a sketch,
+ * which Arduino compiles with `-Wno-error=narrowing`, so that braces would only
+ * warn. Where the first argument is an `Element` already and the others
+ * convert to one without narrowing, C++ picks make_array() above as the more
+ * specialized, which makes the same array.
+ *
+ * \note For values known when compiling, as a table in `PROGMEM` has to be
+ *       made: initialized at start-up, it would be written to flash, which
+ *       fails without a word.
+ *
+ * \tparam Element The type of the elements, which cannot be left out.
+ * \param[in] values The elements, each what becomes an `Element` without
+ *                   narrowing, as a `char*` for a `char const*`, or a number
+ *                   that fits one.
+ *
+ * \stddiff `std::experimental::make_array<D>()` refuses a number of another
+ *          type even where it fits, so that every value of a font would have to
+ *          be written as a `uint8_t`.
+ */
+template <typename Element, typename... Values>
+constexpr array<Element, sizeof...(Values)> make_array(Values... values) {
+  return {{internal::ArrayElement<Element, Values>::Of(values)...}};
+}
+
 /*!
  * \brief Returns whether `a` and `b` hold equal elements, one by one.
  *

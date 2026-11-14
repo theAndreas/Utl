@@ -89,3 +89,21 @@ add_variant(checked UTL_CHECK_ACCESS=1)
 # "// Expected: ..." names; as gnu++11, as avr-gcc builds a sketch.
 add_compile_fail_tests(DIRECTORY ${CMAKE_SOURCE_DIR}/test/compile_fail STANDARD gnu++11
                        INCLUDES ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/test/mock)
+
+# What must not compile without a static_assert to name: make_array<T>() given a value that
+# does not fit T, which stops the constant evaluation with a call of ValueOutOfRange(). The
+# value is a function's argument, which no static_assert can test, and add_compile_fail_tests()
+# expects one, so these, in test/compile_fail/out_of_range/, which it does not glob, pass on
+# the name. In gnu++11, as avr-gcc builds a sketch, and in C++17, as the tests are.
+file(GLOB out_of_range_cases CONFIGURE_DEPENDS
+     ${CMAKE_SOURCE_DIR}/test/compile_fail/out_of_range/*.cpp)
+foreach(case IN LISTS out_of_range_cases)
+  get_filename_component(name ${case} NAME_WE)
+  foreach(standard IN ITEMS gnu++11 c++17)
+    add_test(NAME compile_fail/out_of_range/${name}/${standard}
+             COMMAND ${CMAKE_CXX_COMPILER} -std=${standard} -fsyntax-only
+                     -I${CMAKE_SOURCE_DIR}/src -I${CMAKE_SOURCE_DIR}/test/mock ${case})
+    set_tests_properties(compile_fail/out_of_range/${name}/${standard}
+                         PROPERTIES PASS_REGULAR_EXPRESSION "ValueOutOfRange")
+  endforeach()
+endforeach()

@@ -249,6 +249,8 @@ Sum(rows);
 utl::span<uint8_t>{rows}.subspan(1).Map(Sum);  // a Result: subspan() can fail
 
 constexpr auto kPins = utl::make_array(uint8_t{2}, uint8_t{3});  // utl::array<uint8_t, 2>
+constexpr auto kHeart PROGMEM =
+    utl::make_array<uint8_t>(0x0C, 0x1E, 0x3C, 0x1E, 0x0C);     // utl::array<uint8_t, 5>
 ```
 
 - `array<T, N>` (`array.h`) and `span<T>` (`span.h`): `std::array`, which avr-gcc lacks, and
@@ -261,6 +263,9 @@ constexpr auto kPins = utl::make_array(uint8_t{2}, uint8_t{3});  // utl::array<u
 - `make_array(...)` (`array.h`): an array whose type and size come from its arguments, what
   `std::array a = {...}` deduces from C++17 on. It refuses arguments that would narrow, although
   Arduino compiles with `-fpermissive -Wno-error=narrowing`.
+- `make_array<T>(...)` (`array.h`): an array of `T` whose size comes from its arguments, for a
+  table written in numbers, as a font or a bitmap in `PROGMEM`. It takes any number that fits a
+  `T`, as `0x3C` for a `uint8_t`, and a value that does not, as 256 or -1, stops the build.
 
 ### inplace_vector
 
