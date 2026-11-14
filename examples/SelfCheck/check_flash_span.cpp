@@ -54,14 +54,14 @@ void CheckFlashSpan() {
         F("flash_span reads words and double words"));
   Check(colors[1].green == 128 && colors[1].blue == 255 && colors[0].red == 255,
         F("flash_span reads a struct"));
-  Check(Xor(rows) == (0x3cU ^ 0x42U ^ 0xa5U ^ 0x81U),
+  Check(Xor(rows) == (0x3cu ^ 0x42u ^ 0xa5u ^ 0x81u),
         F("flash_span in a range-based for"));
-  Check(Xor(utl::flash_span<uint8_t>{kArray}) == (7U ^ 8U ^ 9U),
+  Check(Xor(utl::flash_span<uint8_t>{kArray}) == (7u ^ 8u ^ 9u),
         F("flash_span of a utl::array"));
   Check(rows.at(3).ValueOr(0) == 0x81 &&
             rows.at(4).status() == utl::IndexError::kOutOfRange,
         F("flash_span::at"));
-  Check(rows.subspan(1, 2).Map(Xor).ValueOr(0) == (0x42U ^ 0xa5U) &&
+  Check(rows.subspan(1, 2).Map(Xor).ValueOr(0) == (0x42u ^ 0xa5u) &&
             rows.first(5).status() == utl::IndexError::kOutOfRange,
         F("flash_span::subspan, first"));
 }

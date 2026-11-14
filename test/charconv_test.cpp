@@ -112,7 +112,7 @@ TEST(FromCharsTest, ReadsAndStopsAfterTheDigits) {
   Read<uint8_t> const read{ReadFrom<uint8_t>("42,7")};
   EXPECT_TRUE(read.status.IsOk());
   EXPECT_EQ(read.value, 42);
-  EXPECT_EQ(read.taken, 2U);
+  EXPECT_EQ(read.taken, 2u);
   EXPECT_EQ(ReadFrom<int8_t>("-128").value, -128);
   EXPECT_EQ(ReadFrom<int8_t>("127").value, 127);
   EXPECT_EQ(ReadFrom<uint16_t>("65535").value, 65535);
@@ -128,10 +128,10 @@ TEST(FromCharsTest, ReadsInAnyBase) {
   EXPECT_EQ(ReadFrom<uint8_t>("ff", 16).value, 255);
   EXPECT_EQ(ReadFrom<uint8_t>("FF", 16).value, 255);  // either case
   EXPECT_EQ(ReadFrom<uint8_t>("1012", 2).value, 5);   // stops at the 2
-  EXPECT_EQ(ReadFrom<uint8_t>("1012", 2).taken, 3U);
+  EXPECT_EQ(ReadFrom<uint8_t>("1012", 2).taken, 3u);
   EXPECT_EQ(ReadFrom<uint8_t>("z", 36).value, 35);
   // "0x" is no prefix: the 0 is read, and it stops at the x.
-  EXPECT_EQ(ReadFrom<uint8_t>("0x1f", 16).taken, 1U);
+  EXPECT_EQ(ReadFrom<uint8_t>("0x1f", 16).taken, 1u);
 }
 
 TEST(FromCharsTest, InvalidArgumentLeavesTheValue) {

@@ -120,7 +120,7 @@ ISR(PCINT0_vect) {
   }
   last_press = now;
   for (uint8_t key{0}; key < kKeyCount; ++key) {
-    if ((went_down & (1U << key)) != 0 && !presses.push(key).IsOk()) {
+    if ((went_down & (1u << key)) != 0 && !presses.push(key).IsOk()) {
       dropped = static_cast<uint8_t>(dropped + 1);
     }
   }

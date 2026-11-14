@@ -181,7 +181,7 @@ class Bit {
    * \return An integer with that bit set and every other bit cleared.
    */
   static constexpr Integer ToMask(uint8_t position) {
-    return static_cast<Integer>(static_cast<ShiftType>(1U) << position);
+    return static_cast<Integer>(static_cast<ShiftType>(1u) << position);
   }
 
   /*!
@@ -237,7 +237,7 @@ class Bit {
    * \return True if the bit is set.
    */
   static constexpr bool ReadBit(Integer value, uint8_t position) {
-    return ReadBitGroup(value, ToMask(position)) != Integer{0U};
+    return ReadBitGroup(value, ToMask(position)) != Integer{0u};
   }
 
   /*!
@@ -321,7 +321,7 @@ class Bit {
    * unsigned int, unsigned int otherwise. Shifting a uint8_t or a uint16_t
    * as it is would promote it to int, which on the AVR has 16 bits and a sign.
    */
-  using ShiftType = decltype(Integer{} | 0U);
+  using ShiftType = decltype(Integer{} | 0u);
 
   // ~ of an Integer narrower than int is a negative int, so cast back.
   static constexpr Integer Invert(Integer mask) {
@@ -332,7 +332,7 @@ class Bit {
     return static_cast<Integer>(static_cast<ShiftType>(value) >> position);
   }
 
-  Integer value_{0U};
+  Integer value_{0u};
 };
 
 }  // namespace utl

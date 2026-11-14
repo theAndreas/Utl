@@ -14,14 +14,14 @@
 namespace self_check {
 
 void CheckBit() {
-  uint16_t const volatile top_of_16{0x8000U};
-  uint32_t const volatile top_of_32{0x80000000UL};
+  uint16_t const volatile top_of_16{0x8000u};
+  uint32_t const volatile top_of_32{0x80000000uL};
 
   uint16_t const value_16{top_of_16};
   bool const read_16{utl::Bit<uint16_t>::ReadBit(value_16, 15)};
-  bool const cleared_16{utl::Bit<uint16_t>::ClearBit(value_16, 15) == 0U};
+  bool const cleared_16{utl::Bit<uint16_t>::ClearBit(value_16, 15) == 0u};
   bool const group_16{utl::Bit<uint16_t>::ReadBitGroup(value_16, 0x0F, 12) ==
-                      0x08U};
+                      0x08u};
   Check(read_16 && cleared_16 && group_16,
         F("Bit<uint16_t> reads, clears and shifts down its top bit"));
 

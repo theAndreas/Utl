@@ -65,7 +65,7 @@ TEST(StatusTest, MayBeDropped) {
 
 TEST(StatusTest, PrintsOkOrTheError) {
   StringPrint ok;
-  EXPECT_EQ(Status::Ok().PrintTo(ok), 2U);
+  EXPECT_EQ(Status::Ok().PrintTo(ok), 2u);
   EXPECT_EQ(ok.text, "ok");
   UseAlphaMessages();
   StringPrint alpha;

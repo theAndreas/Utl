@@ -102,7 +102,7 @@ class InplaceVectorTest : public ::testing::Test {
 
 TEST_F(InplaceVectorTest, IsMadeOfABracedList) {
   Bytes const bytes{2, 3, 4};
-  EXPECT_EQ(bytes.size(), 3U);
+  EXPECT_EQ(bytes.size(), 3u);
   EXPECT_FALSE(bytes.empty());
   EXPECT_EQ(bytes[0], 2);
   EXPECT_EQ(bytes[2], 4);
@@ -126,7 +126,7 @@ TEST_F(InplaceVectorTest, AddsAtTheEndUntilFull) {
   EXPECT_EQ(bytes, (Bytes{1, 2, 3, 0}));
   EXPECT_EQ(bytes.push_back(5), IndexError::kFull);
   EXPECT_EQ(bytes.emplace_back(uint8_t{5}), IndexError::kFull);
-  EXPECT_EQ(bytes.size(), 4U);  // as it was
+  EXPECT_EQ(bytes.size(), 4u);  // as it was
 }
 
 TEST_F(InplaceVectorTest, MakesAnElementWithoutADefaultConstructor) {
@@ -225,7 +225,7 @@ TEST_F(InplaceVectorTest, Resizes) {
   EXPECT_EQ(bytes, (Bytes{1, 0, 0, 9}));
   EXPECT_EQ(bytes.resize(5), IndexError::kFull);
   EXPECT_EQ(bytes.resize(5, 1), IndexError::kFull);
-  EXPECT_EQ(bytes.size(), 4U);  // as it was
+  EXPECT_EQ(bytes.size(), 4u);  // as it was
 }
 
 TEST_F(InplaceVectorTest, Compares) {
