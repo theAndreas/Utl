@@ -3,6 +3,8 @@
 //
 // A negative value for an element type without a sign, -1 for a uint8_t:
 // make_array<T>() has to stop the build rather than wrap it to 255.
+//
+// Expected: ValueOutOfRange
 
 #include <stdint.h>
 #include <utl/array.h>

@@ -3,6 +3,8 @@
 //
 // A value above what the element type holds, 256 for a uint8_t: make_array<T>()
 // has to stop the build rather than wrap it to 0.
+//
+// Expected: ValueOutOfRange
 
 #include <stdint.h>
 #include <utl/array.h>
