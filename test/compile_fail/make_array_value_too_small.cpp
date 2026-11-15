@@ -3,6 +3,8 @@
 //
 // A value below what a signed element type holds, -129 for an int8_t:
 // make_array<T>() has to stop the build rather than wrap it to 127.
+//
+// Expected: ValueOutOfRange
 
 #include <stdint.h>
 #include <utl/array.h>

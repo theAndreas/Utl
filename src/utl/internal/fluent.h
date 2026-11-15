@@ -169,13 +169,14 @@ class ErrorFluent {
    * Only Self makes one, and ValueFluent on its way to Self, so that no class
    * derives from ErrorFluent<Other> by mistake: the guard of a CRTP base that
    * bugprone-crtp-constructor-accessibility asks for, a private constructor
-   * and the derived class its friend. C-12 allows no friend, and a protected
-   * constructor, which it would take, is what that check reports.
+   * and the derived class its friend, which C-12 allows for Self, a type
+   * parameter of the class. ValueFluent is none: a parameter of its own for it
+   * would take a second name for the derived class into every ErrorFluent, to
+   * keep a defaulted constructor from the other instances of ValueFluent.
    */
-  // NOLINTNEXTLINE(house-no-friend): C-12, the guard of the CRTP, see above
   friend Self;
   template <typename, typename>
-  // NOLINTNEXTLINE(house-no-friend): C-12, the guard of the CRTP, see above
+  // NOLINTNEXTLINE(house-no-friend): C-12, ValueFluent makes its base, above
   friend class ValueFluent;
   constexpr ErrorFluent() = default;
 
@@ -257,7 +258,6 @@ class ValueFluent : public ErrorFluent<Self> {
  private:
   // Only Self makes one, as for ErrorFluent. It derives from ErrorFluent,
   // rather than Self from both, so that a Result has one base, not two.
-  // NOLINTNEXTLINE(house-no-friend): C-12, the guard of the CRTP, as above
   friend Self;
   constexpr ValueFluent() = default;
 
