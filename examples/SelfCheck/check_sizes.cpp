@@ -42,11 +42,11 @@ static_assert(sizeof(utl::string_view) == 4 &&
 constexpr utl::array<uint8_t, 3> kConstantRows{{1, 2, 3}};
 static_assert(kConstantRows[1] == 2 && kConstantRows.size() == 3,
               "an array is constexpr");
-constexpr auto kMadeRows = utl::make_array(uint8_t{1}, uint8_t{2}, uint8_t{3});
+constexpr auto kMadeRows{utl::make_array(uint8_t{1}, uint8_t{2}, uint8_t{3})};
 static_assert(kMadeRows.size() == 3 && kMadeRows[2] == 3 &&
                   sizeof(kMadeRows) == 3,
               "make_array takes type and size from its arguments");
-constexpr auto kTypedRows = utl::make_array<uint8_t>(1, 2, 255);
+constexpr auto kTypedRows{utl::make_array<uint8_t>(1, 2, 255)};
 static_assert(kTypedRows.size() == 3 && kTypedRows[2] == 255 &&
                   sizeof(kTypedRows) == 3,
               "make_array<uint8_t> takes the size from its values");

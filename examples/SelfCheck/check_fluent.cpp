@@ -18,8 +18,8 @@ using utl::Error;
 // fallback only when it is needed.
 void CheckRustFluent() {
   uint8_t seen{0};
-  auto const look = [&seen](uint8_t const& code) { seen = code; };
-  auto const count = [&seen](Error const&) { ++seen; };
+  auto const look{[&seen](uint8_t const& code) { seen = code; }};
+  auto const count{[&seen](Error const&) { ++seen; }};
 
   Check(GetCode(2).Inspect(look).ValueOr(0) == 7 && seen == 7,
         F("Result::Inspect"));
@@ -41,7 +41,7 @@ void CheckRustFluent() {
   GetCode(9).Map([&seen](uint8_t code) { seen = code; }).ConsumeError(count);
   Check(seen == 2, F("Status::ConsumeError ends a chain"));
 
-  auto const odd = [](uint8_t const& index) { return index % 2 == 1; };
+  auto const odd{[](uint8_t const& index) { return index % 2 == 1; }};
   Check(FindCode(1).Filter(odd) == uint8_t{1} &&
             FindCode(7).Filter(odd) == utl::nullopt,
         F("optional::Filter"));

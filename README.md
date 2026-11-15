@@ -113,8 +113,8 @@ char const kUnknownCharText[] PROGMEM = "unknown char";
 char const kNullTextText[] PROGMEM = "null text";
 
 // In the order of FontError.
-constexpr auto kMessages PROGMEM =
-    utl::make_array(kUnknownCharText, kNullTextText);
+constexpr auto kMessages PROGMEM{
+    utl::make_array(kUnknownCharText, kNullTextText)};
 
 void UseFontMessages() {
   static utl::Messages messages{utl::ErrorGroup{kFontErrorGroup}, kMessages};
@@ -248,9 +248,9 @@ uint16_t Sum(utl::span<uint8_t const> values);
 Sum(rows);
 utl::span<uint8_t>{rows}.subspan(1).Map(Sum);  // a Result: subspan() can fail
 
-constexpr auto kPins = utl::make_array(uint8_t{2}, uint8_t{3});  // utl::array<uint8_t, 2>
-constexpr auto kHeart PROGMEM =
-    utl::make_array<uint8_t>(0x0C, 0x1E, 0x3C, 0x1E, 0x0C);     // utl::array<uint8_t, 5>
+constexpr auto kPins{utl::make_array(uint8_t{2}, uint8_t{3})};  // utl::array<uint8_t, 2>
+constexpr auto kHeart PROGMEM{
+    utl::make_array<uint8_t>(0x0C, 0x1E, 0x3C, 0x1E, 0x0C)};    // utl::array<uint8_t, 5>
 ```
 
 - `array<T, N>` (`array.h`) and `span<T>` (`span.h`): `std::array`, which avr-gcc lacks, and
@@ -412,7 +412,7 @@ class Panel {
 };
 
 utl::array<utl::reference_wrapper<Led>, 2> leds{{red, green}};
-auto const read_only = utl::cref(red);  // a utl::reference_wrapper<Led const>
+auto const read_only{utl::cref(red)};  // a utl::reference_wrapper<Led const>
 ```
 
 `reference_wrapper<T>` (`reference_wrapper.h`) is `std::reference_wrapper`, with `get()`, the
@@ -656,7 +656,7 @@ examples are built with it to show that utl does not depend on it.
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
 | Keypad | 2484 | 2484 | 2802 | 212 | 194 | 212 |
-| SelfCheck | 20812 | 20812 | 23784 | 354 | 336 | 364 |
+| SelfCheck | 20820 | 20820 | 23792 | 354 | 336 | 364 |
 <!-- /sizes -->
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the

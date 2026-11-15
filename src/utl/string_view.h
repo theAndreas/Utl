@@ -257,8 +257,8 @@ class basic_string_view {
   int8_t compare(basic_string_view other) const {
     size_type const common{size_ < other.size_ ? size_ : other.size_};
     for (size_type index{0}; index < common; ++index) {
-      auto const a = static_cast<uint8_t>(data_[index]);
-      auto const b = static_cast<uint8_t>(other.data_[index]);
+      auto const a{static_cast<uint8_t>(data_[index])};
+      auto const b{static_cast<uint8_t>(other.data_[index])};
       if (a != b) {
         return a < b ? -1 : 1;
       }
@@ -374,7 +374,7 @@ class basic_string_view {
    */
   friend bool operator==(basic_string_view a,
                          basic_flash_string_view<CharT> b) {
-    return EqualsFlash(a, b);
+    return b.Equals(a);
   }
 
   /*!
@@ -385,7 +385,7 @@ class basic_string_view {
    */
   friend bool operator==(basic_flash_string_view<CharT> a,
                          basic_string_view b) {
-    return EqualsFlash(b, a);
+    return a.Equals(b);
   }
 
   /*!
@@ -396,7 +396,7 @@ class basic_string_view {
    */
   friend bool operator!=(basic_string_view a,
                          basic_flash_string_view<CharT> b) {
-    return !EqualsFlash(a, b);
+    return !b.Equals(a);
   }
 
   /*!
@@ -407,17 +407,10 @@ class basic_string_view {
    */
   friend bool operator!=(basic_flash_string_view<CharT> a,
                          basic_string_view b) {
-    return !EqualsFlash(b, a);
+    return !a.Equals(b);
   }
 
  private:
-  // A member, unlike the operators above, so that the friendship of
-  // basic_flash_string_view reaches it.
-  static bool EqualsFlash(basic_string_view a,
-                          basic_flash_string_view<CharT> b) {
-    return b.Equals(a);
-  }
-
   static bool Equal(CharT const* a, CharT const* b, size_type count) {
     for (size_type index{0}; index < count; ++index) {
       if (a[index] != b[index]) {

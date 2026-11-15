@@ -16,6 +16,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "utl/bit.h"
 #include "utl/charconv_error.h"
 #include "utl/result.h"
 
@@ -133,8 +134,8 @@ T FromMagnitude(UnsignedOf<T> magnitude, bool negative) {
 template <typename T>
 UnsignedOf<T> MagnitudeLimit(bool negative) {
   using U = UnsignedOf<T>;
-  U const all{static_cast<U>(~U{0})};
-  U const highest{IsSigned<T>::kValue ? static_cast<U>(all / 2U) : all};
+  U const all{Bit<U>::Invert(U{0})};
+  U const highest{IsSigned<T>::kValue ? static_cast<U>(all / 2u) : all};
   return negative ? static_cast<U>(highest + 1) : highest;
 }
 

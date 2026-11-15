@@ -20,8 +20,8 @@ using utl::string_view;
 
 TEST(FlashStringViewTest, ReadsFlash) {
   flash_string_view const keyword{F("text=")};
-  EXPECT_EQ(keyword.size(), 5U);
-  EXPECT_EQ(keyword.length(), 5U);
+  EXPECT_EQ(keyword.size(), 5u);
+  EXPECT_EQ(keyword.length(), 5u);
   EXPECT_FALSE(keyword.empty());
   EXPECT_TRUE(flash_string_view{}.empty());
   EXPECT_EQ(keyword[4], '=');
@@ -46,11 +46,11 @@ TEST(FlashStringViewTest, SubstrFindAndAt) {
   EXPECT_EQ(keyword.substr(0, 4).value(), F("text"));
   EXPECT_EQ(keyword.substr(1).value(), F("ext="));
   EXPECT_EQ(keyword.substr(6).status(), IndexError::kOutOfRange);
-  EXPECT_EQ(keyword.find('='), 4U);
-  EXPECT_EQ(keyword.find('t', 1), 3U);
+  EXPECT_EQ(keyword.find('='), 4u);
+  EXPECT_EQ(keyword.find('t', 1), 3u);
   EXPECT_EQ(keyword.find('z'), flash_string_view::npos);
-  EXPECT_EQ(keyword.find("xt"), 2U);
-  EXPECT_EQ(keyword.find("t", 1), 3U);
+  EXPECT_EQ(keyword.find("xt"), 2u);
+  EXPECT_EQ(keyword.find("t", 1), 3u);
   EXPECT_EQ(keyword.find("zz"), flash_string_view::npos);
   EXPECT_EQ(keyword.find("text=!"), flash_string_view::npos);
   EXPECT_EQ(keyword.at(0).ValueOr(0), 't');

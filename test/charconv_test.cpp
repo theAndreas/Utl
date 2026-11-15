@@ -25,8 +25,8 @@ using utl::CharconvError;
 template <typename T>
 std::string Written(T value, uint8_t base = 10, size_t size = 24) {
   utl::array<char, 24> buffer{};
-  auto const end =
-      utl::to_chars(buffer.data(), buffer.data() + size, value, base);
+  auto const end{
+      utl::to_chars(buffer.data(), buffer.data() + size, value, base)};
   if (!end.IsOk()) {
     return "error";
   }
@@ -44,7 +44,7 @@ template <typename T>
 Read<T> ReadFrom(char const* text, uint8_t base = 10, T initial = T{7}) {
   T value{initial};
   size_t const size{std::strlen(text)};
-  auto const end = utl::from_chars(text, text + size, value, base);
+  auto const end{utl::from_chars(text, text + size, value, base)};
   size_t const taken{end.IsOk() ? static_cast<size_t>(end.value() - text)
                                 : size_t{0}};
   return Read<T>{end.status(), value, taken};
@@ -112,7 +112,7 @@ TEST(FromCharsTest, ReadsAndStopsAfterTheDigits) {
   Read<uint8_t> const read{ReadFrom<uint8_t>("42,7")};
   EXPECT_TRUE(read.status.IsOk());
   EXPECT_EQ(read.value, 42);
-  EXPECT_EQ(read.taken, 2U);
+  EXPECT_EQ(read.taken, 2u);
   EXPECT_EQ(ReadFrom<int8_t>("-128").value, -128);
   EXPECT_EQ(ReadFrom<int8_t>("127").value, 127);
   EXPECT_EQ(ReadFrom<uint16_t>("65535").value, 65535);
@@ -128,10 +128,10 @@ TEST(FromCharsTest, ReadsInAnyBase) {
   EXPECT_EQ(ReadFrom<uint8_t>("ff", 16).value, 255);
   EXPECT_EQ(ReadFrom<uint8_t>("FF", 16).value, 255);  // either case
   EXPECT_EQ(ReadFrom<uint8_t>("1012", 2).value, 5);   // stops at the 2
-  EXPECT_EQ(ReadFrom<uint8_t>("1012", 2).taken, 3U);
+  EXPECT_EQ(ReadFrom<uint8_t>("1012", 2).taken, 3u);
   EXPECT_EQ(ReadFrom<uint8_t>("z", 36).value, 35);
   // "0x" is no prefix: the 0 is read, and it stops at the x.
-  EXPECT_EQ(ReadFrom<uint8_t>("0x1f", 16).taken, 1U);
+  EXPECT_EQ(ReadFrom<uint8_t>("0x1f", 16).taken, 1u);
 }
 
 TEST(FromCharsTest, InvalidArgumentLeavesTheValue) {

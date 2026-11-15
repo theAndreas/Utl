@@ -22,14 +22,14 @@ char const kNullFunctionText[] PROGMEM = "function_ref of a null pointer";
 char const kEmptyFunctionText[] PROGMEM = "call of an empty inplace_function";
 
 // In the order of Misuse.
-constexpr auto kTexts PROGMEM =
+constexpr auto kTexts PROGMEM{
     make_array(kResultValueText, kOptionalValueText, kIndexText, kEmptyText,
-               kRemoveText, kNullFunctionText, kEmptyFunctionText);
+               kRemoveText, kNullFunctionText, kEmptyFunctionText)};
 
 }  // namespace
 
 size_t PrintMisuse(Print& out, Misuse misuse) {
-  auto const index = static_cast<uint8_t>(misuse);
+  auto const index{static_cast<uint8_t>(misuse)};
   size_t count{out.print(F("utl: "))};
   if (index < kTexts.size()) {
     count += out.print(

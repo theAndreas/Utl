@@ -21,8 +21,8 @@ char const kOutOfRangeText[] PROGMEM = "out of range";
 char const kValueTooLargeText[] PROGMEM = "value too large";
 
 // In the order of CharconvError.
-constexpr auto kMessages PROGMEM =
-    make_array(kInvalidArgumentText, kOutOfRangeText, kValueTooLargeText);
+constexpr auto kMessages PROGMEM{
+    make_array(kInvalidArgumentText, kOutOfRangeText, kValueTooLargeText)};
 
 }  // namespace
 

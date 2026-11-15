@@ -312,31 +312,49 @@ class basic_flash_string_view {
     return !(a == b);
   }
 
+  /*!
+   * \brief Returns whether `text`, in RAM, holds the chars of this text.
+   *
+   * What `text == F("...")` of basic_string_view asks, which cannot read flash
+   * itself, as this header includes its header.
+   *
+   * \param[in] text A view in RAM.
+   */
+  bool Equals(basic_string_view<CharT> text) const {
+    return text.size() == size_ && memcmp_P(text.data(), data_, size_) == 0;
+  }
+
+  /*!
+   * \brief Returns whether `text`, in RAM, begins with this text.
+   *
+   * What basic_string_view::starts_with() of a text in flash asks.
+   *
+   * \param[in] text A view in RAM.
+   */
+  bool IsPrefixOf(basic_string_view<CharT> text) const {
+    return size_ <= text.size() && memcmp_P(text.data(), data_, size_) == 0;
+  }
+
+  /*!
+   * \brief Returns whether `text`, in RAM, ends with this text.
+   *
+   * What basic_string_view::ends_with() of a text in flash asks.
+   *
+   * \param[in] text A view in RAM.
+   */
+  bool IsSuffixOf(basic_string_view<CharT> text) const {
+    return size_ <= text.size() &&
+           memcmp_P(text.data() + (text.size() - size_), data_, size_) == 0;
+  }
+
  private:
   // Unchecked, for the members, which check what they read themselves.
   CharT Read(size_type index) const {
     return static_cast<CharT>(pgm_read_byte(data_ + index));
   }
 
-  // For basic_string_view, which compares with a text in flash but cannot
-  // include this header, as this one includes it.
-  friend class basic_string_view<CharT>;
-
   basic_flash_string_view(CharT const* data, size_type size)
       : data_{data}, size_{size} {}
-
-  bool Equals(basic_string_view<CharT> text) const {
-    return text.size() == size_ && memcmp_P(text.data(), data_, size_) == 0;
-  }
-
-  bool IsPrefixOf(basic_string_view<CharT> text) const {
-    return size_ <= text.size() && memcmp_P(text.data(), data_, size_) == 0;
-  }
-
-  bool IsSuffixOf(basic_string_view<CharT> text) const {
-    return size_ <= text.size() &&
-           memcmp_P(text.data() + (text.size() - size_), data_, size_) == 0;
-  }
 
   // In flash.
   CharT const* data_;

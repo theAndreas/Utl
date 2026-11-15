@@ -51,9 +51,8 @@ void CheckFunctionRef() {
   Check(SumOfCodes(Doubled) == 16, F("function_ref calls a function"));
 
   uint8_t offset{codes[1]};
-  auto const add = [&offset](uint8_t code) {
-    return static_cast<uint8_t>(code + offset);
-  };
+  auto const add{
+      [&offset](uint8_t code) { return static_cast<uint8_t>(code + offset); }};
   Check(SumOfCodes(add) == 11, F("function_ref calls a lambda"));
   offset = codes[2];
   utl::function_ref<uint8_t(uint8_t)> f{add};

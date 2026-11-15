@@ -1,13 +1,15 @@
 # The answers this project was made from, which `copier update` reads. Change one with
 # `copier update --data name=value`, not here.
-_commit: v0.5.1
+_commit: v0.10.1
 _src_path: gh:theAndreas/embedded-cpp-template
+arduino: true
 arduino_core: arduino:avr@1.8.8
 author: Andreas Burnickl
 copyright_year: 2026
 description: A small standard library for Arduino on the AVR.
 fqbn: arduino:avr:uno
 github_owner: theAndreas
+kind: library
 license: GPL-3.0-or-later
 macro_prefix: UTL
 namespace: utl

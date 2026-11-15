@@ -417,7 +417,7 @@ class inplace_vector : private internal::VectorBase<T, N> {
   template <typename... Args>
   Status emplace(const_iterator position, Args&&... args) {
     // As unsigned, a position before begin() lies far beyond the end too.
-    auto const index = static_cast<size_type>(position - cbegin());
+    auto const index{static_cast<size_type>(position - cbegin())};
     if (index > this->length) {
       return IndexError::kOutOfRange;
     }
@@ -425,8 +425,8 @@ class inplace_vector : private internal::VectorBase<T, N> {
       return IndexError::kFull;
     }
     // Made first, as an argument may refer to an element that moves.
-    T value(
-        static_cast<Args&&>(args)...);  // forwarded: () as emplace_back() has
+    // NOLINTNEXTLINE(house-braced-var-init): T-3, forwarded as emplace_back()
+    T value(static_cast<Args&&>(args)...);
     T* const target{begin() + index};
     if (target == end()) {
       ::new (internal::InPlace{end()}) T(static_cast<T&&>(value));
@@ -483,8 +483,8 @@ class inplace_vector : private internal::VectorBase<T, N> {
    */
   iterator erase(const_iterator first, const_iterator last) {
     // As unsigned, a position before begin() lies far beyond the end too.
-    auto const from = static_cast<size_type>(first - cbegin());
-    auto const to = static_cast<size_type>(last - cbegin());
+    auto const from{static_cast<size_type>(first - cbegin())};
+    auto const to{static_cast<size_type>(last - cbegin())};
     if (!internal::Check(from <= to && to <= this->length, Misuse::kIndex)) {
       return end();
     }
@@ -525,6 +525,35 @@ class inplace_vector : private internal::VectorBase<T, N> {
     return ResizeWith(count, value);
   }
 
+  /*!
+   * \brief Returns whether `a` and `b` hold as many elements, and equal ones,
+   *        one by one.
+   *
+   * \param[in] a An inplace_vector.
+   * \param[in] b Another of the same type and capacity.
+   */
+  friend bool operator==(inplace_vector const& a, inplace_vector const& b) {
+    if (a.size() != b.size()) {
+      return false;
+    }
+    for (size_t index{0}; index < a.size(); ++index) {
+      if (!(a[index] == b[index])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /*!
+   * \brief Returns whether `a` and `b` differ in size or in an element.
+   *
+   * \param[in] a An inplace_vector.
+   * \param[in] b Another of the same type and capacity.
+   */
+  friend bool operator!=(inplace_vector const& a, inplace_vector const& b) {
+    return !(a == b);
+  }
+
  private:
   pointer Elements() { return this->storage.elements; }
   constexpr const_pointer Elements() const { return this->storage.elements; }
@@ -559,37 +588,6 @@ class inplace_vector : private internal::VectorBase<T, N> {
     return Status::Ok();
   }
 };
-
-/*!
- * \brief Returns whether `a` and `b` hold as many elements, and equal ones, one
- *        by one.
- *
- * \param[in] a An inplace_vector.
- * \param[in] b Another of the same type and capacity.
- */
-template <typename T, size_t N>
-bool operator==(inplace_vector<T, N> const& a, inplace_vector<T, N> const& b) {
-  if (a.size() != b.size()) {
-    return false;
-  }
-  for (size_t index{0}; index < a.size(); ++index) {
-    if (!(a[index] == b[index])) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/*!
- * \brief Returns whether `a` and `b` differ in size or in an element.
- *
- * \param[in] a An inplace_vector.
- * \param[in] b Another of the same type and capacity.
- */
-template <typename T, size_t N>
-bool operator!=(inplace_vector<T, N> const& a, inplace_vector<T, N> const& b) {
-  return !(a == b);
-}
 
 }  // namespace utl
 

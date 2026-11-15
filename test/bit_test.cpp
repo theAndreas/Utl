@@ -151,14 +151,14 @@ TEST(BitTest, KeepsAReferenceToTheSameBitWhenCopied) {
 
 TEST(BitTest, MakesTheMaskOfTheLowestBit) {
   EXPECT_EQ(Bit<uint8_t>::ToMask(0), 0x01);
-  EXPECT_EQ(Bit<uint64_t>::ToMask(0), 0x01U);
+  EXPECT_EQ(Bit<uint64_t>::ToMask(0), 0x01u);
 }
 
 TEST(BitTest, MakesTheMaskOfTheHighestBit) {
   EXPECT_EQ(Bit<uint8_t>::ToMask(7), 0x80);
   EXPECT_EQ(Bit<uint16_t>::ToMask(15), 0x8000);
-  EXPECT_EQ(Bit<uint32_t>::ToMask(31), 0x80000000UL);
-  EXPECT_EQ(Bit<uint64_t>::ToMask(63), 0x8000000000000000ULL);
+  EXPECT_EQ(Bit<uint32_t>::ToMask(31), 0x80000000uL);
+  EXPECT_EQ(Bit<uint64_t>::ToMask(63), 0x8000000000000000uLL);
 }
 
 TEST(BitTest, SetsABitAndLeavesTheOthers) {
@@ -172,6 +172,12 @@ TEST(BitTest, ClearsABitAndLeavesTheOthers) {
   EXPECT_EQ(Bit<uint16_t>::ClearBit(0xFFFF, 15), 0x7FFF);
 }
 
+TEST(BitTest, InvertsEveryBit) {
+  static_assert(Bit<uint8_t>::Invert(0x0fu) == 0xf0u, "every bit turned");
+  EXPECT_EQ(Bit<uint8_t>::Invert(0u), 0xffu);
+  EXPECT_EQ(Bit<uint32_t>::Invert(0x80000001u), 0x7ffffffeu);
+}
+
 TEST(BitTest, TogglesABit) {
   EXPECT_EQ(Bit<uint8_t>::ToggleBit(0x00, 7), 0x80);
   EXPECT_EQ(Bit<uint8_t>::ToggleBit(0x80, 7), 0x00);
@@ -183,9 +189,9 @@ TEST(BitTest, WritesABit) {
 }
 
 TEST(BitTest, ReadsABit) {
-  EXPECT_TRUE(Bit<uint32_t>::ReadBit(0x80000000UL, 31));
-  EXPECT_FALSE(Bit<uint32_t>::ReadBit(0x7FFFFFFFUL, 31));
-  EXPECT_TRUE(Bit<uint32_t>::ReadBit(0x00000001UL, 0));
+  EXPECT_TRUE(Bit<uint32_t>::ReadBit(0x80000000uL, 31));
+  EXPECT_FALSE(Bit<uint32_t>::ReadBit(0x7FFFFFFFuL, 31));
+  EXPECT_TRUE(Bit<uint32_t>::ReadBit(0x00000001uL, 0));
 }
 
 TEST(BitTest, ReadsAGroupInPlace) {

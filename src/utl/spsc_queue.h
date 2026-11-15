@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "utl/bit.h"
 #include "utl/index_error.h"
 #include "utl/internal/in_place.h"
 #include "utl/internal/type_traits.h"
@@ -64,7 +65,8 @@ namespace utl {
 template <typename T, size_t N>
 class spsc_queue {
   // A power of two that fits the counts, a uint8_t each: 128 at most.
-  static_assert(N >= 1 && static_cast<uint8_t>(N) == N && (N & (N - 1)) == 0,
+  static_assert(N >= 1 && static_cast<uint8_t>(N) == N &&
+                    Bit<size_t>::ReadBitGroup(N, N - 1) == 0,
                 "spsc_queue: N is a power of two from 1 to 128");
   static_assert(__is_trivially_copyable(T),
                 "spsc_queue: T is trivially copyable, so that copying it in "
@@ -106,7 +108,7 @@ class spsc_queue {
     }
     // The place is free once popped_ says so, not before.
     __atomic_signal_fence(__ATOMIC_ACQUIRE);
-    ::new (internal::InPlace{&storage_.elements[pushed & kMask]}) T(value);
+    ::new (internal::InPlace{&storage_.elements[PlaceOf(pushed)]}) T(value);
     // The element is there before the count hands it over.
     __atomic_signal_fence(__ATOMIC_RELEASE);
     pushed_ = static_cast<uint8_t>(pushed + 1);
@@ -125,7 +127,7 @@ class spsc_queue {
     }
     // The element is there once pushed_ says so, not before.
     __atomic_signal_fence(__ATOMIC_ACQUIRE);
-    T const value{storage_.elements[popped & kMask]};
+    T const value{storage_.elements[PlaceOf(popped)]};
     // The element is read before the count hands its place back.
     __atomic_signal_fence(__ATOMIC_RELEASE);
     popped_ = static_cast<uint8_t>(popped + 1);
@@ -144,7 +146,7 @@ class spsc_queue {
       return nullopt;
     }
     __atomic_signal_fence(__ATOMIC_ACQUIRE);
-    return T(storage_.elements[popped & kMask]);
+    return T(storage_.elements[PlaceOf(popped)]);
   }
 
   /*!
@@ -176,6 +178,11 @@ class spsc_queue {
 
  private:
   static constexpr uint8_t kMask{N - 1};
+
+  // The place in storage_ of the element a count names: the count modulo N.
+  static constexpr uint8_t PlaceOf(uint8_t count) {
+    return Bit<uint8_t>::ReadBitGroup(count, kMask);
+  }
 
   // Room for N elements, none of them made: a union, so that a constexpr
   // constructor makes it by its byte alone, and T needs no constructor here.

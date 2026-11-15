@@ -154,6 +154,29 @@ struct array {
       element = value;
     }
   }
+
+  /*!
+   * \brief Returns whether `a` and `b` hold equal elements, one by one.
+   *
+   * \param[in] a An array.
+   * \param[in] b Another array of the same type and size.
+   */
+  friend bool operator==(array const& a, array const& b) {
+    for (size_t index{0}; index < N; ++index) {
+      if (!(a[index] == b[index])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /*!
+   * \brief Returns whether `a` and `b` differ in an element.
+   *
+   * \param[in] a An array.
+   * \param[in] b Another array of the same type and size.
+   */
+  friend bool operator!=(array const& a, array const& b) { return !(a == b); }
 };
 
 /*!
@@ -166,8 +189,8 @@ struct array {
  * narrowing, checked when compiled.
  *
  * \code{.cpp}
- * constexpr auto kPins = utl::make_array(uint8_t{2}, uint8_t{3});
- * constexpr auto kMessages PROGMEM = utl::make_array(kNackText, kTimeoutText);
+ * constexpr auto kPins{utl::make_array(uint8_t{2}, uint8_t{3})};
+ * constexpr auto kMessages PROGMEM{utl::make_array(kNackText, kTimeoutText)};
  * \endcode
  *
  * \note A table in `PROGMEM` has to be `constexpr`, so that it is complete when
@@ -239,8 +262,8 @@ struct ArrayElement<Element, Value, BracedFrom<Element, Value>> {
  * the type, or refuse after a first `uint8_t` as narrowing.
  *
  * \code{.cpp}
- * constexpr auto kHeart PROGMEM =
- *     utl::make_array<uint8_t>(0x0C, 0x1E, 0x3C, 0x1E, 0x0C);
+ * constexpr auto kHeart PROGMEM{
+ *     utl::make_array<uint8_t>(0x0C, 0x1E, 0x3C, 0x1E, 0x0C)};
  * \endcode
  *
  * A value that does not fit `Element`, as 256 or -1 for a `uint8_t`, stops
@@ -266,33 +289,6 @@ struct ArrayElement<Element, Value, BracedFrom<Element, Value>> {
 template <typename Element, typename... Values>
 constexpr array<Element, sizeof...(Values)> make_array(Values... values) {
   return {{internal::ArrayElement<Element, Values>::Of(values)...}};
-}
-
-/*!
- * \brief Returns whether `a` and `b` hold equal elements, one by one.
- *
- * \param[in] a An array.
- * \param[in] b Another array of the same type and size.
- */
-template <typename T, size_t N>
-bool operator==(array<T, N> const& a, array<T, N> const& b) {
-  for (size_t index{0}; index < N; ++index) {
-    if (!(a[index] == b[index])) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/*!
- * \brief Returns whether `a` and `b` differ in an element.
- *
- * \param[in] a An array.
- * \param[in] b Another array of the same type and size.
- */
-template <typename T, size_t N>
-bool operator!=(array<T, N> const& a, array<T, N> const& b) {
-  return !(a == b);
 }
 
 }  // namespace utl

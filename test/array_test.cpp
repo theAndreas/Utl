@@ -16,8 +16,8 @@ using utl::array;
 
 TEST(ArrayTest, SizeAndElements) {
   array<int, 3> rows{{1, 2, 3}};
-  EXPECT_EQ(rows.size(), 3U);
-  EXPECT_EQ(rows.max_size(), 3U);
+  EXPECT_EQ(rows.size(), 3u);
+  EXPECT_EQ(rows.max_size(), 3u);
   EXPECT_FALSE(rows.empty());
   EXPECT_EQ(rows[1], 2);
   EXPECT_EQ(rows.front(), 1);
@@ -60,9 +60,9 @@ TEST(ArrayTest, CopiesComparesAndFills) {
 }
 
 TEST(ArrayTest, MakeArrayTakesTypeAndSize) {
-  constexpr auto kMade = utl::make_array(uint8_t{1}, uint8_t{2});
+  constexpr auto kMade{utl::make_array(uint8_t{1}, uint8_t{2})};
   static_assert(sizeof(kMade) == 2, "two uint8_t");
-  EXPECT_EQ(kMade.size(), 2U);
+  EXPECT_EQ(kMade.size(), 2u);
   EXPECT_EQ(kMade[1], 2);
 }
 
@@ -70,7 +70,7 @@ TEST(ArrayTest, MakeArrayOfATypeTakesTheSizeFromTheValues) {
   constexpr auto kFont{utl::make_array<uint8_t>('F', 0, 32, 255)};
   static_assert(sizeof(kFont) == 4, "four uint8_t");
   static_assert(kFont[3] == 255, "made when compiling");
-  EXPECT_EQ(kFont.size(), 4U);
+  EXPECT_EQ(kFont.size(), 4u);
   EXPECT_EQ(kFont[0], 'F');
   EXPECT_EQ(kFont[1], 0);
   EXPECT_EQ(kFont[2], 32);
@@ -89,7 +89,7 @@ TEST(ArrayTest, MakeArrayOfATypeTakesElementsOfTheTypeAsTheyAre) {
   static constexpr char kFirst[] = "first";
   static constexpr char kSecond[] = "second";
   constexpr auto kTexts{utl::make_array<char const*>(kFirst, kSecond)};
-  EXPECT_EQ(kTexts.size(), 2U);
+  EXPECT_EQ(kTexts.size(), 2u);
   EXPECT_EQ(kTexts[0], kFirst);
   EXPECT_EQ(kTexts[1], kSecond);
 }

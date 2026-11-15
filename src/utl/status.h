@@ -51,7 +51,7 @@ namespace utl {
 class Status : public internal::ErrorFluent<Status> {
  public:
   /*! \brief Makes an ok Status; Ok() says the same where it is returned. */
-  constexpr Status() : error_{nullptr} {}
+  constexpr Status() : error_{ErrorGroup{internal::NoGroupName()}, 0} {}
 
   /*! \brief Returns an ok Status. */
   static constexpr Status Ok() { return Status{}; }
@@ -80,7 +80,9 @@ class Status : public internal::ErrorFluent<Status> {
   }
 
   /*! \brief Returns whether there is no error. */
-  bool IsOk() const { return error_.IsNone(); }
+  bool IsOk() const {
+    return error_.group() == ErrorGroup{internal::NoGroupName()};
+  }
 
   /*!
    * \brief Returns the error, or null if IsOk().
@@ -172,7 +174,10 @@ class Status : public internal::ErrorFluent<Status> {
   friend bool operator!=(Status const& a, Status const& b) { return !(a == b); }
 
  private:
-  // With a null group if ok.
+  /*
+   * With no group if ok, which only a Status makes and never hands out: error()
+   * returns a null pointer then.
+   */
   Error error_;
 };
 

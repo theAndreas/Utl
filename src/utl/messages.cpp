@@ -32,14 +32,14 @@ __FlashStringHelper const* Messages::Find(ErrorGroup group, uint8_t code) {
   return nullptr;
 }
 
-void UseMessages(Messages& messages) {
+void Messages::Use() {
   for (Messages const* on{first_messages}; on != nullptr; on = on->next_) {
-    if (on == &messages) {
+    if (on == this) {
       return;
     }
   }
-  messages.next_ = first_messages;
-  first_messages = &messages;
+  next_ = first_messages;
+  first_messages = this;
 }
 
 }  // namespace utl

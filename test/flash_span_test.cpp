@@ -57,7 +57,7 @@ static_assert(
 // Of the elements' own type only.
 static_assert(!std::is_constructible_v<flash_span<uint16_t>, Rows>);
 
-constexpr flash_span<uint8_t> kRowsSpan(kRows);
+constexpr flash_span<uint8_t> kRowsSpan{kRows};
 static_assert(kRowsSpan.size() == 4 && kRowsSpan.size_bytes() == 4);
 static_assert(flash_span<uint16_t>{kSteps}.size_bytes() == 6);
 
@@ -130,7 +130,7 @@ TEST(FlashSpanTest, TakesAPart) {
 
 TEST(FlashSpanTest, ComparesIterators) {
   flash_span<uint8_t> const rows{kRows};
-  auto position = rows.begin();
+  auto position{rows.begin()};
   EXPECT_TRUE(position == rows.begin());
   EXPECT_TRUE(position != rows.end());
   ++position;

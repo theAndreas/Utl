@@ -95,7 +95,7 @@ static_assert(std::is_same_v<reference_wrapper<int>::type, int>);
 
 // A reference_wrapper of an object with static storage is a constant.
 int constant_target{0};
-constexpr reference_wrapper<int> kConstant(constant_target);
+constexpr reference_wrapper<int> kConstant{constant_target};
 static_assert(&kConstant.get() == &constant_target);
 
 TEST(ReferenceWrapperTest, RefersToItsObject) {
@@ -112,6 +112,7 @@ TEST(ReferenceWrapperTest, CopiesAndRebinds) {
   int second{2};
   // = rather than braces: what is checked is that an lvalue converts
   // implicitly.
+  // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   reference_wrapper<int> wrapper = first;
   reference_wrapper<int> const copy{wrapper};
   EXPECT_EQ(&copy.get(), &first);
@@ -141,22 +142,25 @@ TEST(ReferenceWrapperTest, AsAMember) {
 TEST(ReferenceWrapperTest, ConvertsAsAPointer) {
   Derived derived;
   // = rather than braces: what is checked is that it converts implicitly.
+  // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   reference_wrapper<Base> const base = derived;
   EXPECT_EQ(&base.get(), &derived);
   // = rather than braces: what is checked is that it converts implicitly.
+  // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   reference_wrapper<Base const> const from_wrapper = utl::ref(derived);
   EXPECT_EQ(&from_wrapper.get(), &derived);
 
   int value{5};
   // = rather than braces: what is checked is that it converts implicitly.
+  // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   reference_wrapper<int const> const read_only = utl::ref(value);
   EXPECT_EQ(&read_only.get(), &value);
 }
 
 TEST(ReferenceWrapperTest, RefAndCref) {
   int value{7};
-  auto const wrapper = utl::ref(value);
-  auto const read_only = utl::cref(value);
+  auto const wrapper{utl::ref(value)};
+  auto const read_only{utl::cref(value)};
   EXPECT_EQ(&wrapper.get(), &value);
   EXPECT_EQ(&read_only.get(), &value);
   EXPECT_EQ(&utl::ref(wrapper).get(), &value);

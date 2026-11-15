@@ -41,7 +41,7 @@ TEST(SpscQueueTest, IsEmptyWhenMade) {
   Keys const keys;
   EXPECT_TRUE(keys.empty());
   EXPECT_FALSE(keys.full());
-  EXPECT_EQ(keys.size(), 0U);
+  EXPECT_EQ(keys.size(), 0u);
   EXPECT_FALSE(keys.front().HasValue());
 }
 
@@ -49,9 +49,9 @@ TEST(SpscQueueTest, TakesInTheOrderAdded) {
   Keys keys;
   EXPECT_TRUE(keys.push(1).IsOk());
   EXPECT_TRUE(keys.push(2).IsOk());
-  EXPECT_EQ(keys.size(), 2U);
+  EXPECT_EQ(keys.size(), 2u);
   EXPECT_EQ(*keys.front(), 1);
-  EXPECT_EQ(keys.size(), 2U);  // front() leaves it in
+  EXPECT_EQ(keys.size(), 2u);  // front() leaves it in
   EXPECT_EQ(*keys.pop(), 1);
   EXPECT_EQ(*keys.pop(), 2);
   EXPECT_FALSE(keys.pop().HasValue());
@@ -87,7 +87,7 @@ TEST(SpscQueueTest, LeavesOutWhatComesWhenFull) {
   EXPECT_EQ(PushFrom(keys, 0, 9), 4);
   EXPECT_TRUE(keys.full());
   EXPECT_EQ(keys.push(9), IndexError::kFull);
-  EXPECT_EQ(keys.size(), 4U);
+  EXPECT_EQ(keys.size(), 4u);
   EXPECT_EQ(*keys.pop(), 0);
   EXPECT_FALSE(keys.full());
   EXPECT_TRUE(keys.push(4).IsOk());  // in the place freed
@@ -116,7 +116,7 @@ TEST(SpscQueueTest, CountsOnPastTheWrapOfAByte) {
 TEST(SpscQueueTest, FillsAQueueOf128) {
   spsc_queue<uint8_t, 128> bytes;
   EXPECT_EQ(PushFrom(bytes, 0, 200), 128);
-  EXPECT_EQ(bytes.size(), 128U);
+  EXPECT_EQ(bytes.size(), 128u);
   EXPECT_TRUE(bytes.full());
   EXPECT_EQ(bytes.push(0), IndexError::kFull);
   EXPECT_EQ(*bytes.pop(), 0);

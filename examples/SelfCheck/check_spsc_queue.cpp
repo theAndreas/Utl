@@ -45,11 +45,11 @@ void CheckSpscQueue() {
   bool in_order{true};
   bool was_full{false};
   uint32_t spins{0};
-  while (expected != kTicks && spins < 1000000UL) {
+  while (expected != kTicks && spins < 1000000uL) {
     ++spins;
     if (expected == kTicks / 2 && !was_full) {
       // Halfway, let the interrupt fill it, and wait for it to find it full.
-      while (!ticks.full() && spins < 1000000UL) {
+      while (!ticks.full() && spins < 1000000uL) {
         ++spins;
       }
       was_full = ticks.full();

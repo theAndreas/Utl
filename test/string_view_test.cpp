@@ -15,8 +15,8 @@ using utl::string_view;
 
 TEST(StringViewTest, OfAString) {
   string_view const line{"text=Hi"};
-  EXPECT_EQ(line.size(), 7U);
-  EXPECT_EQ(line.length(), 7U);
+  EXPECT_EQ(line.size(), 7u);
+  EXPECT_EQ(line.length(), 7u);
   EXPECT_FALSE(line.empty());
   EXPECT_TRUE(string_view{}.empty());
   EXPECT_EQ(line, "text=Hi");
@@ -41,11 +41,11 @@ TEST(StringViewTest, StartsAndEndsWith) {
 
 TEST(StringViewTest, Find) {
   string_view const line{"text=Hi"};
-  EXPECT_EQ(line.find('='), 4U);
-  EXPECT_EQ(line.find('t', 1), 3U);
+  EXPECT_EQ(line.find('='), 4u);
+  EXPECT_EQ(line.find('t', 1), 3u);
   EXPECT_EQ(line.find('x', 4), string_view::npos);
-  EXPECT_EQ(line.find("Hi"), 5U);
-  EXPECT_EQ(line.find("t", 1), 3U);
+  EXPECT_EQ(line.find("Hi"), 5u);
+  EXPECT_EQ(line.find("t", 1), 3u);
   EXPECT_EQ(line.find("Ho"), string_view::npos);
   EXPECT_EQ(line.find("text=Hi!"), string_view::npos);
 }

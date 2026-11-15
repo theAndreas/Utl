@@ -49,9 +49,9 @@ struct Counted {
 
   int value;
 };
-int Counted::alive = 0;
-int Counted::copies = 0;
-int Counted::moves = 0;
+int Counted::alive{0};
+int Counted::copies{0};
+int Counted::moves{0};
 
 struct NotCallable {};
 
@@ -83,8 +83,10 @@ static_assert(!std::is_assignable_v<inplace_function<void()>&, NotCallable>);
 TEST(InplaceFunctionTest, IsEmptyWithoutACallable) {
   inplace_function<int(int)> const by_default;
   // = rather than braces: what is checked is that nullptr converts implicitly.
+  // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   inplace_function<int(int)> const of_null = nullptr;
-  int (*const no_function)(int) = nullptr;
+  using Function = int (*)(int);
+  Function const no_function{nullptr};
   inplace_function<int(int)> const of_null_pointer{no_function};
   // Of other types, which take a null pointer the same way.
   inplace_function<int64_t(int16_t)> const widened{no_function};
@@ -120,7 +122,7 @@ TEST(InplaceFunctionTest, KeepsACopyOfTheLambda) {
   EXPECT_EQ(adder(), 15);  // the lambda and its captures are gone, the copy not
 
   int count{0};
-  auto counter = [count]() mutable { return ++count; };
+  auto counter{[count]() mutable { return ++count; }};
   inplace_function<int()> const f{counter};
   EXPECT_EQ(f(), 1);
   EXPECT_EQ(f(), 2);        // the kept copy counts on, through a const one
@@ -212,7 +214,7 @@ TEST(InplaceFunctionTest, TakesALargerCallableWithMoreCapacity) {
 }
 
 TEST(InplaceFunctionTest, KeepsAFunctionRef) {
-  auto const add_one = [](int value) { return value + 1; };
+  auto const add_one{[](int value) { return value + 1; }};
   utl::function_ref<int(int)> const reference{add_one};
   inplace_function<int(int)> const kept{reference};
   EXPECT_EQ(kept(1), 2);

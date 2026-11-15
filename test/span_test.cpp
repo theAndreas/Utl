@@ -32,7 +32,7 @@ TEST(SpanTest, MadeFromAnything) {
   span<int> const all{rows};
   EXPECT_TRUE(span<int>{}.empty());
   EXPECT_EQ(span<int>{}.data(), nullptr);
-  EXPECT_EQ(all.size(), 4U);
+  EXPECT_EQ(all.size(), 4u);
   EXPECT_EQ(all.size_bytes(), 4 * sizeof(int));
   EXPECT_EQ(Sum(rows), 11);
   EXPECT_EQ(Sum(const_rows), 11);

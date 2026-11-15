@@ -17,8 +17,8 @@ char const kUnknownCharText[] PROGMEM = "unknown char";
 char const kNullTextText[] PROGMEM = "null text";
 
 // In the order of FontError.
-constexpr auto kMessages PROGMEM =
-    utl::make_array(kUnknownCharText, kNullTextText);
+constexpr auto kMessages PROGMEM{
+    utl::make_array(kUnknownCharText, kNullTextText)};
 
 }  // namespace
 

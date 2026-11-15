@@ -29,11 +29,13 @@ void CheckReferenceWrapper() {
   uint8_t second{codes[2]};
   // = rather than braces: what is checked is that an lvalue converts
   // implicitly.
+  // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   utl::reference_wrapper<uint8_t> wrapper = first;
 
   Check(&wrapper.get() == &first, F("reference_wrapper refers to its object"));
   wrapper.get() = 2;
   // = rather than braces: what is checked is that it converts to T& implicitly.
+  // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   uint8_t& converted = wrapper;
   Check(first == 2 && &converted == &first,
         F("reference_wrapper writes through get()"));
@@ -50,6 +52,7 @@ void CheckReferenceWrapper() {
         F("reference_wrapper as a member copies and assigns"));
 
   // = rather than braces: what is checked is that it converts implicitly.
+  // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   utl::reference_wrapper<uint8_t const> const read_only = utl::ref(first);
   Check(&read_only.get() == &first && &utl::cref(second).get() == &second,
         F("ref, cref, and to one of const"));

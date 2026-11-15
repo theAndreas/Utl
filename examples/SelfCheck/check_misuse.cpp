@@ -79,7 +79,8 @@ void CheckMisuse() {
         F("remove_prefix() beyond the end is reported, and empties"));
 
   // Made, never called: a call would jump to address 0 and restart.
-  void (*const volatile no_function)() = nullptr;
+  using Function = void (*)();
+  Function const volatile no_function{nullptr};
   before = MisuseCount();
   utl::function_ref<void()> const null_ref{no_function};
   static_cast<void>(null_ref);

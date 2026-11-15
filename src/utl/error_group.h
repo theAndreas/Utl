@@ -13,6 +13,20 @@
 
 namespace utl {
 
+/*! \cond */
+namespace internal {
+
+/*
+ * The name of no group, which only the Error of an ok Status holds, so that a
+ * Status needs no flag beside it and stays 3 bytes. A function, not a constant:
+ * the static analyzer of clang-tidy follows it, and so knows that a Result of
+ * an error is not ok, which it no longer saw through a constant.
+ */
+constexpr char const* NoGroupName() { return nullptr; }
+
+}  // namespace internal
+/*! \endcond */
+
 /*!
  * \brief The group an error belongs to: the address of its name in flash.
  *
@@ -53,6 +67,11 @@ class ErrorGroup {
    */
   constexpr explicit ErrorGroup(char const* name) : name_{name} {}
 
+  /*!
+   * \brief Not of a null pointer: a group is named by an array of chars.
+   */
+  explicit ErrorGroup(decltype(nullptr)) = delete;
+
   /*! \brief Returns the name of the group, from flash. */
   __FlashStringHelper const* Name() const {
     // Chars in flash, as F() makes them.
@@ -81,11 +100,6 @@ class ErrorGroup {
   }
 
  private:
-  friend class Error;
-
-  // No group, which only an Error inside a Status holds, for "ok".
-  constexpr explicit ErrorGroup(decltype(nullptr)) : name_{nullptr} {}
-
   /*
    * The address of the name is what makes a group unique: no one has to hand
    * out group ids, and a component adds a group of its own without changing

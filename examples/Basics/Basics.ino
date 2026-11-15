@@ -48,10 +48,10 @@ void setup() {
 void loop() {
   // Receive a char and show it; either step may fail, and the first error
   // ends the chain.
-  Status const status =
+  Status const status{
       Receive(digitalRead(3) == HIGH).AndThen([](char received) {
         return SetChar(digitalRead(2) == LOW ? '\n' : received);
-      });
+      })};
   status.PrintTo(Serial);  // "bus: nack", "font: 0" or "ok"
   Serial.println();
 
