@@ -167,8 +167,10 @@ CheckOptions:
   # it, at times through a second one, as iom2560.h through iomxx0_1.h, which
   # include-cleaner does not take back to <avr/io.h>. Any core's folder, not
   # only cores/arduino/ of Arduino's: a third party's core has its own, as
-  # cores/xmega/ of XMegaForArduino's, where Serial comes from.
-  misc-include-cleaner.IgnoreHeaders: '.*/cores/[^/]+/.*;.*/variants/.*;.*/avr/io[^/]*\.h'
+  # cores/xmega/ of XMegaForArduino's, where Serial comes from. And
+  # avr/common.h, which <avr/io.h> includes as well, for the registers every
+  # AVR has, SREG and the stack pointer among them.
+  misc-include-cleaner.IgnoreHeaders: '.*/cores/[^/]+/.*;.*/variants/.*;.*/avr/io[^/]*\.h;.*/avr/common\.h'
   # Google's names, which readability-identifier-naming checks only once it is told them; the
   # same block in every project, so that every project names alike. Two exceptions Google
   # makes itself are general: an accessor is named like the variable it gives (group(),

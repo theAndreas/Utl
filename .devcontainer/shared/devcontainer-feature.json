@@ -76,6 +76,11 @@
             "type": "volume"
         },
         {
+            "source": "utl-ccache",
+            "target": "/home/vscode/.cache/ccache",
+            "type": "volume"
+        },
+        {
             "source": "utl-codex",
             "target": "/home/vscode/.codex",
             "type": "volume"
