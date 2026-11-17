@@ -37,10 +37,10 @@ void CheckReferenceWrapper() {
   // = rather than braces: what is checked is that it converts to T& implicitly.
   // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   uint8_t& converted = wrapper;
-  Check(first == 2 && &converted == &first,
+  Check((first == 2) && (&converted == &first),
         F("reference_wrapper writes through get()"));
   wrapper = second;
-  Check(&wrapper.get() == &second && first == 2,
+  Check((&wrapper.get() == &second) && (first == 2),
         F("reference_wrapper rebinds when assigned"));
 
   Counter const counter{first};
@@ -48,20 +48,20 @@ void CheckReferenceWrapper() {
   copy.Increment();
   copy = Counter{second};
   copy.Increment();
-  Check(first == 3 && second == 8,
+  Check((first == 3) && (second == 8),
         F("reference_wrapper as a member copies and assigns"));
 
   // = rather than braces: what is checked is that it converts implicitly.
   // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   utl::reference_wrapper<uint8_t const> const read_only = utl::ref(first);
-  Check(&read_only.get() == &first && &utl::cref(second).get() == &second,
+  Check((&read_only.get() == &first) && (&utl::cref(second).get() == &second),
         F("ref, cref, and to one of const"));
 
   utl::array<utl::reference_wrapper<uint8_t>, 2> const both{{first, second}};
   for (uint8_t& value : both) {
     value = 0;
   }
-  Check(first == 0 && second == 0, F("reference_wrapper in an array"));
+  Check((first == 0) && (second == 0), F("reference_wrapper in an array"));
 }
 
 }  // namespace self_check

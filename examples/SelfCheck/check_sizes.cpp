@@ -36,19 +36,19 @@ static_assert(sizeof(utl::inplace_function<void(uint8_t)>) == 8,
               "an inplace_function is 4 bytes for the callable, two pointers");
 static_assert(sizeof(utl::inplace_vector<uint8_t, 8>) == 9,
               "an inplace_vector is its room and a count of 1 byte");
-static_assert(sizeof(utl::string_view) == 4 &&
-                  sizeof(utl::flash_string_view) == 4,
+static_assert((sizeof(utl::string_view) == 4) &&
+                  (sizeof(utl::flash_string_view) == 4),
               "a string_view is a pointer and a size");
 constexpr utl::array<uint8_t, 3> kConstantRows{{1, 2, 3}};
-static_assert(kConstantRows[1] == 2 && kConstantRows.size() == 3,
+static_assert((kConstantRows[1] == 2) && (kConstantRows.size() == 3),
               "an array is constexpr");
 constexpr auto kMadeRows{utl::make_array(uint8_t{1}, uint8_t{2}, uint8_t{3})};
-static_assert(kMadeRows.size() == 3 && kMadeRows[2] == 3 &&
-                  sizeof(kMadeRows) == 3,
+static_assert((kMadeRows.size() == 3) && (kMadeRows[2] == 3) &&
+                  (sizeof(kMadeRows) == 3),
               "make_array takes type and size from its arguments");
 constexpr auto kTypedRows{utl::make_array<uint8_t>(1, 2, 255)};
-static_assert(kTypedRows.size() == 3 && kTypedRows[2] == 255 &&
-                  sizeof(kTypedRows) == 3,
+static_assert((kTypedRows.size() == 3) && (kTypedRows[2] == 255) &&
+                  (sizeof(kTypedRows) == 3),
               "make_array<uint8_t> takes the size from its values");
 
 }  // namespace

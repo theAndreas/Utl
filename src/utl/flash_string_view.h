@@ -224,7 +224,7 @@ class basic_flash_string_view {
     }
     size_type const rest{size_ - position};
     return basic_flash_string_view{data_ + position,
-                                   count < rest ? count : rest};
+                                   (count < rest) ? count : rest};
   }
 
   /*!
@@ -233,8 +233,8 @@ class basic_flash_string_view {
    * \param[in] prefix The text to look for.
    */
   bool starts_with(basic_string_view<CharT> prefix) const {
-    return prefix.size() <= size_ &&
-           memcmp_P(prefix.data(), data_, prefix.size()) == 0;
+    return (prefix.size() <= size_) &&
+           (memcmp_P(prefix.data(), data_, prefix.size()) == 0);
   }
 
   /*!
@@ -243,9 +243,9 @@ class basic_flash_string_view {
    * \param[in] suffix The text to look for.
    */
   bool ends_with(basic_string_view<CharT> suffix) const {
-    return suffix.size() <= size_ &&
-           memcmp_P(suffix.data(), data_ + (size_ - suffix.size()),
-                    suffix.size()) == 0;
+    return (suffix.size() <= size_) &&
+           (memcmp_P(suffix.data(), data_ + (size_ - suffix.size()),
+                     suffix.size()) == 0);
   }
 
   /*!
@@ -260,7 +260,7 @@ class basic_flash_string_view {
     if (text.size() > size_) {
       return npos;
     }
-    for (size_type index{position}; index <= size_ - text.size(); ++index) {
+    for (size_type index{position}; index <= (size_ - text.size()); ++index) {
       if (memcmp_P(text.data(), data_ + index, text.size()) == 0) {
         return index;
       }
@@ -321,7 +321,7 @@ class basic_flash_string_view {
    * \param[in] text A view in RAM.
    */
   bool Equals(basic_string_view<CharT> text) const {
-    return text.size() == size_ && memcmp_P(text.data(), data_, size_) == 0;
+    return (text.size() == size_) && (memcmp_P(text.data(), data_, size_) == 0);
   }
 
   /*!
@@ -332,7 +332,7 @@ class basic_flash_string_view {
    * \param[in] text A view in RAM.
    */
   bool IsPrefixOf(basic_string_view<CharT> text) const {
-    return size_ <= text.size() && memcmp_P(text.data(), data_, size_) == 0;
+    return (size_ <= text.size()) && (memcmp_P(text.data(), data_, size_) == 0);
   }
 
   /*!
@@ -343,8 +343,8 @@ class basic_flash_string_view {
    * \param[in] text A view in RAM.
    */
   bool IsSuffixOf(basic_string_view<CharT> text) const {
-    return size_ <= text.size() &&
-           memcmp_P(text.data() + (text.size() - size_), data_, size_) == 0;
+    return (size_ <= text.size()) &&
+           (memcmp_P(text.data() + (text.size() - size_), data_, size_) == 0);
   }
 
  private:

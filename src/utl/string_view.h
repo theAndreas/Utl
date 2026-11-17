@@ -173,7 +173,7 @@ class basic_string_view {
       return IndexError::kOutOfRange;
     }
     size_type const rest{size_ - position};
-    return basic_string_view{data_ + position, count < rest ? count : rest};
+    return basic_string_view{data_ + position, (count < rest) ? count : rest};
   }
 
   /*!
@@ -182,7 +182,7 @@ class basic_string_view {
    * \param[in] prefix The text to look for, in RAM.
    */
   bool starts_with(basic_string_view prefix) const {
-    return prefix.size_ <= size_ && Equal(data_, prefix.data_, prefix.size_);
+    return (prefix.size_ <= size_) && Equal(data_, prefix.data_, prefix.size_);
   }
 
   /*!
@@ -202,7 +202,7 @@ class basic_string_view {
    * \param[in] suffix The text to look for, in RAM.
    */
   bool ends_with(basic_string_view suffix) const {
-    return suffix.size_ <= size_ &&
+    return (suffix.size_ <= size_) &&
            Equal(data_ + (size_ - suffix.size_), suffix.data_, suffix.size_);
   }
 
@@ -227,7 +227,7 @@ class basic_string_view {
    */
   void remove_prefix(size_type count) {
     static_cast<void>(internal::Check(count <= size_, Misuse::kRemove));
-    size_type const removed{count < size_ ? count : size_};
+    size_type const removed{(count < size_) ? count : size_};
     data_ += removed;
     size_ -= removed;
   }
@@ -240,7 +240,7 @@ class basic_string_view {
    */
   void remove_suffix(size_type count) {
     static_cast<void>(internal::Check(count <= size_, Misuse::kRemove));
-    size_ -= count < size_ ? count : size_;
+    size_ -= (count < size_) ? count : size_;
   }
 
   /*!
@@ -255,18 +255,18 @@ class basic_string_view {
    *          sign means anything.
    */
   int8_t compare(basic_string_view other) const {
-    size_type const common{size_ < other.size_ ? size_ : other.size_};
+    size_type const common{(size_ < other.size_) ? size_ : other.size_};
     for (size_type index{0}; index < common; ++index) {
       auto const a{static_cast<uint8_t>(data_[index])};
       auto const b{static_cast<uint8_t>(other.data_[index])};
       if (a != b) {
-        return a < b ? -1 : 1;
+        return (a < b) ? -1 : 1;
       }
     }
     if (size_ == other.size_) {
       return 0;
     }
-    return size_ < other.size_ ? -1 : 1;
+    return (size_ < other.size_) ? -1 : 1;
   }
 
   /*!
@@ -296,7 +296,7 @@ class basic_string_view {
     if (text.size_ > size_) {
       return npos;
     }
-    for (size_type index{position}; index <= size_ - text.size_; ++index) {
+    for (size_type index{position}; index <= (size_ - text.size_); ++index) {
       if (Equal(data_ + index, text.data_, text.size_)) {
         return index;
       }
@@ -313,7 +313,7 @@ class basic_string_view {
    * \param[in] b Another view.
    */
   friend bool operator==(basic_string_view a, basic_string_view b) {
-    return a.size_ == b.size_ && Equal(a.data_, b.data_, a.size_);
+    return (a.size_ == b.size_) && Equal(a.data_, b.data_, a.size_);
   }
 
   /*!

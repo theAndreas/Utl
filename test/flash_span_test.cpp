@@ -46,7 +46,7 @@ constexpr Color kColors[] PROGMEM{{255, 0, 0}, {0, 128, 255}};
 constexpr Pin kPins[] PROGMEM{Pin{2}, Pin{13}};
 constexpr utl::array<uint8_t, 3> kArray PROGMEM{{7, 8, 9}};
 
-static_assert(sizeof(flash_span<uint8_t>) == sizeof(void*) + sizeof(size_t));
+static_assert(sizeof(flash_span<uint8_t>) == (sizeof(void*) + sizeof(size_t)));
 static_assert(std::is_trivially_copyable_v<flash_span<Color>>);
 // Made of an array only explicitly, as its type does not tell where it lies.
 using Rows = uint8_t const (&)[4];  // NOLINT(modernize-avoid-c-arrays)
@@ -58,7 +58,7 @@ static_assert(
 static_assert(!std::is_constructible_v<flash_span<uint16_t>, Rows>);
 
 constexpr flash_span<uint8_t> kRowsSpan{kRows};
-static_assert(kRowsSpan.size() == 4 && kRowsSpan.size_bytes() == 4);
+static_assert((kRowsSpan.size() == 4) && (kRowsSpan.size_bytes() == 4));
 static_assert(flash_span<uint16_t>{kSteps}.size_bytes() == 6);
 
 template <typename T>

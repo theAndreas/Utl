@@ -47,22 +47,23 @@ void CheckFlashSpan() {
   utl::flash_span<int32_t> const offsets{kOffsets};
   utl::flash_span<Color> const colors{kColors};
 
-  Check(rows.size() == 4 && rows[2] == 0xa5 && rows.front() == 0x3c &&
-            rows.back() == 0x81,
+  Check((rows.size() == 4) && (rows[2] == 0xa5) && (rows.front() == 0x3c) &&
+            (rows.back() == 0x81),
         F("flash_span reads bytes from flash"));
-  Check(steps[2] == 40000 && offsets[0] == -70000 && offsets[1] == 70000,
+  Check((steps[2] == 40000) && (offsets[0] == -70000) && (offsets[1] == 70000),
         F("flash_span reads words and double words"));
-  Check(colors[1].green == 128 && colors[1].blue == 255 && colors[0].red == 255,
+  Check((colors[1].green == 128) && (colors[1].blue == 255) &&
+            (colors[0].red == 255),
         F("flash_span reads a struct"));
-  Check(Sum(rows) == 0x3cu + 0x42u + 0xa5u + 0x81u,
+  Check(Sum(rows) == (0x3cu + 0x42u + 0xa5u + 0x81u),
         F("flash_span in a range-based for"));
-  Check(Sum(utl::flash_span<uint8_t>{kArray}) == 7u + 8u + 9u,
+  Check(Sum(utl::flash_span<uint8_t>{kArray}) == (7u + 8u + 9u),
         F("flash_span of a utl::array"));
-  Check(rows.at(3).ValueOr(0) == 0x81 &&
-            rows.at(4).status() == utl::IndexError::kOutOfRange,
+  Check((rows.at(3).ValueOr(0) == 0x81) &&
+            (rows.at(4).status() == utl::IndexError::kOutOfRange),
         F("flash_span::at"));
-  Check(rows.subspan(1, 2).Map(Sum).ValueOr(0) == 0x42u + 0xa5u &&
-            rows.first(5).status() == utl::IndexError::kOutOfRange,
+  Check((rows.subspan(1, 2).Map(Sum).ValueOr(0) == (0x42u + 0xa5u)) &&
+            (rows.first(5).status() == utl::IndexError::kOutOfRange),
         F("flash_span::subspan, first"));
 }
 

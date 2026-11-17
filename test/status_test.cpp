@@ -99,8 +99,8 @@ TEST(StatusTest, AndThenStopsAtAnError) {
 TEST(StatusTest, OrElseGetsTheErrorAndRecovers) {
   Status const recovered{
       Status(AlphaError::kFirst).OrElse([](Error const& error) {
-        return error == AlphaError::kFirst ? Status::Ok()
-                                           : Status{BetaError::kFirst};
+        return (error == AlphaError::kFirst) ? Status::Ok()
+                                             : Status{BetaError::kFirst};
       })};
   EXPECT_TRUE(recovered.IsOk());
   int calls{0};
@@ -115,7 +115,7 @@ TEST(StatusTest, OrElseGetsTheErrorAndRecovers) {
 TEST(StatusTest, InspectErrorLooksAndPassesOn) {
   int seen{0};
   auto const count{[&seen](Error const& error) {
-    seen = error == AlphaError::kFirst ? 1 : 2;
+    seen = (error == AlphaError::kFirst) ? 1 : 2;
   }};
   Status const failed{AlphaError::kFirst};
   EXPECT_EQ(failed.InspectError(count), AlphaError::kFirst);

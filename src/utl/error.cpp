@@ -36,7 +36,7 @@ size_t PrintCode(Print& out, uint8_t code) {
   if (hundreds != 0) {
     printed += out.write(static_cast<uint8_t>('0' + hundreds));
   }
-  if (hundreds != 0 || tens != 0) {
+  if ((hundreds != 0) || (tens != 0)) {
     printed += out.write(static_cast<uint8_t>('0' + tens));
   }
   printed += out.write(static_cast<uint8_t>('0' + code));
@@ -47,7 +47,7 @@ size_t PrintCode(Print& out, uint8_t code) {
 
 __FlashStringHelper const* Error::Message() const {
   __FlashStringHelper const* const text{Messages::Find(group_, code_)};
-  return text != nullptr ? text : F("");
+  return (text != nullptr) ? text : F("");
 }
 
 // Not Printable, whose vptr would make an Error 5 bytes rather than 3.

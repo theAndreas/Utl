@@ -198,7 +198,7 @@ class function_ref<R(Args...)> {
       : bound_{Unconst(object)}, call_{&CallConstantWith<F, Function, T>} {
     static_assert(Function != nullptr, "function_ref: the function is null");
     static_cast<void>(internal::Check(
-        !internal::IsMemberPointer<F>::kValue || object != nullptr,
+        !internal::IsMemberPointer<F>::kValue || (object != nullptr),
         Misuse::kNullFunction));
   }
 

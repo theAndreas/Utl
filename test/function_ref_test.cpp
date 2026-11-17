@@ -62,7 +62,7 @@ struct AddressHidden {
 
 // Two pointers, and nothing it owns: copied as they are, without a destructor
 // of its own.
-static_assert(sizeof(function_ref<void()>) == 2 * sizeof(void*));
+static_assert(sizeof(function_ref<void()>) == (2 * sizeof(void*)));
 static_assert(std::is_trivially_copyable_v<function_ref<void()>>);
 static_assert(std::is_trivially_destructible_v<function_ref<void()>>);
 
@@ -218,7 +218,7 @@ struct Reading {
 
 // A function that takes its object first, as a member function would.
 int Scaled(Led const& led, int scale) { return led.Brightness(scale) / 2; }
-int Count(Led const* led) { return led == nullptr ? -1 : 1; }
+int Count(Led const* led) { return (led == nullptr) ? -1 : 1; }
 
 using ToggleWrapper = decltype(UTL_CW(&Led::Toggle));
 using IsOnWrapper = decltype(UTL_CW(&Led::IsOn));

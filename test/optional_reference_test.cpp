@@ -82,7 +82,7 @@ static_assert(!std::is_convertible_v<optional<long&>,  // NOLINT
 // One of an object with static storage is a constant.
 int constant_target{0};
 constexpr optional<int&> kConstant{constant_target};
-static_assert(kConstant.HasValue() && &*kConstant == &constant_target);
+static_assert(kConstant.HasValue() && (&*kConstant == &constant_target));
 static_assert(!optional<int&>{}.HasValue());
 
 TEST(OptionalReferenceTest, EmptyOrAReference) {
@@ -220,9 +220,9 @@ TEST(OptionalReferenceTest, ComparesTheObjects) {
   EXPECT_NE(optional<int&>{a}, none);
   EXPECT_NE(none, optional<int&>{a});
   EXPECT_EQ(none, optional<int&>{});
-  EXPECT_TRUE(optional<int&>{a} == 5 && 5 == optional<int&>{a});
-  EXPECT_TRUE(optional<int&>{a} != 6 && 6 != optional<int&>{a});
-  EXPECT_TRUE(none != 5 && !(none == 5));
+  EXPECT_TRUE((optional<int&>{a} == 5) && (5 == optional<int&>{a}));
+  EXPECT_TRUE((optional<int&>{a} != 6) && (6 != optional<int&>{a}));
+  EXPECT_TRUE((none != 5) && !(none == 5));
 }
 
 TEST(OptionalReferenceTest, ValueOrElseGivesAReference) {
@@ -244,7 +244,7 @@ TEST(OptionalReferenceTest, InspectAndFilterPassTheReferenceOn) {
   EXPECT_EQ(&*some.Inspect(look), &target);
   EXPECT_EQ(seen, 4);
   EXPECT_FALSE(none.Inspect(look).HasValue());
-  auto const even{[](int const& value) { return value % 2 == 0; }};
+  auto const even{[](int const& value) { return (value % 2) == 0; }};
   EXPECT_EQ(&*some.Filter(even), &target);
   EXPECT_FALSE(some.Filter([](int const&) { return false; }).HasValue());
   EXPECT_FALSE(none.Filter(even).HasValue());

@@ -65,8 +65,8 @@ namespace utl {
 template <typename T, size_t N>
 class spsc_queue {
   // A power of two that fits the counts, a uint8_t each: 128 at most.
-  static_assert(N >= 1 && static_cast<uint8_t>(N) == N &&
-                    Bit<size_t>::ReadBitGroup(N, N - 1) == 0,
+  static_assert((N >= 1) && (static_cast<uint8_t>(N) == N) &&
+                    (Bit<size_t>::ReadBitGroup(N, N - 1) == 0),
                 "spsc_queue: N is a power of two from 1 to 128");
   static_assert(__is_trivially_copyable(T),
                 "spsc_queue: T is trivially copyable, so that copying it in "

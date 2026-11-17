@@ -316,7 +316,7 @@ class flash_span {
    */
   Result<flash_span> subspan(size_type offset, size_type count) const {
     // Written so that offset + count cannot overflow.
-    if (offset > size_ || count > size_ - offset) {
+    if ((offset > size_) || (count > (size_ - offset))) {
       return IndexError::kOutOfRange;
     }
     return flash_span{data_ + offset, count};

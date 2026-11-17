@@ -63,7 +63,7 @@ TEST(SpscQueueTest, TakesInTheOrderAdded) {
 template <size_t N>
 int PushFrom(spsc_queue<uint8_t, N>& queue, int first, int last) {
   int next{first};
-  while (next < last && queue.push(static_cast<uint8_t>(next)).IsOk()) {
+  while ((next < last) && queue.push(static_cast<uint8_t>(next)).IsOk()) {
     ++next;
   }
   return next;
@@ -104,7 +104,7 @@ TEST(SpscQueueTest, CountsOnPastTheWrapOfAByte) {
   while (next_out < 300) {
     next_in = PushFrom(keys, next_in, std::min(next_in + 3, 300));
     sizes_right =
-        sizes_right && keys.size() == static_cast<size_t>(next_in - next_out);
+        sizes_right && (keys.size() == static_cast<size_t>(next_in - next_out));
     int const popped{PopInOrder(keys, next_out)};
     ASSERT_EQ(popped, next_in - next_out);
     next_out += popped;

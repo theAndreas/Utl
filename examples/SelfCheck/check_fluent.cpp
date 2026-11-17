@@ -21,12 +21,12 @@ void CheckRustFluent() {
   auto const look{[&seen](uint8_t const& code) { seen = code; }};
   auto const count{[&seen](Error const&) { ++seen; }};
 
-  Check(GetCode(2).Inspect(look).ValueOr(0) == 7 && seen == 7,
+  Check((GetCode(2).Inspect(look).ValueOr(0) == 7) && (seen == 7),
         F("Result::Inspect"));
   seen = 0;
-  Check(
-      GetCode(9).InspectError(count).status() == BetaError::kFirst && seen == 1,
-      F("Result::InspectError"));
+  Check((GetCode(9).InspectError(count).status() == BetaError::kFirst) &&
+            (seen == 1),
+        F("Result::InspectError"));
   Check(GetCode(9)
                 .MapError([](Error const&) { return AlphaError::kSecond; })
                 .status() == AlphaError::kSecond,
@@ -41,9 +41,9 @@ void CheckRustFluent() {
   GetCode(9).Map([&seen](uint8_t code) { seen = code; }).ConsumeError(count);
   Check(seen == 2, F("Status::ConsumeError ends a chain"));
 
-  auto const odd{[](uint8_t const& index) { return index % 2 == 1; }};
-  Check(FindCode(1).Filter(odd) == uint8_t{1} &&
-            FindCode(7).Filter(odd) == utl::nullopt,
+  auto const odd{[](uint8_t const& index) { return (index % 2) == 1; }};
+  Check((FindCode(1).Filter(odd) == uint8_t{1}) &&
+            (FindCode(7).Filter(odd) == utl::nullopt),
         F("optional::Filter"));
   Check(FindCode(42).ValueOrElse([] { return uint8_t{5}; }) == 5,
         F("optional::ValueOrElse"));
