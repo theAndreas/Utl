@@ -116,7 +116,7 @@ TEST(ResultReferenceTest, AndThenChainsAndStops) {
   EXPECT_EQ(&Get(values, 0).AndThen(next).AndThen(next).value(), &values[2]);
   EXPECT_EQ(Get(values, 2).AndThen(next).status(), BetaError::kFirst);
   Status const checked{Get(values, 2).AndThen([](int& value) {
-    return value == 7 ? Status::Ok() : AlphaError::kFirst;
+    return (value == 7) ? Status::Ok() : AlphaError::kFirst;
   })};
   EXPECT_TRUE(checked.IsOk());
 }

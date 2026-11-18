@@ -47,10 +47,10 @@ void CheckError() {
   Serial.println();
   Check(printed == 18, F("PrintTo returns the number of chars"));
 
-  Check(
-      alpha_first.code() == 0 &&
-          alpha_first.group() == utl::ErrorGroup{self_check::kAlphaErrorGroup},
-      F("an Error has a group and a code"));
+  Check((alpha_first.code() == 0) &&
+            (alpha_first.group() ==
+             utl::ErrorGroup{self_check::kAlphaErrorGroup}),
+        F("an Error has a group and a code"));
   Check(alpha_first == AlphaError::kFirst, F("compares with its enum"));
   Check(AlphaError::kFirst == alpha_first, F("with the enum on the left"));
   Check(alpha_first != AlphaError::kSecond, F("differs in the code"));
@@ -61,7 +61,7 @@ void CheckError() {
   // = rather than braces: what is checked is that a code converts implicitly.
   // NOLINTNEXTLINE(house-braced-var-init): T-3, braces take explicit too
   Error const converted = BetaError::kFirst;
-  Check(braced == beta_first && converted == beta_first,
+  Check((braced == beta_first) && (converted == beta_first),
         F("made from its enum"));
   Check(self_check::MakeAlphaSecondElsewhere() == alpha_second,
         F("equal across translation units"));
@@ -75,16 +75,16 @@ void CheckStatus() {
   Status const ok{Status::Ok()};
   Status const alpha_first{AlphaError::kFirst};
 
-  Check(ok.IsOk() && ok.error() == nullptr && ok == Status{},
+  Check(ok.IsOk() && (ok.error() == nullptr) && (ok == Status{}),
         F("Status::Ok() is ok and has no Error"));
-  Check(!alpha_first.IsOk() && alpha_first.error() != nullptr &&
-            *alpha_first.error() == AlphaError::kFirst,
+  Check(!alpha_first.IsOk() && (alpha_first.error() != nullptr) &&
+            (*alpha_first.error() == AlphaError::kFirst),
         F("a Status holds its Error"));
-  Check(alpha_first == AlphaError::kFirst && alpha_first != BetaError::kFirst &&
-            alpha_first != ok,
+  Check((alpha_first == AlphaError::kFirst) &&
+            (alpha_first != BetaError::kFirst) && (alpha_first != ok),
         F("Status compares with a code"));
   Check((alpha_first == Error{AlphaError::kFirst}) &&
-            (Error{AlphaError::kFirst}) == alpha_first,
+            ((Error{AlphaError::kFirst}) == alpha_first),
         F("Status compares with an Error"));
 }
 
@@ -99,7 +99,7 @@ void CheckStatusFluent() {
     ++calls;
     return Status::Ok();
   })};
-  Check(stopped == AlphaError::kFirst && calls == 0,
+  Check((stopped == AlphaError::kFirst) && (calls == 0),
         F("Status::AndThen stops at an error"));
   Check(Status::Ok().AndThen([] { return Result<uint8_t>{5}; }).ValueOr(0) == 5,
         F("Status::AndThen into a Result"));
@@ -107,8 +107,8 @@ void CheckStatusFluent() {
   Check(alpha_first.OrElse([](Error const&) { return Status::Ok(); }).IsOk(),
         F("Status::OrElse recovers"));
   Check(alpha_first.OrElse([](Error const& error) {
-    return error == AlphaError::kFirst ? Status{BetaError::kFirst}
-                                       : Status::Ok();
+    return (error == AlphaError::kFirst) ? Status{BetaError::kFirst}
+                                         : Status::Ok();
   }) == BetaError::kFirst,
         F("Status::OrElse gets the Error"));
   calls = 0;
@@ -116,7 +116,7 @@ void CheckStatusFluent() {
     ++calls;
     return Status{AlphaError::kFirst};
   })};
-  Check(untouched.IsOk() && calls == 0, F("Status::OrElse leaves ok alone"));
+  Check(untouched.IsOk() && (calls == 0), F("Status::OrElse leaves ok alone"));
 }
 
 }  // namespace

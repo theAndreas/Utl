@@ -485,7 +485,8 @@ class inplace_vector : private internal::VectorBase<T, N> {
     // As unsigned, a position before begin() lies far beyond the end too.
     auto const from{static_cast<size_type>(first - cbegin())};
     auto const to{static_cast<size_type>(last - cbegin())};
-    if (!internal::Check(from <= to && to <= this->length, Misuse::kIndex)) {
+    if (!internal::Check((from <= to) && (to <= this->length),
+                         Misuse::kIndex)) {
       return end();
     }
     pointer kept{begin() + from};
@@ -568,7 +569,7 @@ class inplace_vector : private internal::VectorBase<T, N> {
 
   void Append(std::initializer_list<T> values) {
     static_cast<void>(internal::Check(values.size() <= N, Misuse::kIndex));
-    size_type const count{values.size() < N ? values.size() : N};
+    size_type const count{(values.size() < N) ? values.size() : N};
     for (T const* value{values.begin()}; this->length != count; ++value) {
       ::new (internal::InPlace{end()}) T(*value);
       ++this->length;

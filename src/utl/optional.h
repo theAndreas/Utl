@@ -318,8 +318,8 @@ class optional {
    * \param[in] b Another optional.
    */
   friend bool operator==(optional const& a, optional const& b) {
-    return a.has_value_ == b.has_value_ &&
-           (!a.has_value_ || a.value_ == b.value_);
+    return (a.has_value_ == b.has_value_) &&
+           (!a.has_value_ || (a.value_ == b.value_));
   }
 
   /*!
@@ -470,7 +470,7 @@ class optional<T&> {
    *                     lvalue.
    */
   T& ValueOr(T& fallback) const {
-    return pointer_ != nullptr ? *pointer_ : fallback;
+    return (pointer_ != nullptr) ? *pointer_ : fallback;
   }
 
   /*! \brief Deleted: the `T&` returned would outlive a temporary fallback. */
@@ -582,7 +582,7 @@ class optional<T&> {
    */
   template <typename P>
   optional Filter(P predicate) const {
-    if (pointer_ != nullptr && predicate(static_cast<T const&>(*pointer_))) {
+    if ((pointer_ != nullptr) && predicate(static_cast<T const&>(*pointer_))) {
       return *this;
     }
     return nullopt;
@@ -616,9 +616,9 @@ class optional<T&> {
    * \param[in] b Another optional.
    */
   friend bool operator==(optional const& a, optional const& b) {
-    return a.pointer_ == nullptr
-               ? b.pointer_ == nullptr
-               : b.pointer_ != nullptr && *a.pointer_ == *b.pointer_;
+    return (a.pointer_ == nullptr)
+               ? (b.pointer_ == nullptr)
+               : ((b.pointer_ != nullptr) && (*a.pointer_ == *b.pointer_));
   }
 
   /*!
@@ -638,7 +638,7 @@ class optional<T&> {
    * \param[in] b A value.
    */
   friend bool operator==(optional const& a, T const& b) {
-    return a.pointer_ != nullptr && *a.pointer_ == b;
+    return (a.pointer_ != nullptr) && (*a.pointer_ == b);
   }
 
   /*!

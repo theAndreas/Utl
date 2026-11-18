@@ -27,7 +27,7 @@ namespace internal {
 // and no floating point, where 1 / 2 is not 0.
 template <typename T>
 struct IsCharconvInteger {
-  static constexpr bool kValue{static_cast<T>(1) / static_cast<T>(2) ==
+  static constexpr bool kValue{(static_cast<T>(1) / static_cast<T>(2)) ==
                                static_cast<T>(0)};
 };
 template <>
@@ -79,7 +79,7 @@ struct Sign {
 
   // Whether a minus lies at `in`; if so, `in` moves past it.
   static bool ReadMinus(char const*& in, char const* last) {
-    if (in == last || *in != '-') {
+    if ((in == last) || (*in != '-')) {
       return false;
     }
     ++in;
@@ -109,7 +109,7 @@ constexpr uint8_t kLowestBase{2};
 constexpr uint8_t kHighestBase{36};
 
 constexpr bool IsBase(uint8_t base) {
-  return base >= kLowestBase && base <= kHighestBase;
+  return (base >= kLowestBase) && (base <= kHighestBase);
 }
 
 // The magnitude of `value`, modulo 2^n, so that the lowest value of a
@@ -142,20 +142,21 @@ UnsignedOf<T> MagnitudeLimit(bool negative) {
 // The char of a digit below 36, in lower case as in the standard.
 inline char DigitChar(uint8_t digit) {
   constexpr uint8_t kTen{10};
-  return static_cast<char>(digit < kTen ? '0' + digit : 'a' + (digit - kTen));
+  return static_cast<char>((digit < kTen) ? ('0' + digit)
+                                          : ('a' + (digit - kTen)));
 }
 
 // The value of a digit char in either case, or 36, which no base takes.
 inline uint8_t DigitValue(char c) {
   constexpr uint8_t kTen{10};
   constexpr uint8_t kNone{36};
-  if (c >= '0' && c <= '9') {
+  if ((c >= '0') && (c <= '9')) {
     return static_cast<uint8_t>(c - '0');
   }
-  if (c >= 'a' && c <= 'z') {
+  if ((c >= 'a') && (c <= 'z')) {
     return static_cast<uint8_t>(c - 'a' + kTen);
   }
-  if (c >= 'A' && c <= 'Z') {
+  if ((c >= 'A') && (c <= 'Z')) {
     return static_cast<uint8_t>(c - 'A' + kTen);
   }
   return kNone;
@@ -212,7 +213,8 @@ class DigitAppender {
 
   // Appends `digit` to `magnitude`, or returns false if that passed the limit.
   bool Append(U& magnitude, uint8_t digit) const {
-    if (magnitude > cutoff_ || (magnitude == cutoff_ && digit > cutlim_)) {
+    if ((magnitude > cutoff_) ||
+        ((magnitude == cutoff_) && (digit > cutlim_))) {
       return false;
     }
     magnitude = static_cast<U>((magnitude * radix_) + digit);

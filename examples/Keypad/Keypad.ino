@@ -116,7 +116,7 @@ ISR(PCINT0_vect) {
   uint8_t const went_down{Bits::ReadBitGroup(last_pins, down)};
   last_pins = pins;
   auto const now{static_cast<uint16_t>(millis())};
-  if (went_down == 0 || now - last_press < kBounceMs) {
+  if ((went_down == 0) || ((now - last_press) < kBounceMs)) {
     return;
   }
   last_press = now;

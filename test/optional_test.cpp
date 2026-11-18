@@ -136,7 +136,7 @@ TEST(OptionalTest, InspectLooksAtTheValue) {
 }
 
 TEST(OptionalTest, FilterKeepsWhatHolds) {
-  auto const even{[](int const& index) { return index % 2 == 0; }};
+  auto const even{[](int const& index) { return (index % 2) == 0; }};
   EXPECT_EQ(Find(7).Filter(even), 2);
   EXPECT_EQ(Find(1).Filter(even), nullopt);
   EXPECT_EQ(Find(42).Filter(even), nullopt);

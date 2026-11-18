@@ -224,7 +224,7 @@ Element ValueOutOfRange();
 // bring that header's error group and its own findings into every array.
 template <typename Value>
 constexpr bool IsNegative(Value value) {
-  return value != Value{0} && !(value > Value{0});
+  return (value != Value{0}) && !(value > Value{0});
 }
 
 // An element of make_array<Element>() made of a value that would narrow, a
@@ -233,8 +233,8 @@ constexpr bool IsNegative(Value value) {
 template <typename Element, typename Value, typename = void>
 struct ArrayElement {
   static constexpr bool Fits(Value value) {
-    return static_cast<Value>(static_cast<Element>(value)) == value &&
-           IsNegative(value) == IsNegative(static_cast<Element>(value));
+    return (static_cast<Value>(static_cast<Element>(value)) == value) &&
+           (IsNegative(value) == IsNegative(static_cast<Element>(value)));
   }
 
   static constexpr Element Of(Value value) {

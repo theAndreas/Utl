@@ -66,13 +66,13 @@ using Objects = inplace_vector<Counted, 4>;
 // bytes are copied, and nothing is destroyed.
 static_assert(sizeof(Bytes) == 5);
 static_assert(sizeof(inplace_vector<uint8_t, 255>) == 256);
-static_assert(sizeof(inplace_vector<uint8_t, 256>) == 256 + sizeof(size_t));
+static_assert(sizeof(inplace_vector<uint8_t, 256>) == (256 + sizeof(size_t)));
 static_assert(std::is_trivially_copyable_v<Bytes>);
 static_assert(std::is_trivially_destructible_v<Bytes>);
 static_assert(std::is_trivially_copyable_v<inplace_vector<Pin, 2>>);
 static_assert(!std::is_trivially_copyable_v<Objects>);
 static_assert(!std::is_trivially_destructible_v<Objects>);
-static_assert(Bytes::capacity() == 4 && Bytes::max_size() == 4);
+static_assert((Bytes::capacity() == 4) && (Bytes::max_size() == 4));
 
 // Made empty when compiled.
 constexpr Bytes kEmpty;

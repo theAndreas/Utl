@@ -26,7 +26,7 @@ uint8_t volatile next_tick{0};  // the interrupt's own: the one to push next
 
 // Every 400 cycles, 25 us at 16 MHz: pushes the next tick, until all are.
 void PushTick() {
-  if (next_tick != kTicks && ticks.push(next_tick).IsOk()) {
+  if ((next_tick != kTicks) && ticks.push(next_tick).IsOk()) {
     next_tick = static_cast<uint8_t>(next_tick + 1);
   }
 }
@@ -45,18 +45,18 @@ void CheckSpscQueue() {
   bool in_order{true};
   bool was_full{false};
   uint32_t spins{0};
-  while (expected != kTicks && spins < 1000000uL) {
+  while ((expected != kTicks) && (spins < 1000000uL)) {
     ++spins;
-    if (expected == kTicks / 2 && !was_full) {
+    if ((expected == (kTicks / 2)) && !was_full) {
       // Halfway, let the interrupt fill it, and wait for it to find it full.
-      while (!ticks.full() && spins < 1000000uL) {
+      while (!ticks.full() && (spins < 1000000uL)) {
         ++spins;
       }
       was_full = ticks.full();
     }
     utl::optional<uint8_t> const tick{ticks.pop()};
     if (tick) {
-      in_order = in_order && *tick == expected;
+      in_order = in_order && (*tick == expected);
       expected = static_cast<uint8_t>(expected + 1);
     }
   }
@@ -66,7 +66,7 @@ void CheckSpscQueue() {
   TCCR2B = saved_b;
   OCR2A = saved_compare;
 
-  Check(expected == kTicks && in_order,
+  Check((expected == kTicks) && in_order,
         F("spsc_queue from an interrupt, every tick in order"));
   Check(was_full && ticks.empty(),
         F("spsc_queue full under an interrupt, no tick lost"));

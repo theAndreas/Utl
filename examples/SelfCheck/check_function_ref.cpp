@@ -60,7 +60,7 @@ void CheckFunctionRef() {
 
   f = Zero;
   utl::function_ref<uint16_t(uint8_t)> const widened{Doubled};
-  Check(f(codes[2]) == 0 && widened(codes[2]) == 14,
+  Check((f(codes[2]) == 0) && (widened(codes[2]) == 14),
         F("function_ref rebinds, and to a function of other types"));
   Check(SumOfCodes([](uint8_t code) { return code; }) == 8,
         F("function_ref of a lambda written as the argument"));
@@ -68,11 +68,11 @@ void CheckFunctionRef() {
   Tally tally;
   ForEachCode({UTL_CW(&Tally::Add), tally});
   utl::function_ref<uint8_t()> const sum{UTL_CW(&Tally::Sum), &tally};
-  Check(sum() == 8 && tally.Sum() == 8,
+  Check((sum() == 8) && (tally.Sum() == 8),
         F("function_ref calls a member function of its object"));
   utl::function_ref<uint16_t(Tally const&)> const sum_of{UTL_CW(&Tally::Sum)};
   utl::function_ref<uint8_t(uint8_t)> const doubled{UTL_CW(Doubled)};
-  Check(sum_of(tally) == 8 && doubled(codes[2]) == 14,
+  Check((sum_of(tally) == 8) && (doubled(codes[2]) == 14),
         F("function_ref calls a function given as a constant"));
 }
 

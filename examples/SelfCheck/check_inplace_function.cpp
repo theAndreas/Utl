@@ -66,13 +66,14 @@ void CheckInplaceFunction() {
   first();
   utl::inplace_function<uint8_t()> const copy{first};
   first = nullptr;
-  Check(copy() == 2 && !first && count == 0,
+  Check((copy() == 2) && !first && (count == 0),
         F("inplace_function copies its callable"));
 
   utl::inplace_function<uint8_t(uint8_t)> f{Tripled};
   uint8_t const tripled{f(codes[2])};
   f = nullptr;
-  Check(tripled == 21 && !f, F("inplace_function of a function, and emptied"));
+  Check((tripled == 21) && !f,
+        F("inplace_function of a function, and emptied"));
 }
 
 }  // namespace self_check

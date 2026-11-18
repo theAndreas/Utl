@@ -21,8 +21,8 @@ namespace {
 void CheckArray() {
   utl::array<uint8_t, 3> rows{{codes[0], codes[1], codes[2]}};
 
-  Check(rows.size() == 3 && !rows.empty(), F("array::size"));
-  Check(rows[2] == 7 && rows.front() == 0 && rows.back() == 7,
+  Check((rows.size() == 3) && !rows.empty(), F("array::size"));
+  Check((rows[2] == 7) && (rows.front() == 0) && (rows.back() == 7),
         F("array::operator[], front, back"));
   uint16_t sum{0};
   for (uint8_t const row : rows) {
@@ -39,7 +39,7 @@ void CheckArray() {
   utl::array<uint8_t, 3> copy{rows};
   Check(copy == rows, F("array copies and compares"));
   copy.fill(5);
-  Check(copy != rows && copy[0] == 5 && copy[2] == 5, F("array::fill"));
+  Check((copy != rows) && (copy[0] == 5) && (copy[2] == 5), F("array::fill"));
 }
 
 // Takes a C array, a utl::array and a span alike, through a span of const.
@@ -58,29 +58,30 @@ void CheckSpan() {
   uint8_t c_array[]{codes[2], codes[2]};  // NOLINT(modernize-avoid-c-arrays)
   span<uint8_t> const all{rows};
 
-  Check(span<uint8_t>{}.empty() && span<uint8_t>{}.data() == nullptr,
+  Check(span<uint8_t>{}.empty() && (span<uint8_t>{}.data() == nullptr),
         F("span() is empty"));
-  Check(all.size() == 4 && all.data() == rows.data() && all.size_bytes() == 4,
+  Check((all.size() == 4) && (all.data() == rows.data()) &&
+            (all.size_bytes() == 4),
         F("span of an array"));
-  Check(Sum(rows) == 11 && Sum(const_rows) == 11 && Sum(c_array) == 14 &&
-            Sum(all) == 11,
+  Check((Sum(rows) == 11) && (Sum(const_rows) == 11) && (Sum(c_array) == 14) &&
+            (Sum(all) == 11),
         F("span of const from array, const array, C array, span"));
   all[0] = 9;
-  Check(rows[0] == 9 && all.front() == 9 && all.back() == 3,
+  Check((rows[0] == 9) && (all.front() == 9) && (all.back() == 3),
         F("span writes through"));
   all[0] = 0;
 
-  Check(all.at(3).ValueOr(0) == 3 &&
-            all.at(4).status() == IndexError::kOutOfRange,
+  Check((all.at(3).ValueOr(0) == 3) &&
+            (all.at(4).status() == IndexError::kOutOfRange),
         F("span::at"));
-  Check(Sum(all.first(2).value()) == 1 && Sum(all.last(1).value()) == 3,
+  Check((Sum(all.first(2).value()) == 1) && (Sum(all.last(1).value()) == 3),
         F("span::first, last"));
-  Check(Sum(all.subspan(1, 2).value()) == 8 && all.subspan(4).value().empty(),
+  Check((Sum(all.subspan(1, 2).value()) == 8) && all.subspan(4).value().empty(),
         F("span::subspan"));
-  Check(all.first(5).status() == IndexError::kOutOfRange &&
-            all.last(5).status() == IndexError::kOutOfRange &&
-            all.subspan(5).status() == IndexError::kOutOfRange &&
-            all.subspan(2, 3).status() == IndexError::kOutOfRange,
+  Check((all.first(5).status() == IndexError::kOutOfRange) &&
+            (all.last(5).status() == IndexError::kOutOfRange) &&
+            (all.subspan(5).status() == IndexError::kOutOfRange) &&
+            (all.subspan(2, 3).status() == IndexError::kOutOfRange),
         F("span beyond the end"));
   Check(all.subspan(1, static_cast<size_t>(-1)).status() ==
             IndexError::kOutOfRange,
@@ -109,29 +110,30 @@ uint8_t Tracked::alive{0};
 void CheckInplaceVector() {
   using Codes = utl::inplace_vector<uint8_t, 4>;
   Codes codes_kept{codes[0], codes[1], codes[2]};
-  Check(codes_kept.size() == 3 && codes_kept[2] == 7 && codes_kept.back() == 7,
+  Check((codes_kept.size() == 3) && (codes_kept[2] == 7) &&
+            (codes_kept.back() == 7),
         F("inplace_vector of a braced list"));
-  Check(pressed.empty() && pressed.push_back(1).IsOk() && pressed.size() == 1,
+  Check(pressed.empty() && pressed.push_back(1).IsOk() && (pressed.size() == 1),
         F("inplace_vector made when compiled"));
 
   Check(codes_kept.push_back(9).IsOk(), F("inplace_vector::push_back"));
   utl::Status const full{codes_kept.push_back(10)};
   PrintStatus(full);
-  Check(full == IndexError::kFull && codes_kept.size() == 4,
+  Check((full == IndexError::kFull) && (codes_kept.size() == 4),
         F("inplace_vector::push_back when full"));
-  Check(Sum(codes_kept) == 17 && codes_kept.at(3).ValueOr(0) == 9 &&
-            codes_kept.at(4).status() == IndexError::kOutOfRange,
+  Check((Sum(codes_kept) == 17) && (codes_kept.at(3).ValueOr(0) == 9) &&
+            (codes_kept.at(4).status() == IndexError::kOutOfRange),
         F("inplace_vector as a span, and at"));
 
   codes_kept.erase(codes_kept.begin());
   Check(codes_kept.insert(codes_kept.begin() + 1, 5).IsOk() &&
-            codes_kept == Codes{1, 5, 7, 9},
+            (codes_kept == Codes{1, 5, 7, 9}),
         F("inplace_vector::erase and insert"));
   codes_kept.pop_back();
-  Check(codes_kept.resize(4, 2).IsOk() && codes_kept == Codes{1, 5, 7, 2},
+  Check(codes_kept.resize(4, 2).IsOk() && (codes_kept == Codes{1, 5, 7, 2}),
         F("inplace_vector::pop_back and resize"));
   codes_kept = {3};
-  Check(codes_kept.size() == 1 && codes_kept.front() == 3,
+  Check((codes_kept.size() == 1) && (codes_kept.front() == 3),
         F("inplace_vector assigned a braced list"));
 
   {
@@ -140,7 +142,7 @@ void CheckInplaceVector() {
     static_cast<void>(tracked.emplace_back(codes[2]));
     utl::inplace_vector<Tracked, 3> const copy{tracked};
     tracked.erase(tracked.begin());
-    Check(Tracked::alive == 3 && copy.size() == 2 && tracked[0].code == 7,
+    Check((Tracked::alive == 3) && (copy.size() == 2) && (tracked[0].code == 7),
           F("inplace_vector of elements with a destructor"));
   }
   Check(Tracked::alive == 0, F("inplace_vector destroys each element once"));

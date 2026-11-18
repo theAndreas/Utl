@@ -71,7 +71,7 @@ TEST(ResultTest, AndThenChainsAndStops) {
   EXPECT_EQ(broken.status(), BetaError::kFirst);
   EXPECT_EQ(calls, 0);
   Status const checked{Get(2).AndThen([](int value) {
-    return value == 20 ? Status::Ok() : Status{AlphaError::kFirst};
+    return (value == 20) ? Status::Ok() : Status{AlphaError::kFirst};
   })};
   EXPECT_TRUE(checked.IsOk());
 }
@@ -130,7 +130,7 @@ TEST(ResultTest, ValueOrElseMakesTheFallbackFromTheError) {
   int calls{0};
   auto const fallback{[&calls](Error const& error) {
     ++calls;
-    return error == BetaError::kFirst ? -1 : -2;
+    return (error == BetaError::kFirst) ? -1 : -2;
   }};
   EXPECT_EQ(Get(1).ValueOrElse(fallback), 10);
   EXPECT_EQ(calls, 0);

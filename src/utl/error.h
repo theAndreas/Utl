@@ -100,7 +100,7 @@ class [[nodiscard]] Error {
   friend bool operator==(Error const& a, Error const& b) {
     // A hidden friend: found only through an Error, and with the implicit
     // conversion above on either side.
-    return a.group_ == b.group_ && a.code_ == b.code_;
+    return (a.group_ == b.group_) && (a.code_ == b.code_);
   }
 
   /*!
