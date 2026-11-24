@@ -180,7 +180,10 @@ struct VectorBase<T, N, false> {
  *          No `try_` and `unchecked_` variants, which push_back() covers; no
  *          constructor of `n` elements, which resize() does; no `reserve()`,
  *          `shrink_to_fit()`, `swap()`, `assign()`, `append_range()` or `<`. No
- *          inplace_vector of no elements.
+ *          inplace_vector of no elements. Of a temporary one, operator[],
+ *          front() and back() give the element moved out, and data(), the
+ *          iterators and erase() do not compile, where the standard gives what
+ *          dangles at the end of the statement.
  */
 template <typename T, size_t N>
 class inplace_vector : private internal::VectorBase<T, N> {
@@ -248,18 +251,34 @@ class inplace_vector : private internal::VectorBase<T, N> {
    * \pre `index` < size(). Beyond the end the access is undefined; with
    *      `UTL_CHECK_ACCESS` at 1 it is reported first, as Misuse::kIndex.
    */
-  reference operator[](size_type index) {
+  reference operator[](size_type index) & {
     return static_cast<void>(
                internal::Check(index < this->length, Misuse::kIndex)),
            Elements()[index];
   }
 
-  /*! \copydoc operator[](size_type) */
-  constexpr const_reference operator[](size_type index) const {
+  /*! \copydoc operator[](size_type) & */
+  constexpr const_reference operator[](size_type index) const& {
     return static_cast<void>(
                internal::Check(index < this->length, Misuse::kIndex)),
            Elements()[index];
   }
+
+  /*!
+   * \brief Returns the element at `index` of a temporary inplace_vector, moved
+   *        out of it, as a reference into it would dangle.
+   *
+   * \param[in] index The position, from 0.
+   * \pre `index` < size(), as for the others.
+   */
+  T operator[](size_type index) && {
+    return static_cast<void>(
+               internal::Check(index < this->length, Misuse::kIndex)),
+           static_cast<T&&>(Elements()[index]);
+  }
+
+  /*! \brief Deleted: of a temporary inplace_vector, it would dangle. */
+  const_reference operator[](size_type index) const&& = delete;
 
   /*!
    * \brief Returns the element at `index`, or IndexError::kOutOfRange.
@@ -287,18 +306,32 @@ class inplace_vector : private internal::VectorBase<T, N> {
    * \pre It is not empty(). If it is, the access is undefined; with
    *      `UTL_CHECK_ACCESS` at 1 it is reported first, as Misuse::kEmpty.
    */
-  reference front() {
+  reference front() & {
     return static_cast<void>(
                internal::Check(this->length != 0, Misuse::kEmpty)),
            Elements()[0];
   }
 
   /*! \copydoc front() */
-  constexpr const_reference front() const {
+  constexpr const_reference front() const& {
     return static_cast<void>(
                internal::Check(this->length != 0, Misuse::kEmpty)),
            Elements()[0];
   }
+
+  /*!
+   * \brief Returns the first element of a temporary inplace_vector, moved out.
+   *
+   * \pre It is not empty(), as for the others.
+   */
+  T front() && {
+    return static_cast<void>(
+               internal::Check(this->length != 0, Misuse::kEmpty)),
+           static_cast<T&&>(Elements()[0]);
+  }
+
+  /*! \brief Deleted: of a temporary inplace_vector, it would dangle. */
+  const_reference front() const&& = delete;
 
   /*!
    * \brief Returns the last element, unchecked.
@@ -306,42 +339,71 @@ class inplace_vector : private internal::VectorBase<T, N> {
    * \return The last element.
    * \pre It is not empty(), as for front().
    */
-  reference back() {
+  reference back() & {
     return static_cast<void>(
                internal::Check(this->length != 0, Misuse::kEmpty)),
            Elements()[this->length - 1];
   }
 
   /*! \copydoc back() */
-  constexpr const_reference back() const {
+  constexpr const_reference back() const& {
     return static_cast<void>(
                internal::Check(this->length != 0, Misuse::kEmpty)),
            Elements()[this->length - 1];
   }
 
+  /*!
+   * \brief Returns the last element of a temporary inplace_vector, moved out.
+   *
+   * \pre It is not empty(), as for the others.
+   */
+  T back() && {
+    return static_cast<void>(
+               internal::Check(this->length != 0, Misuse::kEmpty)),
+           static_cast<T&&>(Elements()[this->length - 1]);
+  }
+
+  /*! \brief Deleted: of a temporary inplace_vector, it would dangle. */
+  const_reference back() const&& = delete;
+
   /*! \brief Returns the address of the first element. */
-  pointer data() { return Elements(); }
+  pointer data() & { return Elements(); }
 
   /*! \copydoc data() */
-  constexpr const_pointer data() const { return Elements(); }
+  constexpr const_pointer data() const& { return Elements(); }
+
+  /*! \brief Deleted: of a temporary inplace_vector, it would dangle. */
+  const_pointer data() const&& = delete;
 
   /*! \brief Returns an iterator to the first element. */
-  iterator begin() { return Elements(); }
+  iterator begin() & { return Elements(); }
 
   /*! \copydoc begin() */
-  constexpr const_iterator begin() const { return Elements(); }
+  constexpr const_iterator begin() const& { return Elements(); }
+
+  /*! \brief Deleted: of a temporary inplace_vector, it would dangle. */
+  const_iterator begin() const&& = delete;
 
   /*! \brief Returns an iterator to the first element that cannot write. */
-  constexpr const_iterator cbegin() const { return Elements(); }
+  constexpr const_iterator cbegin() const& { return Elements(); }
+
+  /*! \brief Deleted: of a temporary inplace_vector, it would dangle. */
+  const_iterator cbegin() const&& = delete;
 
   /*! \brief Returns an iterator past the last element. */
-  iterator end() { return Elements() + this->length; }
+  iterator end() & { return Elements() + this->length; }
 
   /*! \copydoc end() */
-  constexpr const_iterator end() const { return Elements() + this->length; }
+  constexpr const_iterator end() const& { return Elements() + this->length; }
+
+  /*! \brief Deleted: of a temporary inplace_vector, it would dangle. */
+  const_iterator end() const&& = delete;
 
   /*! \brief Returns an iterator past the last element that cannot write. */
-  constexpr const_iterator cend() const { return Elements() + this->length; }
+  constexpr const_iterator cend() const& { return Elements() + this->length; }
+
+  /*! \brief Deleted: of a temporary inplace_vector, it would dangle. */
+  const_iterator cend() const&& = delete;
 
   /*!
    * \brief Adds a copy of `value` at the end, or returns IndexError::kFull.
@@ -469,7 +531,7 @@ class inplace_vector : private internal::VectorBase<T, N> {
    *      is returned; with `UTL_CHECK_ACCESS` at 1 it is reported first, as
    *      Misuse::kIndex.
    */
-  iterator erase(const_iterator position) {
+  iterator erase(const_iterator position) & {
     return erase(position, position + 1);
   }
 
@@ -483,7 +545,7 @@ class inplace_vector : private internal::VectorBase<T, N> {
    *      end() is returned; with `UTL_CHECK_ACCESS` at 1 it is reported first,
    *      as Misuse::kIndex.
    */
-  iterator erase(const_iterator first, const_iterator last) {
+  iterator erase(const_iterator first, const_iterator last) & {
     // As unsigned, a position before begin() lies far beyond the end too.
     auto const from{static_cast<size_type>(first - cbegin())};
     auto const to{static_cast<size_type>(last - cbegin())};
@@ -558,8 +620,11 @@ class inplace_vector : private internal::VectorBase<T, N> {
   }
 
  private:
-  pointer Elements() { return this->storage.elements; }
-  constexpr const_pointer Elements() const { return this->storage.elements; }
+  pointer Elements() & { return this->storage.elements; }
+  constexpr const_pointer Elements() const& { return this->storage.elements; }
+
+  // Deleted: of a temporary, it would dangle (CodingStyle C-16).
+  const_pointer Elements() const&& = delete;
 
   // Destroys the elements from `count` on, from the last.
   void DestroyFrom(size_type count) {

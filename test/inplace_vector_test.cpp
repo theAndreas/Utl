@@ -291,5 +291,16 @@ TEST_F(InplaceVectorTest, CopiesTriviallyCopyableElementsAsBytes) {
   EXPECT_EQ(copy, (Bytes{3}));
 }
 
+TEST_F(InplaceVectorTest, GivesAnElementOfATemporaryMovedOut) {
+  static_assert(
+      std::is_same_v<decltype(inplace_vector<Counted, 4>{1, 2}[0]), Counted>);
+  static_assert(std::is_same_v<decltype(Objects{1, 2}.front()), Counted>);
+  static_assert(std::is_same_v<decltype(Objects{1, 2}.back()), Counted>);
+
+  EXPECT_EQ((inplace_vector<Counted, 4>{1, 2, 3}[1].value), 2);
+  EXPECT_EQ((Objects{1, 2, 3}.front().value), 1);
+  EXPECT_EQ((Objects{1, 2, 3}.back().value), 3);
+}
+
 }  // namespace
 }  // namespace utl_test

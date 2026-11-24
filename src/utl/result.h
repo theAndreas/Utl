@@ -42,6 +42,10 @@ namespace utl {
  * it. A dropped Result warns, as `[[nodiscard]]`: a call that fetches a value
  * and drops it is a mistake almost every time.
  *
+ * Of a temporary Result, value() and status() give copies, so that
+ * `GetRow(3).value()` holds after the statement; error() does not compile, as
+ * the pointer it gives would point into what is gone. Name the Result first.
+ *
  * \tparam T The type of the value. It needs a default constructor, for the
  *           value of a Result with an error. For a reference, use Result<T&>;
  *           for no value, Result<void>.
@@ -81,10 +85,19 @@ class [[nodiscard]] Result : public internal::ValueFluent<Result<T>, T const&> {
   bool IsOk() const { return status_.IsOk(); }
 
   /*! \brief Returns the error, or null if IsOk(), as Status::error(). */
-  Error const* error() const { return status_.error(); }
+  Error const* error() const& { return status_.error(); }
+
+  /*! \brief Deleted: of a temporary Result, it would dangle. */
+  Error const* error() const&& = delete;
 
   /*! \brief Returns ok or the error, to compare with a code or to print. */
-  Status const& status() const { return status_; }
+  Status const& status() const& { return status_; }
+
+  /*! \brief Returns ok or the error of a temporary Result, as a copy. */
+  Status status() && { return status_; }
+
+  /*! \brief Deleted: of a temporary Result, it would dangle. */
+  Status const& status() const&& = delete;
 
   /*!
    * \brief Returns the value.
@@ -93,10 +106,24 @@ class [[nodiscard]] Result : public internal::ValueFluent<Result<T>, T const&> {
    * \pre IsOk(); ask first, or use ValueOr(). With `UTL_CHECK_ACCESS` at 1, a
    *      call on an error is reported first, as Misuse::kResultValue.
    */
-  T const& value() const {
+  T const& value() const& {
     return static_cast<void>(internal::Check(IsOk(), Misuse::kResultValue)),
            value_;
   }
+
+  /*!
+   * \brief Returns the value of a temporary Result, moved out of it, as a
+   *        reference into it would dangle.
+   *
+   * \pre IsOk(), as for the others.
+   */
+  T value() && {
+    return static_cast<void>(internal::Check(IsOk(), Misuse::kResultValue)),
+           static_cast<T&&>(value_);
+  }
+
+  /*! \brief Deleted: of a temporary Result, it would dangle. */
+  T const& value() const&& = delete;
 
   /*!
    * \brief Returns the value, or `fallback` if there is an error.
@@ -123,9 +150,11 @@ class [[nodiscard]] Result : public internal::ValueFluent<Result<T>, T const&> {
 
   /*! \cond */
   // The value, unchecked, for ValueFluent, which asks IsOk() first.
-  T const& UncheckedValue(internal::UncheckedKey /*key*/) const {
+  T const& UncheckedValue(internal::UncheckedKey /*key*/) const& {
     return value_;
   }
+  // Deleted: of a temporary, it would dangle (CodingStyle C-16).
+  T const& UncheckedValue(internal::UncheckedKey key) const&& = delete;
   /*! \endcond */
 
  private:
@@ -160,7 +189,8 @@ class [[nodiscard]] Result : public internal::ValueFluent<Result<T>, T const&> {
  * As Result<T>, with a `T&` in place of the value, which the fluent functions
  * give their function as it is. It binds an lvalue only, as a temporary would
  * be gone before the first use. Assigning one rebinds it, and never writes
- * through it.
+ * through it. Of a temporary one, status() gives a copy and error() does not
+ * compile, as of a temporary Result<T>.
  *
  * \tparam T The type referred to, `const` for a reference that cannot write.
  */
@@ -225,10 +255,19 @@ class [[nodiscard]] Result<T&> : public internal::ValueFluent<Result<T&>, T&> {
   bool IsOk() const { return status_.IsOk(); }
 
   /*! \brief Returns the error, or null if IsOk(), as Status::error(). */
-  Error const* error() const { return status_.error(); }
+  Error const* error() const& { return status_.error(); }
+
+  /*! \brief Deleted: of a temporary Result, it would dangle. */
+  Error const* error() const&& = delete;
 
   /*! \brief Returns ok or the error, to compare with a code or to print. */
-  Status const& status() const { return status_; }
+  Status const& status() const& { return status_; }
+
+  /*! \brief Returns ok or the error of a temporary Result, as a copy. */
+  Status status() && { return status_; }
+
+  /*! \brief Deleted: of a temporary Result, it would dangle. */
+  Status const& status() const&& = delete;
 
   /*!
    * \brief Returns the object referred to.
@@ -299,7 +338,9 @@ class [[nodiscard]] Result<T&> : public internal::ValueFluent<Result<T&>, T&> {
  * Map() with a function that returns nothing; a function of a sketch returns a
  * Status.
  *
- * Not `[[nodiscard]]`, as a Status is not: it has no value to lose.
+ * Not `[[nodiscard]]`, as a Status is not: it has no value to lose. Of a
+ * temporary one, status() gives a copy and error() does not compile, as of a
+ * temporary Status.
  */
 template <>
 class Result<void> : public Status {
@@ -333,7 +374,13 @@ class Result<void> : public Status {
       : Status{status} {}
 
   /*! \brief Returns this, as the Status it is. */
-  Status const& status() const { return *this; }
+  Status const& status() const& { return *this; }
+
+  /*! \brief Returns this temporary Result as a copy of the Status it is. */
+  Status status() && { return *this; }
+
+  /*! \brief Deleted: of a temporary Result, it would dangle. */
+  Status const& status() const&& = delete;
 
   /*!
    * \brief Returns a Result of `f()` if there is no error, or else the error.

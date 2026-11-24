@@ -8,6 +8,7 @@
 #include <utl/index_error.h>
 
 #include <cstdint>
+#include <type_traits>
 
 namespace utl_test {
 namespace {
@@ -119,6 +120,18 @@ TEST(ArrayTest, MakeArrayOfATypeTakesAnAggregateOfTheType) {
   };
   constexpr auto kCorners{utl::make_array<Point>(Point{1, 2}, Point{3, 4})};
   EXPECT_EQ(kCorners[0].x + kCorners[1].y, 5);
+}
+
+TEST(ArrayTest, GivesAnElementOfATemporaryAsACopy) {
+  static_assert(std::is_same_v<decltype(array<int, 3>{{1, 2, 3}}[0]), int>);
+  static_assert(
+      std::is_same_v<decltype(array<int, 3>{{1, 2, 3}}.front()), int>);
+  static_assert(std::is_same_v<decltype(array<int, 3>{{1, 2, 3}}.back()), int>);
+  static_assert(std::is_same_v<decltype(array<int const, 2>{{1, 2}}[0]), int>);
+
+  EXPECT_EQ((array<int, 3>{{1, 2, 3}}[1]), 2);
+  EXPECT_EQ((array<int, 3>{{1, 2, 3}}.front()), 1);
+  EXPECT_EQ((array<int, 3>{{1, 2, 3}}.back()), 3);
 }
 
 }  // namespace

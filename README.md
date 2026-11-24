@@ -160,6 +160,10 @@ One class per file in `src/utl/`:
   rebinds it, and `Map()` and the others give their function the `T&` itself. `value()` of one
   with an error is undefined, as there is no `T` to give; `ValueOr()` gives a `T&`, of the object
   or of the fallback.
+
+Of a temporary `Result`, `value()` and `status()` give copies, so `GetRow(3).value()` and
+`SetChar(c).status() == ...` hold. `error()` of a temporary `Result` or `Status` does not compile,
+as its pointer would point into what is gone at the end of the statement: name it first.
 - `ErrorGroup` (`error_group.h`): a group, the address of its name in flash, a value of 2 bytes that
   takes no memory of its own; no virtual function.
 - `Messages` (`messages.h`): the texts of a group, and `UseMessages()`, which turns them on.
@@ -259,7 +263,10 @@ constexpr auto kHeart PROGMEM{
   `IndexError::kOutOfRange` instead: `at()`, and `first()`, `last()`, `subspan()` of a span.
   `operator[]` stays unchecked, unless [checked](#checked-access). The group `IndexError` costs
   its 2 bytes only in a sketch that calls one of these, and its text only in one that calls
-  `utl::UseIndexMessages()`.
+  `utl::UseIndexMessages()`. Of a temporary array, `[]`, `front()` and `back()` give a copy, and
+  `data()` and the iterators do not compile, as what they give would be gone at the end of the
+  statement; the standard lets them dangle. A span refers to what others own, and gives its
+  references of a temporary span too.
 - `make_array(...)` (`array.h`): an array whose type and size come from its arguments, what
   `std::array a = {...}` deduces from C++17 on. It refuses arguments that would narrow, although
   Arduino compiles with `-fpermissive -Wno-error=narrowing`.
@@ -289,7 +296,8 @@ wherever a sketch drops it, and a `Status` does not. `insert()` puts the element
 given, or returns `IndexError::kOutOfRange` for one outside. `at()` returns a `Result`, as of an
 array, and a span takes an `inplace_vector` as it takes an array. `pop_back()` of an empty one and
 `erase()` beyond the end do nothing, [checked](#checked-access), where the standard leaves them
-undefined.
+undefined. Of a temporary one, as of a temporary array, `[]`, `front()` and `back()` give the
+element moved out, and what would point into it does not compile.
 
 One made empty is a constant: a global one lies in `.bss` and costs no code to set up. One made of
 a braced list, `{2, 3, 4}`, is set up when the sketch starts, with the list in RAM besides; a table
@@ -379,7 +387,8 @@ side, as in a `Result`, so `T` needs a default constructor; an `optional<uint8_t
 error instead. `AndThen()`, `Map()` and `OrElse()` are what C++23's `std::optional` calls
 `and_then()`, `transform()` and `or_else()`. From Rust's `Option` it has `ValueOrElse(f)`, a
 fallback made only when it is needed, `Inspect(f)`, and `Filter(predicate)`, which empties it
-unless the predicate holds.
+unless the predicate holds. Of a temporary one, `*FindRow(0x3c)` gives a copy and `->` does not
+compile, as it would point into what is gone.
 
 ```cpp
 utl::optional<Led&> FindLed(uint8_t pin);  // a reference, or utl::nullopt
@@ -659,7 +668,7 @@ examples are built with it to show that utl does not depend on it.
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
 | Keypad | 2452 | 2452 | 2770 | 212 | 194 | 212 |
-| SelfCheck | 20890 | 20890 | 23844 | 360 | 342 | 370 |
+| SelfCheck | 20810 | 20810 | 23684 | 360 | 342 | 370 |
 <!-- /sizes -->
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the

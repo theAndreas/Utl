@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <string>
+#include <type_traits>
 
 #include "test/alpha_error.h"
 #include "test/beta_error.h"
@@ -164,6 +165,12 @@ TEST(StatusTest, FluentFunctionsTakeWhatTheyShould) {
   EXPECT_EQ(
       Status::Ok().AndThen([]() -> Result<int> const { return 2; }).ValueOr(0),
       2);
+}
+
+TEST(StatusTest, AResultOfVoidGivesItsStatusOfATemporaryAsACopy) {
+  static_assert(std::is_same_v<decltype(Result<void>{}.status()), Status>);
+
+  EXPECT_TRUE(Result<void>{}.status().IsOk());
 }
 
 }  // namespace

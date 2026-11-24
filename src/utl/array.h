@@ -39,7 +39,9 @@ namespace utl {
  *
  * \stddiff at() returns a Result with IndexError::kOutOfRange where
  *          std::array::at() throws, as a sketch is built without exceptions. No
- *          array of no elements.
+ *          array of no elements. Of a temporary array, operator[], front() and
+ *          back() give a copy, and data() and the iterators do not compile,
+ *          where the standard gives what dangles at the end of the statement.
  */
 template <typename T, size_t N>
 struct array {
@@ -79,16 +81,31 @@ struct array {
    * \pre `index` < N. Beyond the end the access is undefined; with
    *      `UTL_CHECK_ACCESS` at 1 it is reported first, as Misuse::kIndex.
    */
-  reference operator[](size_type index) {
+  reference operator[](size_type index) & {
     return static_cast<void>(internal::Check(index < N, Misuse::kIndex)),
            elements[index];
   }
 
-  /*! \copydoc operator[](size_type) */
-  constexpr const_reference operator[](size_type index) const {
+  /*! \copydoc operator[](size_type) & */
+  constexpr const_reference operator[](size_type index) const& {
     return static_cast<void>(internal::Check(index < N, Misuse::kIndex)),
            elements[index];
   }
+
+  /*!
+   * \brief Returns the element at `index` of a temporary array, moved out of
+   *        it, as a reference into it would dangle.
+   *
+   * \param[in] index The position, from 0.
+   * \pre `index` < N, as for the others.
+   */
+  internal::RemoveCv<T> operator[](size_type index) && {
+    return static_cast<void>(internal::Check(index < N, Misuse::kIndex)),
+           static_cast<T&&>(elements[index]);
+  }
+
+  /*! \brief Deleted: of a temporary array, it would dangle. */
+  const_reference operator[](size_type index) const&& = delete;
 
   /*!
    * \brief Returns the element at `index`, or IndexError::kOutOfRange.
@@ -109,40 +126,67 @@ struct array {
   }
 
   /*! \brief Returns the first element. */
-  reference front() { return elements[0]; }
+  reference front() & { return elements[0]; }
 
   /*! \copydoc front() */
-  constexpr const_reference front() const { return elements[0]; }
+  constexpr const_reference front() const& { return elements[0]; }
+
+  /*! \brief Returns the first element of a temporary array, moved out. */
+  internal::RemoveCv<T> front() && { return static_cast<T&&>(elements[0]); }
+
+  /*! \brief Deleted: of a temporary array, it would dangle. */
+  const_reference front() const&& = delete;
 
   /*! \brief Returns the last element. */
-  reference back() { return elements[N - 1]; }
+  reference back() & { return elements[N - 1]; }
 
   /*! \copydoc back() */
-  constexpr const_reference back() const { return elements[N - 1]; }
+  constexpr const_reference back() const& { return elements[N - 1]; }
+
+  /*! \brief Returns the last element of a temporary array, moved out. */
+  internal::RemoveCv<T> back() && { return static_cast<T&&>(elements[N - 1]); }
+
+  /*! \brief Deleted: of a temporary array, it would dangle. */
+  const_reference back() const&& = delete;
 
   /*! \brief Returns the address of the first element. */
-  pointer data() { return elements; }
+  pointer data() & { return elements; }
 
   /*! \copydoc data() */
-  constexpr const_pointer data() const { return elements; }
+  constexpr const_pointer data() const& { return elements; }
+
+  /*! \brief Deleted: of a temporary array, it would dangle. */
+  const_pointer data() const&& = delete;
 
   /*! \brief Returns an iterator to the first element. */
-  iterator begin() { return elements; }
+  iterator begin() & { return elements; }
 
   /*! \copydoc begin() */
-  constexpr const_iterator begin() const { return elements; }
+  constexpr const_iterator begin() const& { return elements; }
+
+  /*! \brief Deleted: of a temporary array, it would dangle. */
+  const_iterator begin() const&& = delete;
 
   /*! \brief Returns an iterator to the first element that cannot write. */
-  constexpr const_iterator cbegin() const { return elements; }
+  constexpr const_iterator cbegin() const& { return elements; }
+
+  /*! \brief Deleted: of a temporary array, it would dangle. */
+  const_iterator cbegin() const&& = delete;
 
   /*! \brief Returns an iterator past the last element. */
-  iterator end() { return elements + N; }
+  iterator end() & { return elements + N; }
 
   /*! \copydoc end() */
-  constexpr const_iterator end() const { return elements + N; }
+  constexpr const_iterator end() const& { return elements + N; }
+
+  /*! \brief Deleted: of a temporary array, it would dangle. */
+  const_iterator end() const&& = delete;
 
   /*! \brief Returns an iterator past the last element that cannot write. */
-  constexpr const_iterator cend() const { return elements + N; }
+  constexpr const_iterator cend() const& { return elements + N; }
+
+  /*! \brief Deleted: of a temporary array, it would dangle. */
+  const_iterator cend() const&& = delete;
 
   /*!
    * \brief Sets every element to `value`.
