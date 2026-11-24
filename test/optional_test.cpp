@@ -9,6 +9,7 @@
 #include <utl/optional_error.h>
 
 #include <cstddef>
+#include <type_traits>
 
 #include "test/alpha_error.h"
 
@@ -146,6 +147,12 @@ TEST(OptionalTest, AndThenMayChangeTheType) {
   auto const letter{
       [](int index) { return optional<char>{static_cast<char>('a' + index)}; }};
   EXPECT_EQ(Find(7).AndThen(letter), 'c');
+}
+
+TEST(OptionalTest, GivesTheValueOfATemporaryAsACopy) {
+  static_assert(std::is_same_v<decltype(*optional<int>{4}), int>);
+
+  EXPECT_EQ(*optional<int>{4}, 4);
 }
 
 }  // namespace

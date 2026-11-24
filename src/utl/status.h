@@ -43,6 +43,10 @@ namespace utl {
  * ConsumeError() ends a chain. OrElse(), InspectError() and MapError(), which
  * Result has as well, come from its base.
  *
+ * error() of a temporary Status does not compile: the pointer it gives would
+ * point into what is gone at the end of the statement. Name the Status first,
+ * as above.
+ *
  * \note Not `[[nodiscard]]`, unlike Result and Error: a sketch drops the Status
  *       of a call that draws or sets, `SetText("Hi!")`, as a matter of course.
  *       A library marks a function whose Status must be looked at itself:
@@ -89,7 +93,10 @@ class Status : public internal::ErrorFluent<Status> {
    *
    * A pointer, so that no one gets hold of an Error that is none.
    */
-  Error const* error() const { return IsOk() ? nullptr : &error_; }
+  Error const* error() const& { return IsOk() ? nullptr : &error_; }
+
+  /*! \brief Deleted: of a temporary Status, it would dangle. */
+  Error const* error() const&& = delete;
 
   /*! \brief Returns the text of the error, or `ok`, from flash. */
   __FlashStringHelper const* Message() const;

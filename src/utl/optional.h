@@ -94,7 +94,9 @@ constexpr nullopt_t nullopt{0};
  *          std::optional throws `bad_optional_access`, as a sketch is built
  *          without exceptions. reset() sets the value to `T{}` rather than
  *          destroying it. AndThen(), Map() and OrElse() are what C++23 calls
- *          `and_then()`, `transform()` and `or_else()`.
+ *          `and_then()`, `transform()` and `or_else()`. Of a temporary
+ *          optional, `*` gives the value moved out and `->` does not compile,
+ *          where the standard gives what dangles at the end of the statement.
  */
 template <typename T>
 class optional {
@@ -132,24 +134,40 @@ class optional {
    * \pre HasValue(). With `UTL_CHECK_ACCESS` at 1 an empty one is reported
    *      first, as Misuse::kOptionalValue.
    */
-  T& operator*() { return static_cast<void>(Checked()), value_; }
+  T& operator*() & { return static_cast<void>(Checked()), value_; }
 
   /*! \copydoc operator*() */
-  constexpr T const& operator*() const {
+  constexpr T const& operator*() const& {
     return static_cast<void>(Checked()), value_;
   }
+
+  /*!
+   * \brief Returns the value of a temporary optional, moved out of it, as a
+   *        reference into it would dangle.
+   *
+   * \pre HasValue(), as for the others.
+   */
+  internal::RemoveCv<T> operator*() && {
+    return static_cast<void>(Checked()), static_cast<T&&>(value_);
+  }
+
+  /*! \brief Deleted: of a temporary optional, it would dangle. */
+  T const& operator*() const&& = delete;
 
   /*!
    * \brief Returns the address of the value, unchecked, to reach its members.
    *
    * \pre HasValue(), as for operator*().
    */
-  T* operator->() { return static_cast<void>(Checked()), &value_; }
+  T* operator->() & { return static_cast<void>(Checked()), &value_; }
 
   /*! \copydoc operator->() */
-  constexpr T const* operator->() const {
+  constexpr T const* operator->() const& {
     return static_cast<void>(Checked()), &value_;
   }
+
+  /*! \brief Deleted: of a temporary optional, it would dangle. */
+  T const* operator->() const&& = delete;
 
   /*!
    * \brief Returns the value, or OptionalError::kEmpty.
@@ -302,7 +320,7 @@ class optional {
    * \return The new value.
    */
   template <typename... Args>
-  T& emplace(Args&&... args) {
+  T& emplace(Args&&... args) & {
     value_ = T(static_cast<Args&&>(args)...);
     has_value_ = true;
     return value_;

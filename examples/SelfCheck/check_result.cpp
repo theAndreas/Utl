@@ -24,8 +24,10 @@ void CheckResult() {
 
   Check(GetCode(1).IsOk() && (GetCode(1).value() == 1),
         F("Result holds a value"));
-  Check((GetCode(9).status() == BetaError::kFirst) &&
-            (*GetCode(9).error() == BetaError::kFirst),
+  // Named, as error() of a temporary would point into what is gone.
+  Result<uint8_t> const beyond{GetCode(9)};
+  Check((beyond.status() == BetaError::kFirst) &&
+            (*beyond.error() == BetaError::kFirst),
         F("Result holds an error"));
   Check((GetCode(2).ValueOr(42) == 7) && (GetCode(9).ValueOr(42) == 42),
         F("Result::ValueOr"));

@@ -205,5 +205,13 @@ TEST(ResultReferenceTest, InspectErrorAndMapErrorPassItOn) {
   EXPECT_EQ(&Get(values, 2).MapError(to_alpha).value(), &values[2]);
 }
 
+TEST(ResultReferenceTest, GivesTheStatusOfATemporaryAsACopy) {
+  int object{1};
+  static_assert(
+      std::is_same_v<decltype(Result<int&>{object}.status()), Status>);
+
+  EXPECT_TRUE(Result<int&>{object}.status().IsOk());
+}
+
 }  // namespace
 }  // namespace utl_test

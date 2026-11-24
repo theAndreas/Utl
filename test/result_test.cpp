@@ -8,6 +8,8 @@
 #include <utl/result.h>
 #include <utl/status.h>
 
+#include <type_traits>
+
 #include "test/alpha_error.h"
 #include "test/beta_error.h"
 
@@ -160,6 +162,19 @@ TEST(ResultTest, MapErrorKeepsTheValue) {
   auto const to_alpha{[](Error const&) { return AlphaError::kSecond; }};
   EXPECT_EQ(Get(5).MapError(to_alpha).status(), AlphaError::kSecond);
   EXPECT_EQ(Get(1).MapError(to_alpha).value(), 10);
+}
+
+TEST(ResultTest, GivesTheValueOfATemporaryAsACopy) {
+  static_assert(std::is_same_v<decltype(Result<int>{4}.value()), int>);
+
+  EXPECT_EQ(Result<int>{4}.value(), 4);
+}
+
+TEST(ResultTest, GivesTheStatusOfATemporaryAsACopy) {
+  static_assert(std::is_same_v<decltype(Result<int>{4}.status()), Status>);
+
+  EXPECT_EQ(Result<int>{Error{AlphaError::kFirst}}.status(),
+            AlphaError::kFirst);
 }
 
 }  // namespace
