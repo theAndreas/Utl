@@ -243,7 +243,7 @@ Result<char const*> ReadDigits(char const* first, char const* last,
                                uint8_t base, U limit, U& magnitude) {
   DigitAppender<U> const appender{base, limit};
   char const* in{first};
-  for (; in != last; ++in) {
+  while (in != last) {
     uint8_t const digit{DigitValue(*in)};
     if (digit >= base) {
       break;
@@ -251,6 +251,7 @@ Result<char const*> ReadDigits(char const* first, char const* last,
     if (!appender.Append(magnitude, digit)) {
       return CharconvError::kOutOfRange;
     }
+    ++in;
   }
   if (in == first) {
     return CharconvError::kInvalidArgument;

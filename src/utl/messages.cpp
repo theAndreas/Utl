@@ -19,8 +19,8 @@ Messages* first_messages{nullptr};
 }  // namespace
 
 __FlashStringHelper const* Messages::Find(ErrorGroup group, uint8_t code) {
-  for (Messages const* messages{first_messages}; messages != nullptr;
-       messages = messages->next_) {
+  Messages const* messages{first_messages};
+  while (messages != nullptr) {
     if (messages->group_ == group) {
       if (code >= messages->count_) {
         return nullptr;
@@ -28,15 +28,18 @@ __FlashStringHelper const* Messages::Find(ErrorGroup group, uint8_t code) {
       return static_cast<__FlashStringHelper const*>(
           pgm_read_ptr(&messages->texts_[code]));
     }
+    messages = messages->next_;
   }
   return nullptr;
 }
 
 void Messages::Use() {
-  for (Messages const* on{first_messages}; on != nullptr; on = on->next_) {
+  Messages const* on{first_messages};
+  while (on != nullptr) {
     if (on == this) {
       return;
     }
+    on = on->next_;
   }
   next_ = first_messages;
   first_messages = this;

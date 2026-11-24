@@ -632,7 +632,7 @@ sketch, not the `.ino`, for which arduino-cli writes prototypes outside the name
 - `Keypad`: a code lock of four buttons on pins 8 to 11. The pin-change interrupt passes each press
   to `loop()` through a `spsc_queue`, without `cli()`; `loop()` looks its char up in a table in
   flash, a `flash_span`, keeps the last four in an `inplace_vector`, and when they match the code,
-  also in flash, opens the lock through a `function_ref` bound to it with `UTL_CW()`. 2484 bytes of
+  also in flash, opens the lock through a `function_ref` bound to it with `UTL_CW()`. 2452 bytes of
   flash and 212 of RAM, little more than `Basics`.
 - `SelfCheck`: checks the library and prints a line per check, then the number that failed.
   `tools/self_check.sh` runs it in simavr and compares with `SelfCheck.expected`. Its checks lie
@@ -655,8 +655,8 @@ examples are built with it to show that utl does not depend on it.
 | Example | Flash, ram | Flash, flash | Flash, checked | RAM, ram | RAM, flash | RAM, checked |
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
-| Keypad | 2484 | 2484 | 2802 | 212 | 194 | 212 |
-| SelfCheck | 20820 | 20820 | 23792 | 354 | 336 | 364 |
+| Keypad | 2452 | 2452 | 2770 | 212 | 194 | 212 |
+| SelfCheck | 20760 | 20760 | 23714 | 354 | 336 | 364 |
 <!-- /sizes -->
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the
