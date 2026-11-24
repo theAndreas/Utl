@@ -116,18 +116,20 @@ struct VectorBase<T, N, false> {
   CountFor<N> length{0};
 
   void CopyFrom(VectorBase const& other) {
-    for (; length != other.length; ++length) {
+    while (length != other.length) {
       ::new (InPlace{&storage.elements[length]})
           T(other.storage.elements[length]);
+      ++length;
     }
   }
 
   // The elements of other are moved from, and stay, as std::inplace_vector
   // leaves them.
   void MoveFrom(VectorBase& other) {
-    for (; length != other.length; ++length) {
+    while (length != other.length) {
       ::new (InPlace{&storage.elements[length]})
           T(static_cast<T&&>(other.storage.elements[length]));
+      ++length;
     }
   }
 
@@ -433,8 +435,8 @@ class inplace_vector : private internal::VectorBase<T, N> {
     } else {
       // The last moves into room not made yet, the others into elements.
       ::new (internal::InPlace{end()}) T(static_cast<T&&>(end()[-1]));
-      for (pointer to{end() - 1}; to != target; --to) {
-        *to = static_cast<T&&>(to[-1]);
+      for (size_type at{this->length - 1u}; at != index; --at) {
+        Elements()[at] = static_cast<T&&>(Elements()[at - 1u]);
       }
       *target = static_cast<T&&>(value);
     }
@@ -489,11 +491,11 @@ class inplace_vector : private internal::VectorBase<T, N> {
                          Misuse::kIndex)) {
       return end();
     }
-    pointer kept{begin() + from};
-    for (pointer moved{begin() + to}; moved != end(); ++moved, ++kept) {
-      *kept = static_cast<T&&>(*moved);
+    size_type const moved{this->length - to};
+    for (size_type step{0}; step < moved; ++step) {
+      Elements()[from + step] = static_cast<T&&>(Elements()[to + step]);
     }
-    DestroyFrom(static_cast<size_type>(kept - begin()));
+    DestroyFrom(from + moved);
     return begin() + from;
   }
 
@@ -570,8 +572,8 @@ class inplace_vector : private internal::VectorBase<T, N> {
   void Append(std::initializer_list<T> values) {
     static_cast<void>(internal::Check(values.size() <= N, Misuse::kIndex));
     size_type const count{(values.size() < N) ? values.size() : N};
-    for (T const* value{values.begin()}; this->length != count; ++value) {
-      ::new (internal::InPlace{end()}) T(*value);
+    for (size_type index{0}; index < count; ++index) {
+      ::new (internal::InPlace{end()}) T(values.begin()[index]);
       ++this->length;
     }
   }
