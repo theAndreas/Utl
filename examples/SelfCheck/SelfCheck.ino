@@ -13,6 +13,7 @@
 #include "self_check.h"
 
 void setup() {
+  self_check::PaintStack();
   Serial.begin(115200);
   // The library's groups: index in words, optional as a code, so that the
   // output shows both.
@@ -32,6 +33,7 @@ void setup() {
   self_check::CheckSpscQueue();
   self_check::CheckBit();
   self_check::CheckMisuse();
+  self_check::CheckStack();
 
   Serial.print(F("failed: "));
   Serial.println(self_check::Failed());
