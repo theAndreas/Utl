@@ -42,7 +42,36 @@ SIMAVR_FREQUENCY="16000000"
 # Status and Result give a sketch the functions of their base in internal/fluent.h.
 DOCS_INTERNAL_API='^src/utl/internal/fluent\.h:'
 
+# Two targets, the examples built for the same Uno twice. board: by arduino-cli with arduino:avr's
+# avr-gcc 7.3, as a sketch is built, which the sizes in the README measure. cmake: by CMake with
+# avr-gcc 14 from apt, the core of arduino:avr compiled by CMakeLists.txt, as only a GCC of 10 or
+# later writes the call graphs make stack adds up.
+TARGETS=(board cmake)
+
+target_settings() {
+  case "$1" in
+    cmake)
+      BUILD_SYSTEM="cmake"
+      CMAKE_TOOLCHAIN="cmake/toolchains/avr-gcc.cmake"
+      CMAKE_DEFINES=(-DAVR_MCU="${SIMAVR_MCU}" -DAVR_F_CPU="${SIMAVR_FREQUENCY}"
+        -DARDUINO_CORE_DIR="$(arduino_core_dir)" -DARDUINO_VARIANT=standard)
+      ;;
+  esac
+}
+
+# Prints where arduino-cli installs ARDUINO_CORE: packages/<vendor>/hardware/<arch>/<version> of
+# its data folder. Nothing where arduino-cli is not there yet, as when CI asks tools/setup.sh which
+# build systems the targets have before it installs arduino-cli; CMake then says what is missing.
+arduino_core_dir() {
+  local data
+  data="$(arduino-cli config get directories.data 2> /dev/null)" || return 0
+  local core="${ARDUINO_CORE%@*}"
+  echo "${data}/packages/${core%%:*}/hardware/${core#*:}/${ARDUINO_CORE#*@}"
+}
+
+# The plugin of each avr-gcc: one loads only into the cc1plus it was built for.
 readonly PLUGIN="${BUILD_DIR}/avr-flash-vtbl.so"
+readonly CMAKE_PLUGIN="${BUILD_DIR}/avr-flash-vtbl-cmake.so"
 
 # Every example in three variants: "ram" (vtables in RAM, the default of avr-gcc), "flash"
 # (vtables in flash, with the plugin avr-flash-vtbl) and "checked" (vtables in RAM, misuse
@@ -54,16 +83,33 @@ TIDY_VARIANTS=(default checked)
 
 variant_flags() {
   case "$1" in
-    # extra_flags reach every C++ file of the build, the core included. A file compiled
-    # without the plugin would read a vtable in flash from RAM.
-    flash) echo "-fplugin=${PLUGIN}" ;;
+    # extra_flags of arduino-cli, and VARIANT_FLAGS of CMakeLists.txt, reach every C++ file of
+    # the build, the core included. A file compiled without the plugin would read a vtable in
+    # flash from RAM. The plugin of the avr-gcc the build system takes: arduino-cli the core's,
+    # CMake the one from apt.
+    flash)
+      if [[ "${BUILD_SYSTEM}" == cmake ]]; then
+        echo "-fplugin=${CMAKE_PLUGIN}"
+      else
+        echo "-fplugin=${PLUGIN}"
+      fi
+      ;;
     checked) echo "-DUTL_CHECK_ACCESS=1" ;;
   esac
 }
 
-# Builds the plugin, against the avr-gcc of the core; again after the core is updated.
+# Builds the plugins, against the avr-gcc of the core and the one from apt; again after the core
+# is updated.
 prepare() {
-  "${ROOT_DIR}/tools/build_plugin.sh"
+  select_target board
+  local bin_dir
+  bin_dir="$(avr_gcc_bin_dir)"
+  if [[ -z "${bin_dir}" ]]; then
+    err "arduino-cli knows no avr-gcc for ${FQBN}; install arduino:avr."
+    return 1
+  fi
+  "${ROOT_DIR}/tools/build_plugin.sh" "${bin_dir}/avr-g++" "${PLUGIN}"
+  "${ROOT_DIR}/tools/build_plugin.sh" avr-g++ "${CMAKE_PLUGIN}"
 }
 
 # Fails if a vtable of the flash variant lies in .data, that is, in RAM: then some file was

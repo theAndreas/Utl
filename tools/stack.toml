@@ -1,0 +1,29 @@
+# What a call through a pointer never reaches in the examples, for tools/avr_stack.py, which
+# takes such a call to reach every function whose address a program takes. Each rule is a fact
+# of these examples and of arduino:avr 1.8.8, not of every sketch, and its reason says why it
+# holds; one that does not makes make stack's bound a lower one. Names as avr-c++filt prints
+# them, * for any text; a template names its return type first.
+
+[[never]]
+caller = "* utl::*::Call*"
+callee = "* utl::*::Call*"
+reason = """A trampoline of function_ref or inplace_function calls what it was made of: no \
+example makes one of another function_ref or inplace_function."""
+
+[[never]]
+caller = "Print::*"
+callee = "* utl::*::Call*"
+reason = """Print calls through a pointer only its own virtual functions, which no class of \
+utl or of the examples overrides: the core's HardwareSerial is the only Print here."""
+
+[[never]]
+caller = "* utl::*::Call*"
+callee = "Print::*"
+reason = """No function_ref or inplace_function of the examples is made of a function of \
+Print: they call lambdas, functions and members of the examples' own classes."""
+
+[[never]]
+caller = "Print::write(unsigned char const*, unsigned int)"
+callee = "Print::write(unsigned char const*, unsigned int)"
+reason = """Print::write() of a buffer calls the virtual write() of one byte for each, never \
+itself, as Print.cpp of arduino:avr 1.8.8 has it."""

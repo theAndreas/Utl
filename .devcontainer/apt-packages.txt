@@ -7,3 +7,7 @@
 #       file: .devcontainer/apt-packages.txt
 #
 # The template wrote this file once; it is the project's, and `copier update` leaves it alone.
+
+# avr-gcc 14 and avr-libc, which the target cmake builds the examples with, the Arduino core
+# included: arduino:avr's avr-gcc 7.3 writes no call graph, which make stack adds up.
+gcc-avr avr-libc

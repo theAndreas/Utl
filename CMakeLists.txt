@@ -9,6 +9,9 @@
 #   cmake --workflow --preset default    # the tests
 #   cmake --workflow --preset sanitize   # under ASan and UBSan
 #   tools/coverage.sh                    # the tests, and what they reach
+#
+# Configured with cmake/toolchains/avr-gcc.cmake, it builds the examples for the AVR instead, as
+# the target cmake of tools/project.sh: see the branch of CMAKE_CROSSCOMPILING below.
 
 cmake_minimum_required(VERSION 3.25)
 project(Utl LANGUAGES CXX)
@@ -19,6 +22,80 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # The warnings, the instrumentation of the presets sanitize and coverage, and the tests of
 # what must not compile come from the template.
 include(cmake/checks.cmake)
+
+file(GLOB library_sources CONFIGURE_DEPENDS src/utl/*.cpp)
+
+# The target cmake of tools/project.sh: the examples for the AVR, by avr-gcc from apt, and the
+# Arduino core with them, compiled here as arduino:avr's platform.txt compiles it, so that
+# avr-gcc writes the call graphs make stack adds up (tools/stack.sh). Each example is
+# programs/<Name>.elf, named in programs.txt, as tools/lib/cmake.sh reads them.
+if(CMAKE_CROSSCOMPILING)
+  enable_language(C ASM)
+
+  set(ARDUINO_CORE_DIR "" CACHE PATH "arduino:avr as arduino-cli installs it")
+  set(ARDUINO_VARIANT "" CACHE STRING "The folder of variants/ the board takes its pins from")
+  set(core_dir ${ARDUINO_CORE_DIR}/cores/arduino)
+  set(variant_dir ${ARDUINO_CORE_DIR}/variants/${ARDUINO_VARIANT})
+  if(NOT IS_DIRECTORY ${core_dir} OR NOT IS_DIRECTORY ${variant_dir})
+    message(FATAL_ERROR "No Arduino core at ${core_dir} and ${variant_dir}: make setup installs "
+                        "it, and tools/project.sh names it in ARDUINO_CORE_DIR.")
+  endif()
+
+  # The flags of the variant, as variant_flags() of tools/project.sh prints them, on every C++
+  # file, the core's as well, as arduino-cli passes them in compiler.cpp.extra_flags: a file
+  # compiled without the plugin of the variant flash would read a vtable in flash from RAM. Not
+  # on a C file, into whose compiler the plugin of C++ does not load.
+  set(VARIANT_FLAGS "" CACHE STRING "The flags of a variant, as variant_flags() prints them")
+  separate_arguments(variant_flags UNIX_COMMAND "${VARIANT_FLAGS}")
+  foreach(flag IN LISTS variant_flags)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:${flag}>)
+  endforeach()
+  # As platform.txt of arduino:avr 1.8.8 has them, IDE 1.6.7 as the version, which arduino-cli
+  # passes as well. Linked with -flto as there, its call graphs at the link, beside the program.
+  add_compile_definitions(ARDUINO=10607 ARDUINO_AVR_UNO ARDUINO_ARCH_AVR)
+  add_compile_options(-flto $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
+                      $<$<COMPILE_LANGUAGE:CXX>:-fno-threadsafe-statics>)
+  add_link_options(-flto -save-temps=obj)
+  set(CMAKE_C_STANDARD 11)
+  set(CMAKE_C_EXTENSIONS ON)
+
+  # The core is the toolchain's own code: compiled without warnings, as arduino-cli leaves its
+  # warnings out as well. An archive, so that the linker takes only what is called: its
+  # interrupt handlers, as Tone's, would clash with a sketch's otherwise. Packed by avr-gcc-ar,
+  # which indexes the symbols of an object of -flto, as avr-ar does not.
+  set(CMAKE_AR ${CMAKE_CXX_COMPILER_AR})
+  set(CMAKE_RANLIB ${CMAKE_CXX_COMPILER_RANLIB})
+  file(GLOB core_sources CONFIGURE_DEPENDS ${core_dir}/*.c ${core_dir}/*.cpp ${core_dir}/*.S)
+  add_library(arduino_core STATIC ${core_sources})
+  target_include_directories(arduino_core SYSTEM PUBLIC ${core_dir} ${variant_dir})
+  target_compile_options(arduino_core PRIVATE -w $<$<COMPILE_LANGUAGE:CXX>:-std=gnu++11>
+                                              $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>)
+
+  # Each folder of examples/, not its files, as .clang-tidy and CPPLINT.cfg lie there as well.
+  # The sketch is C++ with Arduino.h first, as arduino-cli makes it.
+  file(GLOB examples LIST_DIRECTORIES true CONFIGURE_DEPENDS examples/*)
+  set(programs "")
+  foreach(dir IN LISTS examples)
+    if(NOT IS_DIRECTORY ${dir})
+      continue()
+    endif()
+    get_filename_component(name ${dir} NAME)
+    string(APPEND programs "${name}\n")
+    file(GLOB sources CONFIGURE_DEPENDS ${dir}/*.cpp)
+    set_source_files_properties(${dir}/${name}.ino PROPERTIES LANGUAGE CXX
+                                COMPILE_OPTIONS "-include;Arduino.h")
+    add_executable(${name} ${dir}/${name}.ino ${sources} ${library_sources})
+    target_include_directories(${name} PRIVATE src ${dir})
+    target_compile_options(${name} PRIVATE -std=gnu++11 ${CHECK_WARNINGS})
+    target_link_libraries(${name} PRIVATE arduino_core m)
+    # .elf here rather than as CMAKE_EXECUTABLE_SUFFIX in the toolchain file, which CMake's
+    # platform file Generic sets back to nothing.
+    set_target_properties(${name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/programs
+                                             SUFFIX .elf)
+  endforeach()
+  file(WRITE ${CMAKE_BINARY_DIR}/programs.txt "${programs}")
+  return()
+endif()
 
 find_package(GTest REQUIRED)
 include(GoogleTest)
@@ -33,7 +110,6 @@ if(UTL_SANITIZE)
        -fno-sanitize-recover=all -fno-omit-frame-pointer)
 endif()
 
-file(GLOB library_sources CONFIGURE_DEPENDS src/utl/*.cpp)
 set(test_sources
     test/array_test.cpp
     test/bit_test.cpp
