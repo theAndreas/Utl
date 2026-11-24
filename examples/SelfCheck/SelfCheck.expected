@@ -158,4 +158,5 @@ pass spsc_queue full under an interrupt, no tick lost
 pass Bit<uint16_t> reads, clears and shifts down its top bit
 pass Bit<uint32_t> makes the mask of its top bit
 pass SetBits, ClearBits and WriteBitGroup on a register
+pass the stack under 256 bytes
 failed: 0

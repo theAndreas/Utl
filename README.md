@@ -636,7 +636,10 @@ sketch, not the `.ino`, for which arduino-cli writes prototypes outside the name
   flash and 212 of RAM, little more than `Basics`.
 - `SelfCheck`: checks the library and prints a line per check, then the number that failed.
   `tools/self_check.sh` runs it in simavr and compares with `SelfCheck.expected`. Its checks lie
-  in one file per area, `check_*.cpp`; a new area is a file there and a line in `setup()`.
+  in one file per area, `check_*.cpp`; a new area is a file there and a line in `setup()`. The
+  last checks the stack: `setup()` first fills the free RAM below it with a pattern, and at the
+  end the stack, interrupts included, must have written over less than 256 bytes of it. It took
+  202 in this run, which sees the paths the checks take, not every path there is.
 
 ## vtables in flash
 
@@ -656,7 +659,7 @@ examples are built with it to show that utl does not depend on it.
 |---|---|---|---|---|---|---|
 | Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
 | Keypad | 2452 | 2452 | 2770 | 212 | 194 | 212 |
-| SelfCheck | 20760 | 20760 | 23714 | 354 | 336 | 364 |
+| SelfCheck | 20890 | 20890 | 23844 | 360 | 342 | 370 |
 <!-- /sizes -->
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the

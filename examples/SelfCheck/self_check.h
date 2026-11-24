@@ -48,6 +48,10 @@ void CheckBit();               // check_bit.cpp
 void PushTick();               // check_spsc_queue.cpp, from its interrupt
 void CheckMisuse();            // check_misuse.cpp
 
+// The stack: painted first in setup(), checked last.
+void PaintStack();  // check_stack.cpp
+void CheckStack();  // check_stack.cpp
+
 }  // namespace self_check
 
 #endif  // UTL_EXAMPLES_SELFCHECK_SELF_CHECK_H_
