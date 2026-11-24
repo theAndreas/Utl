@@ -119,7 +119,8 @@ class basic_flash_string_view {
       // The chars in flash that F() made, as the core's Print reads them.
       // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       : data_{reinterpret_cast<CharT const*>(text)},
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        // F() ends the text with its '\0' (MISRA 21.2.2).
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-unsafe-functions)
         size_{strlen_P(reinterpret_cast<PGM_P>(text))} {}
 
   /*!
@@ -234,6 +235,7 @@ class basic_flash_string_view {
    */
   bool starts_with(basic_string_view<CharT> prefix) const {
     return (prefix.size() <= size_) &&
+           // NOLINTNEXTLINE(bugprone-unsafe-functions): MISRA 24.5.2, of chars
            (memcmp_P(prefix.data(), data_, prefix.size()) == 0);
   }
 
@@ -244,6 +246,7 @@ class basic_flash_string_view {
    */
   bool ends_with(basic_string_view<CharT> suffix) const {
     return (suffix.size() <= size_) &&
+           // NOLINTNEXTLINE(bugprone-unsafe-functions): MISRA 24.5.2, of chars
            (memcmp_P(suffix.data(), data_ + (size_ - suffix.size()),
                      suffix.size()) == 0);
   }
@@ -261,6 +264,7 @@ class basic_flash_string_view {
       return npos;
     }
     for (size_type index{position}; index <= (size_ - text.size()); ++index) {
+      // NOLINTNEXTLINE(bugprone-unsafe-functions): MISRA 24.5.2, of chars
       if (memcmp_P(text.data(), data_ + index, text.size()) == 0) {
         return index;
       }
@@ -321,6 +325,7 @@ class basic_flash_string_view {
    * \param[in] text A view in RAM.
    */
   bool Equals(basic_string_view<CharT> text) const {
+    // NOLINTNEXTLINE(bugprone-unsafe-functions): MISRA 24.5.2, of chars
     return (text.size() == size_) && (memcmp_P(text.data(), data_, size_) == 0);
   }
 
@@ -332,6 +337,7 @@ class basic_flash_string_view {
    * \param[in] text A view in RAM.
    */
   bool IsPrefixOf(basic_string_view<CharT> text) const {
+    // NOLINTNEXTLINE(bugprone-unsafe-functions): MISRA 24.5.2, of chars
     return (size_ <= text.size()) && (memcmp_P(text.data(), data_, size_) == 0);
   }
 
@@ -344,6 +350,7 @@ class basic_flash_string_view {
    */
   bool IsSuffixOf(basic_string_view<CharT> text) const {
     return (size_ <= text.size()) &&
+           // NOLINTNEXTLINE(bugprone-unsafe-functions): MISRA 24.5.2, of chars
            (memcmp_P(text.data() + (text.size() - size_), data_, size_) == 0);
   }
 

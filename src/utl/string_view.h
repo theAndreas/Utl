@@ -85,7 +85,10 @@ class basic_string_view {
    * \stddiff Not `constexpr`.
    */
   basic_string_view(CharT const* text)  // NOLINT(runtime/explicit)
-      : data_{text}, size_{strlen(text)} {
+      : data_{text},
+        // The '\0' is what the caller promises, as for std::string_view.
+        // NOLINTNEXTLINE(bugprone-unsafe-functions): MISRA 21.2.2, above.
+        size_{strlen(text)} {
     // Not constexpr: a constexpr length in C++11 would be a recursion, one
     // call per char at run time, on a stack of 2 KB.
   }

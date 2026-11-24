@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // avr-libc's access to flash, for the tests on the host, which has no
-// separate flash: PROGMEM is nothing, and a read from flash is a read.
+// separate flash: PROGMEM is nothing, and a read from flash is a read. Each
+// function is what avr-libc does, by the C function it mirrors, hence the
+// NOLINTs of bugprone-unsafe-functions (MISRA 24.5.2, 21.2.2) below.
 
 #ifndef UTL_TEST_MOCK_AVR_PGMSPACE_H_
 #define UTL_TEST_MOCK_AVR_PGMSPACE_H_
@@ -23,6 +25,7 @@ inline uint8_t pgm_read_byte(void const* address) {
 // NOLINTNEXTLINE(readability-identifier-naming)
 inline uint16_t pgm_read_word(void const* address) {
   uint16_t value{0};
+  // NOLINTNEXTLINE(bugprone-unsafe-functions): as avr-libc
   memcpy(&value, address, sizeof(value));
   return value;
 }
@@ -30,12 +33,14 @@ inline uint16_t pgm_read_word(void const* address) {
 // NOLINTNEXTLINE(readability-identifier-naming)
 inline uint32_t pgm_read_dword(void const* address) {
   uint32_t value{0};
+  // NOLINTNEXTLINE(bugprone-unsafe-functions): as avr-libc
   memcpy(&value, address, sizeof(value));
   return value;
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 inline void* memcpy_P(void* ram, void const* flash, size_t count) {
+  // NOLINTNEXTLINE(bugprone-unsafe-functions): as avr-libc
   return memcpy(ram, flash, count);
 }
 
@@ -46,10 +51,14 @@ inline void const* pgm_read_ptr(void const* address) {
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 inline int memcmp_P(void const* ram, void const* flash, size_t count) {
+  // NOLINTNEXTLINE(bugprone-unsafe-functions): as avr-libc
   return memcmp(ram, flash, count);
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
-inline size_t strlen_P(char const* flash) { return strlen(flash); }
+inline size_t strlen_P(char const* flash) {
+  // NOLINTNEXTLINE(bugprone-unsafe-functions): as avr-libc
+  return strlen(flash);
+}
 
 #endif  // UTL_TEST_MOCK_AVR_PGMSPACE_H_

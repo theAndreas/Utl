@@ -31,7 +31,12 @@ namespace internal {
 // __builtin_memcpy, as T is trivially copyable and needs no constructor.
 template <typename T, size_t Size = sizeof(T)>
 struct FlashRead {
-  static void Into(T& to, T const* from) { memcpy_P(&to, from, Size); }
+  static void Into(T& to, T const* from) {
+    // T is trivially copyable, and avr-libc reads flash of any size by
+    // memcpy_P() alone.
+    // NOLINTNEXTLINE(bugprone-unsafe-functions): MISRA 24.5.2, above.
+    memcpy_P(&to, from, Size);
+  }
 };
 template <typename T>
 struct FlashRead<T, 1> {
