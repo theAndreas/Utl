@@ -11,8 +11,8 @@
 #include <utl/status.h>
 #include <utl/string_view.h>
 
+#include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <limits>
 #include <string>
 
@@ -43,7 +43,7 @@ struct Read {
 template <typename T>
 Read<T> ReadFrom(char const* text, uint8_t base = 10, T initial = T{7}) {
   T value{initial};
-  size_t const size{std::strlen(text)};
+  size_t const size{std::char_traits<char>::length(text)};
   auto const end{utl::from_chars(text, text + size, value, base)};
   size_t const taken{end.IsOk() ? static_cast<size_t>(end.value() - text)
                                 : size_t{0}};
