@@ -8,7 +8,8 @@
 # tools/avr_stack.py adds it up from the call graphs avr-gcc writes beside the objects. Builds
 # first, as make examples does. Leaves out a target that CMake does not build: arduino:avr's
 # avr-gcc, and PlatformIO's atmelavr's, is 7.3, and -fcallgraph-info came with GCC 10; and one
-# that CMake builds for another processor than an AVR.
+# that CMake builds for another processor than an AVR. tools/stack.toml, where the project has
+# one, says what a call through a pointer never reaches, as avr_stack.py describes it.
 
 set -euo pipefail
 
@@ -32,6 +33,10 @@ main() {
   local mcu
   local elf
   local graphs=()
+  local never=()
+  if [[ -f "${ROOT_DIR}/tools/stack.toml" ]]; then
+    never=(--never "${ROOT_DIR}/tools/stack.toml")
+  fi
   for target in "${TARGETS[@]}"; do
     select_target "${target}"
     if [[ "${BUILD_SYSTEM}" != cmake ]]; then
@@ -65,7 +70,8 @@ main() {
         fi
         mapfile -t graphs <<< "${listed}"
         echo "${program} (${label}):"
-        python3 "${ROOT_DIR}/tools/avr_stack.py" --mcu "${mcu}" "${elf}" "${graphs[@]}" || failed=1
+        python3 "${ROOT_DIR}/tools/avr_stack.py" --mcu "${mcu}" "${never[@]}" "${elf}" \
+          "${graphs[@]}" || failed=1
       done
     done
   done
