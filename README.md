@@ -664,16 +664,19 @@ utl needed it while its groups were virtual; it now saves only the core's 18 byt
 examples are built with it to show that utl does not depend on it.
 
 <!-- sizes -->
-| Example | Flash, ram | Flash, flash | Flash, checked | RAM, ram | RAM, flash | RAM, checked |
-|---|---|---|---|---|---|---|
-| Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
-| Keypad | 2452 | 2452 | 2770 | 212 | 194 | 212 |
-| SelfCheck | 20810 | 20810 | 23684 | 360 | 342 | 370 |
+| Example | Flash, board/ram | Flash, board/flash | Flash, board/checked | Flash, cmake/ram | Flash, cmake/flash | Flash, cmake/checked | RAM, board/ram | RAM, board/flash | RAM, board/checked | RAM, cmake/ram | RAM, cmake/flash | RAM, cmake/checked |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Basics | 2404 | 2404 | 2404 | 2366 | 2366 | 2366 | 196 | 178 | 196 | 196 | 178 | 196 |
+| Keypad | 2452 | 2452 | 2770 | 2426 | 2426 | 2436 | 212 | 194 | 212 | 212 | 194 | 212 |
+| SelfCheck | 20810 | 20810 | 23684 | 16970 | 16970 | 19508 | 360 | 342 | 370 | 338 | 320 | 344 |
 <!-- /sizes -->
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the
 plugin; `checked` is `ram` with `UTL_CHECK_ACCESS` at 1. `SelfCheck` checks more in `checked`,
-which is most of what it adds there. `arduino:avr:uno`, Arduino AVR Boards 1.8.8 (avr-gcc 7.3.0).
+which is most of what it adds there. All for `arduino:avr:uno`, Arduino AVR Boards 1.8.8, built
+twice: `board` by arduino-cli with the core's avr-gcc 7.3.0, as a sketch is built; `cmake` by
+CMake with avr-gcc 14 from apt, the core compiled by `CMakeLists.txt` with the flags of its
+`platform.txt`, for the stack below. The first is what a sketch gets.
 
 **Every C++ file of a sketch has to be compiled with the plugin**, the Arduino core included. A
 file compiled without it reads a vtable in flash from RAM and jumps anywhere; the linker does not
@@ -687,16 +690,30 @@ compiler.cpp.extra_flags=-fplugin=/full/path/to/avr-flash-vtbl.so
 ```
 
 A plugin loads only into the `cc1plus` it was built for: build it again after an update of the AVR
-core.
+core. `make setup` builds one for each avr-gcc, `build/avr-flash-vtbl.so` for the core's and
+`build/avr-flash-vtbl-cmake.so` for the one from apt.
+
+## The deepest stack
+
+`make stack` adds up the deepest stack of each example of the target `cmake`, from the call
+graphs avr-gcc 14 writes, as avr-gcc 7.3 of the core cannot, and fails where it does not fit the
+RAM that `.data` and `.bss` leave: the template's `tools/avr_stack.py`, its interrupts
+included. A call through a pointer, as a virtual function of the core's `Print`, a
+`function_ref` or an `inplace_function` makes, is taken to reach every function whose address
+the program takes. Where that would be a recursion that cannot happen, a rule of
+`tools/stack.toml` says what such a call never reaches, each with its reason; they are facts of
+these examples, not of every sketch. `SelfCheck` takes 205 bytes at most in `checked`, of 1704
+free; what it measures at run time, the paths its checks take, stays below.
 
 ## Build and check
 
 Needs `arduino-cli`, a host `g++` and `clang`, `simavr`, `uv` and `jq`; for the tests on the
-host CMake, Ninja and GoogleTest (`libgtest-dev`); for the reference Doxygen. The dev container
+host CMake, Ninja and GoogleTest (`libgtest-dev`), and for the target `cmake` avr-gcc and
+avr-libc from apt (`gcc-avr`, `avr-libc`); for the reference Doxygen. The dev container
 below has them all. `make` lists every build and check:
 
 ```bash
-make setup          # arduino:avr 1.8.8, and the plugin: build/avr-flash-vtbl.so
+make setup          # arduino:avr 1.8.8, and a plugin for each avr-gcc in build/
 make lint           # clang-format, cpplint, shellcheck, actionlint, ruff; make fmt formats
 make tests          # the tests on the host, by GCC, in both variants
 make clang          # the same by clang
@@ -704,8 +721,9 @@ make sanitize       # the same under AddressSanitizer and UBSan
 make coverage       # the same with --coverage: what of src/ they reach
 make tidy           # clang-tidy: library and examples as for the Uno, and the tests
 make headers        # every header compiled on its own, for the host and for the Uno
-make self-check     # examples/SelfCheck in simavr, in each variant
-make examples       # every example in each variant, fails on a warning; the table
+make self-check     # examples/SelfCheck in simavr, for each target in each variant
+make examples       # every example for each target in each variant, fails on a warning
+make stack          # the deepest stack of each example of the target cmake
 make docs           # the reference from the Doxygen blocks, in build/docs/html
 make keypad         # examples/Keypad in simavr with keys pressed, ~40 s a variant
 make check          # all of it but keypad, warnings as errors, as CI
@@ -714,8 +732,9 @@ make check          # all of it but keypad, warnings as errors, as CI
 The checks, CI and the dev container come from the template
 [embedded-cpp-template](https://github.com/theAndreas/embedded-cpp-template), and `uv run
 copier update` brings its newest version. What is Utl's own for them lies in `tools/project.sh`:
-the board, the pinned core, the three variants and their flags, the plugin, and the check that
-the flash variant leaves no vtable in RAM; and in `tools/project.mk`, the target `keypad`.
+the two targets, the board, the pinned core, the three variants and their flags, the plugins,
+and the check that the flash variant leaves no vtable in RAM; in `tools/stack.toml`, the rules of
+`make stack`; and in `tools/project.mk`, the target `keypad`.
 
 The dev container in `.devcontainer/` carries all of it, with clangd for IntelliSense, which
 `.clangd` points at the compilation databases of CMake and of `tools/tidy.sh`; see
