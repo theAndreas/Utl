@@ -184,7 +184,7 @@ class inplace_function<R(Args...), Capacity> {
    *
    * \param[in,out] other The one to move from.
    */
-  inplace_function(inplace_function&& other) : inplace_function{} {
+  inplace_function(inplace_function&& other) noexcept : inplace_function{} {
     MoveFrom(other);
   }
 
@@ -197,7 +197,7 @@ class inplace_function<R(Args...), Capacity> {
    * \param[in] other The one to copy.
    * \return This one.
    */
-  inplace_function& operator=(inplace_function const& other) {
+  inplace_function& operator=(inplace_function const& other) & {
     if (this != &other) {
       Reset();
       CopyFrom(other);
@@ -212,7 +212,7 @@ class inplace_function<R(Args...), Capacity> {
    * \param[in,out] other The one to move from.
    * \return This one.
    */
-  inplace_function& operator=(inplace_function&& other) {
+  inplace_function& operator=(inplace_function&& other) & noexcept {
     if (this != &other) {
       Reset();
       MoveFrom(other);

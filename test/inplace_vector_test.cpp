@@ -38,7 +38,7 @@ struct Counted {
     ++alive;
   }
   Counted& operator=(Counted const&) = default;
-  Counted& operator=(Counted&& other) noexcept {
+  Counted& operator=(Counted&& other) & noexcept {
     value = other.value;
     other.value = -1;
     return *this;
@@ -300,6 +300,11 @@ TEST_F(InplaceVectorTest, GivesAnElementOfATemporaryMovedOut) {
   EXPECT_EQ((inplace_vector<Counted, 4>{1, 2, 3}[1].value), 2);
   EXPECT_EQ((Objects{1, 2, 3}.front().value), 1);
   EXPECT_EQ((Objects{1, 2, 3}.back().value), 3);
+}
+
+TEST_F(InplaceVectorTest, MovesWithoutThrowing) {
+  static_assert(std::is_nothrow_move_constructible_v<Objects>);
+  static_assert(std::is_nothrow_move_assignable_v<Objects>);
 }
 
 }  // namespace
