@@ -632,7 +632,7 @@ sketch, not the `.ino`, for which arduino-cli writes prototypes outside the name
 - `Keypad`: a code lock of four buttons on pins 8 to 11. The pin-change interrupt passes each press
   to `loop()` through a `spsc_queue`, without `cli()`; `loop()` looks its char up in a table in
   flash, a `flash_span`, keeps the last four in an `inplace_vector`, and when they match the code,
-  also in flash, opens the lock through a `function_ref` bound to it with `UTL_CW()`. 2484 bytes of
+  also in flash, opens the lock through a `function_ref` bound to it with `UTL_CW()`. 2452 bytes of
   flash and 212 of RAM, little more than `Basics`.
 - `SelfCheck`: checks the library and prints a line per check, then the number that failed.
   `tools/self_check.sh` runs it in simavr and compares with `SelfCheck.expected`. Its checks lie
