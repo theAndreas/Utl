@@ -212,7 +212,7 @@ PVS-Studio or Cppcheck Premium, fills the rows marked *Review* (ROADMAP I-4).
 | Id | Category | Topic | Covered by | Deviation |
 |---|---|---|---|---|
 | Rule 15.0.1 | Required | Special member functions as needed | `cppcoreguidelines-special-member-functions`, CodingStyle C-3 |  |
-| Rule 15.0.2 | Advisory | Signatures of copy and move functions | `misc-unconventional-assign-operator`, `performance-noexcept-move-constructor`, in part |  |
+| Rule 15.0.2 | Advisory | Signatures of copy and move functions | `house-copy-move-signature`, CodingStyle C-17; the return type `misc-unconventional-assign-operator` |  |
 | Rule 15.1.1 | Required | No dynamic type used in a constructor or destructor | `clang-analyzer-optin.cplusplus.VirtualCall` |  |
 | Rule 15.1.2 | Advisory | Constructors initialize every base | Review |  |
 | Rule 15.1.3 | Required | Conversions by one argument explicit | cpplint `runtime/explicit` for a constructor, a conversion operator by review; CodingStyle C-4 | A conversion that is meant, as of a span from an array, is implicit, with a `NOLINT(runtime/explicit)` that says why (C-4) |
