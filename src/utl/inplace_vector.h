@@ -92,9 +92,9 @@ struct VectorBase<T, N, false> {
 
   VectorBase(VectorBase const& other) { CopyFrom(other); }
 
-  VectorBase(VectorBase&& other) { MoveFrom(other); }
+  VectorBase(VectorBase&& other) noexcept { MoveFrom(other); }
 
-  VectorBase& operator=(VectorBase const& other) {
+  VectorBase& operator=(VectorBase const& other) & {
     if (this != &other) {
       DestroyAll();
       CopyFrom(other);
@@ -102,7 +102,7 @@ struct VectorBase<T, N, false> {
     return *this;
   }
 
-  VectorBase& operator=(VectorBase&& other) {
+  VectorBase& operator=(VectorBase&& other) & noexcept {
     if (this != &other) {
       DestroyAll();
       MoveFrom(other);

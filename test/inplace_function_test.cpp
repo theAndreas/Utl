@@ -220,5 +220,12 @@ TEST(InplaceFunctionTest, KeepsAFunctionRef) {
   EXPECT_EQ(kept(1), 2);
 }
 
+TEST(InplaceFunctionTest, MovesWithoutThrowing) {
+  using Function = inplace_function<int(int)>;
+
+  static_assert(std::is_nothrow_move_constructible_v<Function>);
+  static_assert(std::is_nothrow_move_assignable_v<Function>);
+}
+
 }  // namespace
 }  // namespace utl_test

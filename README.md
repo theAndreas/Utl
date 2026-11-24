@@ -513,7 +513,7 @@ the Uno, room for `[this]` and a byte. A callable larger than that stops the bui
 destroy, which is null for a callable that is trivially copyable, as a lambda that captures
 pointers, references or numbers, copied as its bytes. Where a `function_ref` refers to a lambda
 that is gone after the call, it keeps one; it is copied and assigned as a value, and copies its
-callable with it. It is empty when made without a callable, from `nullptr` or a null function
+callable with it; a temporary one cannot be assigned to, as that would change nothing. It is empty when made without a callable, from `nullptr` or a null function
 pointer, and after it was moved from; `operator bool` asks. A call of an empty one does nothing
 and returns `R()`, [checked](#checked-access), where `std::function` throws; so `R` is `void` or
 has a default constructor, and is never a reference. Left out are `swap()`, the comparisons with
