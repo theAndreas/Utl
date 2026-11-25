@@ -42,10 +42,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install simavr
+      # simavr, and the toolchain apt-packages.txt names: make setup builds the plugin for the
+      # avr-gcc from apt as well, that of the target cmake, although the keys run on board alone.
+      - name: Install simavr and the toolchain
         uses: ./.github/actions/apt-install
         with:
           packages: simavr
+          file: .devcontainer/apt-packages.txt
 
       # arduino-cli and the pinned core, as in CI: the template's target-setup, which replaced
       # arduino-setup with v0.7.0.
