@@ -16,6 +16,8 @@ through.
 | `stack.sh` | `make stack`: the deepest stack of each program on each AVR target CMake builds, by `avr_stack.py` |
 | `avr_stack.py` | The deepest stack of one AVR program, from avr-gcc's call graphs and its disassembly, against the RAM it leaves; a call through a pointer reaches every function whose address the program takes, but what a rule of `stack.toml` excludes |
 | `stack.toml` | The project's, where it has one: what a call through a pointer never reaches, each rule with its reason, for `avr_stack.py` |
+| `stack_cuts.py` | `make stack`, after every program passed: what each rule of `stack.toml` cut against `stack_cuts.txt`, which `FIX=1` writes |
+| `stack_cuts.txt` | The project's, beside its `stack.toml`: the calls through a pointer each rule cuts, in which programs, as `make stack FIX=1` wrote them |
 | `coverage.sh` | `make coverage`: the tests with --coverage, failing on a line, branch or condition of `src/` that no test reaches |
 | `tidy.sh` | `make tidy`: clang-tidy, and each target's compilation database |
 | `cppcheck.sh` | `make cppcheck` |
@@ -27,7 +29,7 @@ through.
 | `project.mk` | The project's: its own targets of the `Makefile` |
 | `lib/` | What the scripts above call, a target of none: `arduino_cli.sh`, `cmake.sh` and `platformio.sh`, the build systems of those names, for the scripts that build a target, and `clang_database.py`, which rewrites the database of a CMake or a PlatformIO build for clang-tidy, after `sketch_database.py` has written that of one example of a library built by PlatformIO for each of its sources; `doc_indent.py` and `cpplint_house.py`, cpplint with the NOLINT of a check of our own, for `lint.sh`, `tidy_module.sh` and the clang-tidy module in `tidy_module/` for `tidy.sh`, and `tidy_cache.py`, through which it calls clang-tidy and which skips a file that passed before on the same input |
 
-`project.sh`, `project.mk` and `stack.toml` are the project's own: the template wrote the first
+`project.sh`, `project.mk`, `stack.toml` and `stack_cuts.txt` are the project's own: the template wrote the first
 two once, and `copier update` leaves them alone. Everything else here comes from the template and is brought up
 to date with `copier update`; a change of the project's own goes into `project.sh`, `project.mk`
 or a script of its own beside them.
