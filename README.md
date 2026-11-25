@@ -702,7 +702,9 @@ included. A call through a pointer, as a virtual function of the core's `Print`,
 `function_ref` or an `inplace_function` makes, is taken to reach every function whose address
 the program takes. Where that would be a recursion that cannot happen, a rule of
 `tools/stack.toml` says what such a call never reaches, each with its reason; they are facts of
-these examples, not of every sketch. `SelfCheck` takes 205 bytes at most in `checked`, of 1704
+these examples, not of every sketch. `tools/stack_cuts.txt` lists the calls each rule cuts, and
+`make stack` fails where they change, so that a changed example has the reasons read again.
+`SelfCheck` takes 205 bytes at most in `checked`, of 1704
 free; what it measures at run time, the paths its checks take, stays below.
 
 ## Build and check
@@ -734,7 +736,7 @@ The checks, CI and the dev container come from the template
 copier update` brings its newest version. What is Utl's own for them lies in `tools/project.sh`:
 the two targets, the board, the pinned core, the three variants and their flags, the plugins,
 and the check that the flash variant leaves no vtable in RAM; in `tools/stack.toml`, the rules of
-`make stack`; and in `tools/project.mk`, the target `keypad`.
+`make stack`, and in `tools/stack_cuts.txt` what they cut; and in `tools/project.mk`, the target `keypad`.
 
 The dev container in `.devcontainer/` carries all of it, with clangd for IntelliSense, which
 `.clangd` points at the compilation databases of CMake and of `tools/tidy.sh`; see
