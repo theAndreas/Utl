@@ -3,24 +3,59 @@
 # of these examples and of arduino:avr 1.8.8, not of every sketch, and its reason says why it
 # holds; one that does not makes make stack's bound a lower one. Names as avr-c++filt prints
 # them, * for any text; a template names its return type first.
+#
+# A trampoline is named by its class, function_ref or inplace_function, not as utl::*::Call*,
+# which would take in internal::MapCall, Invoker and CallReturning as well: a function_ref passed
+# to Result::Map() is called through a pointer from there, and a rule must not cut that call.
+# There is no pattern for either of two names, so each pair has a rule of its own.
 
 [[never]]
-caller = "* utl::*::Call*"
-callee = "* utl::*::Call*"
-reason = """A trampoline of function_ref or inplace_function calls what it was made of: no \
-example makes one of another function_ref or inplace_function."""
+caller = "* utl::function_ref<*>::Call*"
+callee = "* utl::function_ref<*>::Call*"
+reason = """A trampoline of function_ref calls what it was made of: no example makes a \
+function_ref of another."""
+
+[[never]]
+caller = "* utl::function_ref<*>::Call*"
+callee = "* utl::inplace_function<*>::Call*"
+reason = """A trampoline of function_ref calls what it was made of: no example makes a \
+function_ref of an inplace_function."""
+
+[[never]]
+caller = "* utl::inplace_function<*>::Call*"
+callee = "* utl::inplace_function<*>::Call*"
+reason = """A trampoline of inplace_function calls what it keeps: no example makes an \
+inplace_function of another."""
+
+[[never]]
+caller = "* utl::inplace_function<*>::Call*"
+callee = "* utl::function_ref<*>::Call*"
+reason = """A trampoline of inplace_function calls what it keeps: no example makes an \
+inplace_function of a function_ref."""
 
 [[never]]
 caller = "Print::*"
-callee = "* utl::*::Call*"
+callee = "* utl::function_ref<*>::Call*"
 reason = """Print calls through a pointer only its own virtual functions, which no class of \
 utl or of the examples overrides: the core's HardwareSerial is the only Print here."""
 
 [[never]]
-caller = "* utl::*::Call*"
+caller = "Print::*"
+callee = "* utl::inplace_function<*>::Call*"
+reason = """Print calls through a pointer only its own virtual functions, which no class of \
+utl or of the examples overrides: the core's HardwareSerial is the only Print here."""
+
+[[never]]
+caller = "* utl::function_ref<*>::Call*"
 callee = "Print::*"
-reason = """No function_ref or inplace_function of the examples is made of a function of \
-Print: they call lambdas, functions and members of the examples' own classes."""
+reason = """No function_ref of the examples is made of a function of Print: they call lambdas, \
+functions and members of the examples' own classes."""
+
+[[never]]
+caller = "* utl::inplace_function<*>::Call*"
+callee = "Print::*"
+reason = """No inplace_function of the examples is made of a function of Print: they keep \
+lambdas and functions of the examples."""
 
 [[never]]
 caller = "Print::write(unsigned char const*, unsigned int)"
