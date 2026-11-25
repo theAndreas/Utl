@@ -47,6 +47,9 @@ DOCS_INTERNAL_API='^src/utl/internal/fluent\.h:'
 # avr-gcc 14 from apt, the core of arduino:avr compiled by CMakeLists.txt, as only a GCC of 10 or
 # later writes the call graphs make stack adds up.
 TARGETS=(board cmake)
+# The README's table shows board alone: what a sketch gets. cmake is built, run in simavr and
+# added up by make stack all the same, but no sketch is built that way.
+SIZES_TARGETS=(board)
 
 target_settings() {
   case "$1" in

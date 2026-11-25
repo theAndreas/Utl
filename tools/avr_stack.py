@@ -50,7 +50,9 @@ image is byte for byte the same with or without them):
 
   A rule that does not hold makes the number a lower bound again, which is why each has its
   reason. Where a recursion goes through a pointer, the failure names each such call as a rule
-  names it.
+  names it. --cuts adds each call through a pointer a rule cut to a file, for tools/stack_cuts.py,
+  which fails where they change: a rule holds of the programs as they are, and one whose cuts
+  change has its reason read again.
 
 A call pushes its return address: two bytes, or three on a part with more than 128 KiB of
 flash, as avr-gcc's __AVR_3_BYTE_PC__ says of it.
@@ -68,7 +70,8 @@ cannot use.
 Out of Wordclock's tools/avr-stack.py, for the AVR128DA48 alone, made general.
 
 Usage:
-    tools/avr_stack.py --mcu atmega328p [--never RULES.toml] PROGRAM.elf GRAPH... [--paths]
+    tools/avr_stack.py --mcu atmega328p [--never RULES.toml [--cuts FILE --name NAME]]
+                       PROGRAM.elf GRAPH... [--paths]
 
 GRAPH is a .ci file or a folder searched for them.
 """
@@ -296,6 +299,9 @@ class Stack:
             self.demangled = demangle([symbol_name(t) for t in graph.frames] + self.taken)
         # The calls through a pointer followed so far, as (caller, callee) pairs.
         self.through_pointer = set()
+        # The calls through a pointer a rule cut, as (rule, caller, callee), the rule by its index
+        # and the functions by their names.
+        self.cut = set()
 
     def taken_functions(self, taken):
         """The functions a call through a pointer may reach, those of the graph by their title
@@ -318,9 +324,12 @@ class Stack:
         program takes, but those a rule of --never says it does not."""
         caller = self.name(title)
         for callee in self.taken:
-            if not self.never.excludes(caller, self.name(callee)):
+            rule = self.never.rule_for(caller, self.name(callee))
+            if rule is None:
                 self.through_pointer.add((title, callee))
                 yield callee
+            else:
+                self.cut.add((rule, caller, self.name(callee)))
 
     def callees(self, title):
         """What `title` calls: functions of the graph by their title, of the library by their
@@ -496,7 +505,9 @@ class Never:
     """The rules of --never: which functions a caller never reaches through a pointer."""
 
     def __init__(self, path):
+        # Each rule's caller and callee as the file writes them, and as patterns.
         self.rules = []
+        self.patterns = []
         if path is None:
             return
         try:
@@ -512,12 +523,16 @@ class Never:
                      'a callee and the reason why the one never reaches the other')
             if not all(isinstance(rule[key], str) and rule[key].strip() for key in RULE_KEYS):
                 fail(f'{path}: rule {number}: its caller, callee and reason are texts, none empty')
-            self.rules.append((pattern(rule['caller']), pattern(rule['callee'])))
+            self.rules.append((rule['caller'], rule['callee']))
+            self.patterns.append((pattern(rule['caller']), pattern(rule['callee'])))
 
-    def excludes(self, caller, callee):
-        """Whether a rule says `caller` never reaches `callee` through a pointer."""
-        return any(rule_caller.fullmatch(caller) and rule_callee.fullmatch(callee)
-                   for rule_caller, rule_callee in self.rules)
+    def rule_for(self, caller, callee):
+        """The index of the first rule that says `caller` never reaches `callee` through a
+        pointer; None where none does."""
+        for index, (rule_caller, rule_callee) in enumerate(self.patterns):
+            if rule_caller.fullmatch(caller) and rule_callee.fullmatch(callee):
+                return index
+        return None
 
 
 def graph_files(paths):
@@ -538,6 +553,10 @@ def main():
     parser.add_argument('--paths', action='store_true', help='print the deepest paths frame by frame')
     parser.add_argument('--never', type=Path,
                         help='a TOML file of what a caller never reaches through a pointer')
+    parser.add_argument('--cuts', type=Path,
+                        help='a file to add the calls through a pointer each rule of --never cut '
+                        'to, a line each: --name, the rule\'s number, caller and callee, by tabs')
+    parser.add_argument('--name', default='', help='what names the program in --cuts')
     args = parser.parse_args()
 
     if not args.elf.is_file():
@@ -588,6 +607,11 @@ def main():
         print(f'{graph.labels[handler]}: {stack.depth(handler)} bytes on top')
     print(f'worst case {worst} bytes of {free} free ({ram} on the {args.mcu} '
           f'less {used} of .data and .bss): {free - worst} to spare')
+
+    if args.cuts is not None:
+        with args.cuts.open('a') as cuts:
+            cuts.writelines(f'{args.name}\t{rule + 1}\t{caller}\t{callee}\n'
+                            for rule, caller, callee in sorted(stack.cut))
 
     if args.paths:
         for title in [deepest_entry] + deepest_handlers:
