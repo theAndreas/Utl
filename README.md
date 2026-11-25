@@ -664,19 +664,19 @@ utl needed it while its groups were virtual; it now saves only the core's 18 byt
 examples are built with it to show that utl does not depend on it.
 
 <!-- sizes -->
-| Example | Flash, board/ram | Flash, board/flash | Flash, board/checked | Flash, cmake/ram | Flash, cmake/flash | Flash, cmake/checked | RAM, board/ram | RAM, board/flash | RAM, board/checked | RAM, cmake/ram | RAM, cmake/flash | RAM, cmake/checked |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Basics | 2404 | 2404 | 2404 | 2366 | 2366 | 2366 | 196 | 178 | 196 | 196 | 178 | 196 |
-| Keypad | 2452 | 2452 | 2770 | 2426 | 2426 | 2436 | 212 | 194 | 212 | 212 | 194 | 212 |
-| SelfCheck | 20810 | 20810 | 23684 | 16970 | 16970 | 19508 | 360 | 342 | 370 | 338 | 320 | 344 |
+| Example | Flash, ram | Flash, flash | Flash, checked | RAM, ram | RAM, flash | RAM, checked |
+|---|---|---|---|---|---|---|
+| Basics | 2404 | 2404 | 2404 | 196 | 178 | 196 |
+| Keypad | 2452 | 2452 | 2770 | 212 | 194 | 212 |
+| SelfCheck | 20810 | 20810 | 23684 | 360 | 342 | 370 |
 <!-- /sizes -->
 
 `ram` keeps the vtables in RAM, the default of avr-gcc; `flash` puts them into flash with the
 plugin; `checked` is `ram` with `UTL_CHECK_ACCESS` at 1. `SelfCheck` checks more in `checked`,
-which is most of what it adds there. All for `arduino:avr:uno`, Arduino AVR Boards 1.8.8, built
-twice: `board` by arduino-cli with the core's avr-gcc 7.3.0, as a sketch is built; `cmake` by
-CMake with avr-gcc 14 from apt, the core compiled by `CMakeLists.txt` with the flags of its
-`platform.txt`, for the stack below. The first is what a sketch gets.
+which is most of what it adds there. All for `arduino:avr:uno`, Arduino AVR Boards 1.8.8, built by
+arduino-cli with the core's avr-gcc 7.3.0, as a sketch is built. The examples are built a second
+time, by CMake with avr-gcc 14 from apt, for the stack below; no sketch gets those sizes, so the
+table leaves them out.
 
 **Every C++ file of a sketch has to be compiled with the plugin**, the Arduino core included. A
 file compiled without it reads a vtable in flash from RAM and jumps anywhere; the linker does not
